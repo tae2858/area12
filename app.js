@@ -76,52 +76,69 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const enterBtn = document.getElementById("enter-btn");
     const enterOverlay = document.getElementById("enter-overlay");
-    const ytPlayer = document.getElementById("yt-player");
     const playPauseBtn = document.getElementById("player-play-pause");
     const volumeSlider = document.getElementById("volume-slider");
     const visualizer = document.querySelector(".visualizer");
 
     let isPlaying = false;
+    let player = null;
+    let playerReady = false;
     const ytCommandQueue = [];
 
-    function sendYTCommand(func, args = []) {
-        if (!ytPlayer || !ytPlayer.contentWindow) {
-            ytCommandQueue.push({ func, args });
-            scheduleYTQueueFlush();
-            return;
-        }
+    const ytApiScript = document.createElement("script");
+    ytApiScript.src = "https://www.youtube.com/iframe_api";
+    ytApiScript.async = true;
+    document.head.appendChild(ytApiScript);
 
-        const command = {
-            event: "command",
-            func,
-            args,
-            id: 1
+    window.onYouTubeIframeAPIReady = function () {
+        const playerVars = {
+            autoplay: 0,
+            controls: 0,
+            disablekb: 1,
+            modestbranding: 1,
+            rel: 0,
+            loop: 1,
+            playlist: "EWrX250Zhko",
+            playsinline: 1
         };
 
-        try {
-            ytPlayer.contentWindow.postMessage(JSON.stringify(command), "*");
-        } catch (error) {
-            ytCommandQueue.push({ func, args });
-            scheduleYTQueueFlush();
+        if (/^https?:\/\//.test(window.location.origin)) {
+            playerVars.origin = window.location.origin;
+        }
+
+        player = new YT.Player("yt-player", {
+            playerVars,
+            events: {
+                onReady: () => {
+                    playerReady = true;
+                    if (volumeSlider) {
+                        player.setVolume(Math.floor(volumeSlider.value * 100));
+                    }
+                    flushYTCommandQueue();
+                }
+            }
+        });
+    };
+
+    function flushYTCommandQueue() {
+        while (playerReady && ytCommandQueue.length) {
+            const { func, args } = ytCommandQueue.shift();
+            try {
+                if (player && typeof player[func] === "function") {
+                    player[func](...args);
+                }
+            } catch (error) {
+                console.warn("YT command failed during flush:", error);
+            }
         }
     }
 
-    function scheduleYTQueueFlush() {
-        if (window.ytQueueFlushTimer) return;
-        window.ytQueueFlushTimer = setInterval(() => {
-            if (!ytPlayer || !ytPlayer.contentWindow) return;
-            while (ytCommandQueue.length) {
-                const { func, args } = ytCommandQueue.shift();
-                try {
-                    ytPlayer.contentWindow.postMessage(JSON.stringify({ event: "command", func, args, id: 1 }), "*");
-                } catch (err) {
-                    ytCommandQueue.unshift({ func, args });
-                    return;
-                }
-            }
-            clearInterval(window.ytQueueFlushTimer);
-            window.ytQueueFlushTimer = null;
-        }, 500);
+    function sendYTCommand(func, args = []) {
+        if (playerReady && player && typeof player[func] === "function") {
+            player[func](...args);
+            return;
+        }
+        ytCommandQueue.push({ func, args });
     }
 
     // Typewriter effect trigger
