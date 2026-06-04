@@ -32,10 +32,8 @@
         </div>
     </div>
 
-    <!-- YouTube Background Music Player -->
-    <div id="youtube-player-container" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;z-index:-1;" aria-hidden="true">
-        <div id="yt-player"></div>
-    </div>
+    <!-- Invisible Audio Element for Background Music -->
+    <audio id="bg-audio" loop src="background.mp3"></audio>
 
     <!-- Floating Guns.lol Audio Player Panel -->
     <div id="music-player-widget" class="music-player-widget">
@@ -46,7 +44,7 @@
             <span class="bar"></span>
         </div>
         <div class="player-info">
-            <div class="song-title">YouTube Music</div>
+            <div class="song-title">Area 12 Soundtrack</div>
             <div class="song-status">PLAYING</div>
         </div>
         <div class="player-controls">
@@ -232,7 +230,6 @@
         </div>
     </div>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
     <script type="module" src="app.js"></script>
 
     <!-- Glowing toast notification system -->
