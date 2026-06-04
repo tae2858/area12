@@ -1,0 +1,5 @@
+# Ignore ZIP archives
+*.zip
+
+# Ignore Discord Bot Config credentials
+backend/config.json
