@@ -21,7 +21,9 @@ let allServers = [];
 let currentUsername = null;
 
 // Environment-aware backend API URL binding
-const API_BASE_URL = "https://multicraft-production.up.railway.app/proxy/find-nearby-servers";
+const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8080"
+    : "https://multicraft-production.up.railway.app/proxy/find-nearby-servers";
 
 // Typewriter taglines for Guns.lol overlay effect
 const TAGLINES = [
