@@ -67,6 +67,11 @@ function escapeHtml(text) {
 
 // 1. Entry Overlay & Music Controller
 document.addEventListener("DOMContentLoaded", () => {
+    const isEmbed = window.self !== window.top || new URLSearchParams(window.location.search).has('embed');
+    if (isEmbed) {
+        document.body.classList.add("is-embedded");
+    }
+
     const enterBtn = document.getElementById("enter-btn");
     const enterOverlay = document.getElementById("enter-overlay");
     const ytPlayer = document.getElementById("yt-player");
