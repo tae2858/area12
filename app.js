@@ -204,6 +204,15 @@ function initAPIPolling() {
             if (response.ok) {
                 const data = await response.json();
                 if (data) {
+                    const hasFavorites = data.favorites && typeof data.favorites === "object" && Object.keys(data.favorites).length > 0;
+                    const hasNearby = data.nearby && Array.isArray(data.nearby) && data.nearby.length > 0;
+
+                    // Skip updating if response is empty (likely rate-limited) and we already have cached servers
+                    if (!hasFavorites && !hasNearby && allServers.length > 0) {
+                        console.warn("API returned empty data; keeping cached servers to prevent flickering.");
+                        return;
+                    }
+
                     const tempServers = [];
                     const foundFavorites = new Set();
 
@@ -308,7 +317,7 @@ function initAPIPolling() {
     };
 
     fetchServers();
-    setInterval(fetchServers, 5000);
+    setInterval(fetchServers, 15000);
 }
 
 // 4. Render Pinned Favorites (Subscription-style Cards)
