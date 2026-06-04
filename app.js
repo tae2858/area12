@@ -184,15 +184,33 @@ function startTypewriter() {
     tick();
 }
 
-// 3. API Polling Loop (Fetches from FastAPI every 5 seconds)
+// 3. API Polling Loop (Fetches from Railway proxy every 5 seconds)
 function initAPIPolling() {
     const fetchServers = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/servers`);
+            const response = await fetch("https://multicraft-production.up.railway.app/proxy/find-nearby-servers", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({})
+            });
             if (response.ok) {
                 const data = await response.json();
-                if (data && data.length > 0) {
-                    allServers = data;
+                if (data && data.nearby && data.nearby.length > 0) {
+                    allServers = data.nearby.map(s => {
+                        const isFavorite = s.server_id === "QVZACNG5" || s.server_id === "MULL97H1";
+                        return {
+                            server_id: s.server_id,
+                            name: s.server_name || "",
+                            admin: s.admin_name || "",
+                            players: `${s.connected_players}/${s.max_players}`,
+                            pvp: s.pvp,
+                            online: s.online,
+                            description: s.description || "",
+                            is_favorite: isFavorite
+                        };
+                    });
                     renderPinnedFavorites(allServers);
                     renderDirectoryGrid(allServers);
                     checkRoute(allServers); 
