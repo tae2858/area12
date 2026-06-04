@@ -1,32 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Area 12 - MultiCraft Server Index Directory</title>
+    <title>Area 12</title>
     <!-- SEO Optimization -->
-    <meta name="description" content="Explore live multiplayer server directories, player status counts, and invite tokens for MultiCraft servers.">
+    <meta name="description"
+        content="Explore live multiplayer server directories, player status counts, and invite tokens.">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <!-- Favicon Icon -->
+    <link rel="icon" type="image/png" href="logo.png">
     <!-- Main Style Sheet Link -->
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <!-- Guns.lol Style Entry Overlay -->
     <div id="enter-overlay" class="enter-overlay">
         <div class="overlay-content">
             <img src="logo.png" alt="Area 12 Logo" class="overlay-logo">
-            <h1 class="glitch" data-text="AREA 12">AREA 12</h1>
+            <h1 class="glitch" data-text="Area 12">Area 12</h1>
             <p class="overlay-tagline" id="typewriter"></p>
             <button id="enter-btn" class="enter-btn">[ CLICK TO ENTER ]</button>
         </div>
     </div>
 
     <!-- Invisible YouTube Stream Embed for Background Music -->
-    <iframe id="yt-player" width="1" height="1" src="https://www.youtube.com/embed/1tJ8sc8I4z0?enablejsapi=1&autoplay=0&loop=1&playlist=1tJ8sc8I4z0" frameborder="0" style="position: absolute; top: -100px; left: -100px; opacity: 0; pointer-events: none;" allow="autoplay"></iframe>
+    <iframe id="yt-player" width="1" height="1"
+        src="https://www.youtube.com/embed/EWrX250Zhko?enablejsapi=1&autoplay=0&loop=1&playlist=EWrX250Zhko"
+        frameborder="0" style="position: absolute; top: -100px; left: -100px; opacity: 0; pointer-events: none;"
+        allow="autoplay"></iframe>
 
     <!-- Floating Guns.lol Audio Player Panel -->
     <div id="music-player-widget" class="music-player-widget">
@@ -51,9 +61,9 @@
         <div class="nav-container">
             <div class="logo-section">
                 <img src="logo.png" alt="Logo" class="site-logo">
-                <span class="logo-text">AREA<span class="logo-accent">12</span></span>
+                <span class="logo-text">Area <span class="logo-accent">12</span></span>
             </div>
-            
+
             <nav class="nav-links">
                 <a href="#" class="active">HOME</a>
                 <a href="#directory">DIRECTORY</a>
@@ -62,7 +72,8 @@
             </nav>
 
             <div class="nav-actions">
-                <a href="https://discord.gg/v9NUPx3p78" target="_blank" id="discord-btn" class="cyan-btn">JOIN DISCORD</a>
+                <a href="https://discord.gg/v9NUPx3p78" target="_blank" id="discord-btn" class="cyan-btn">JOIN
+                    DISCORD</a>
             </div>
         </div>
     </header>
@@ -70,15 +81,13 @@
     <!-- Main Container -->
     <main class="content-container">
 
-
-
         <!-- Subscription/Pricing Card Layout (MultiCraft Favorite Slots) -->
         <section class="slots-section">
             <div class="section-header">
                 <h3 class="section-title">PINNED NETWORKS</h3>
                 <p class="section-subtitle">Verified high-performance favorites</p>
             </div>
-            
+
             <div class="slots-grid" id="favorites-grid">
                 <!-- Loading placeholder cards -->
                 <div class="slot-card-skeleton"></div>
@@ -95,7 +104,8 @@
                 </div>
                 <!-- Search bar styling with HSL tailors -->
                 <div class="search-wrapper">
-                    <input type="text" id="search-input" placeholder="Search servers or invites..." class="search-input">
+                    <input type="text" id="search-input" placeholder="Search servers or invites..."
+                        class="search-input">
                     <span class="search-icon">🔍</span>
                 </div>
             </div>
@@ -106,76 +116,66 @@
             </div>
         </section>
 
-        <!-- About/Footer Description (Guns.lol styling) -->
-        <section id="about" class="about-section">
+        <!-- Footer Description (Guns.lol styling) -->
+        <footer id="about" class="about-section">
             <div class="about-card">
-                <h4>ABOUT MULTICRAFT GRID</h4>
-                <p>We monitor and poll multiplayer game server APIs to present a real-time list of online rooms, player caps, and PvP settings. Copy the invite code of any active lobby and paste it directly into your MultiCraft client to join.</p>
+                <h4>AREA 12 DIRECTORY</h4>
+                <p>Real-time monitor index for active multiplayer servers. Search active lobbies, analyze server player
+                    counts, and join by copying the unique server invite codes directly to your clipboard.</p>
                 <div class="about-credits">
                     <span>© 2026 Area 12. All Rights Reserved.</span>
+                    <span class="heart-pulse">Made with 🤍 for the gaming community</span>
                     <span><a href="/credits" id="credits-link" class="credits-footer-btn">Team Credits</a></span>
-                    <span class="heart-pulse">Made with 🤍 for MultiCraft</span>
                 </div>
             </div>
-        </section>
+        </footer>
 
     </main>
 
     <!-- Dedicated Guns.lol Server Bio Page Section (Hidden by default) -->
     <div id="bio-page-container" class="bio-page-container hidden">
         <div class="bio-glow-back"></div>
-        <div class="bio-page-wrapper">
-            <div class="bio-card">
-                <button id="bio-back-btn" class="bio-back-btn">← Back to Index</button>
-                <img src="logo.png" alt="Server Logo" class="bio-logo">
-                <h1 id="bio-server-name" class="bio-title">SERVER NAME</h1>
-                <p id="bio-typewriter" class="bio-tagline"></p>
-                
-                <div class="bio-details-grid">
-                    <div class="bio-detail-box">
-                        <span class="lbl">MAKER</span>
-                        <span id="bio-maker" class="val">---</span>
-                    </div>
-                    <div class="bio-detail-box">
-                        <span class="lbl">PLAYERS ONLINE</span>
-                        <span id="bio-players" class="val">0/0</span>
-                    </div>
-                    <div class="bio-detail-box">
-                        <span class="lbl">BATTLE MODE</span>
-                        <span id="bio-pvp" class="val">---</span>
-                    </div>
-                </div>
+        <div class="bio-card">
+            <button id="bio-back-btn" class="bio-back-btn">← Back to Index</button>
+            <img src="logo.png" alt="Server Logo" class="bio-logo">
+            <h1 id="bio-server-name" class="bio-title">SERVER NAME</h1>
+            <p id="bio-typewriter" class="bio-tagline"></p>
 
-                <div class="bio-stats-bar">
-                    <span class="bio-stat-item">👁️ <span id="bio-views-count">0</span> Views</span>
-                    <button id="bio-like-btn" class="bio-like-btn">❤️ <span id="bio-likes-count">0</span> Likes</button>
+            <div class="bio-details-grid">
+                <div class="bio-detail-box">
+                    <span class="lbl">MAKER</span>
+                    <span id="bio-maker" class="val">---</span>
                 </div>
-
-                <div class="bio-code-label">CLICK CODE TO COPY</div>
-                <div id="bio-invite-code" class="bio-invite-code" title="Click to Copy">
-                    -----
+                <div class="bio-detail-box">
+                    <span class="lbl">PLAYERS ONLINE</span>
+                    <span id="bio-players" class="val">0/0</span>
                 </div>
-                
-                <button id="bio-copy-btn" class="bio-copy-btn">COPY INVITE CODE</button>
+                <div class="bio-detail-box">
+                    <span class="lbl">BATTLE MODE</span>
+                    <span id="bio-pvp" class="val">---</span>
+                </div>
             </div>
 
-            <!-- Dedicated Reviews & Feedback Section -->
-            <div class="bio-reviews-card">
-                <h3 class="reviews-title">REVIEWS & FEEDBACK</h3>
-                
-                <div id="bio-reviews-list" class="bio-reviews-list">
-                    <div class="no-reviews">No reviews yet. Be the first to share your thoughts!</div>
+            <div class="bio-stats-bar">
+                <span class="bio-stat-item">👁️ <span id="bio-views-count">0</span> Views</span>
+                <button id="bio-like-btn" class="bio-like-btn">❤️ <span id="bio-likes-count">0</span> Likes</button>
+            </div>
+
+            <div class="bio-code-label">CLICK CODE TO COPY</div>
+            <div id="bio-invite-code" class="bio-invite-code" title="Click to Copy">
+                -----
+            </div>
+
+            <button id="bio-copy-btn" class="bio-copy-btn">COPY INVITE CODE</button>
+
+            <!-- Comments Section -->
+            <div class="bio-comments-section">
+                <h3>Comments</h3>
+                <div id="comments-container" class="comments-container">
+                    <p class="no-comments-msg">No comments yet. Be the first to share your thoughts!</p>
                 </div>
-                
-                <div id="bio-add-review-section" class="bio-add-review-section">
-                    <form id="bio-review-form" class="bio-review-form">
-                        <textarea id="bio-review-text" required maxlength="250" placeholder="Write a review about this server..."></textarea>
-                        <button type="submit" id="bio-review-submit-btn" class="bio-review-submit-btn">POST REVIEW</button>
-                    </form>
-                    <div id="bio-review-login-prompt" class="bio-review-login-prompt hidden">
-                        Please <button type="button" id="review-signin-trigger" class="prompt-link">Sign In</button> to post a review.
-                    </div>
-                </div>
+
+                <div id="comment-input-area" class="comment-input-area"></div>
             </div>
         </div>
     </div>
@@ -183,37 +183,29 @@
     <!-- Dedicated Credits Page Section (Hidden by default) -->
     <div id="credits-page-container" class="bio-page-container hidden">
         <div class="bio-glow-back"></div>
-        <div class="bio-page-wrapper">
-            <div class="bio-card credits-card-layout">
-                <button id="credits-back-btn" class="bio-back-btn">← Back to Index</button>
-                <h1 class="bio-title" style="margin-bottom: 24px;">AREA 12 TEAM</h1>
-                
-                <div class="credits-list">
-                    <!-- Jared12 -->
-                    <div class="credit-member-card">
-                        <div class="member-avatar">👑</div>
-                        <div class="member-details">
-                            <h3 class="member-name">Jared12</h3>
-                            <p class="member-role">Owner of the Area 12 Brand & Lead Idea Manager</p>
-                        </div>
+        <div class="bio-card credits-card-layout">
+            <button id="credits-back-btn" class="bio-back-btn">← Back to Index</button>
+            <h1 class="bio-title text-orchid-glow">AREA 12 TEAM</h1>
+            <div class="credits-list">
+                <div class="credit-member-card">
+                    <div class="member-avatar">J</div>
+                    <div class="member-info">
+                        <h3 class="member-name">Jared12</h3>
+                        <p class="member-role">Founder / Lead Developer</p>
                     </div>
-
-                    <!-- ziadlive -->
-                    <div class="credit-member-card">
-                        <div class="member-avatar">💻</div>
-                        <div class="member-details">
-                            <h3 class="member-name">ziadlive</h3>
-                            <p class="member-role">Owner & Creator of the Website, Lead Developer</p>
-                        </div>
+                </div>
+                <div class="credit-member-card">
+                    <div class="member-avatar">Z</div>
+                    <div class="member-info">
+                        <h3 class="member-name">ziadlive</h3>
+                        <p class="member-role">Co-Founder / Systems Architect</p>
                     </div>
-
-                    <!-- x9jm -->
-                    <div class="credit-member-card">
-                        <div class="member-avatar">🛠️</div>
-                        <div class="member-details">
-                            <h3 class="member-name">x9jm</h3>
-                            <p class="member-role">Developer</p>
-                        </div>
+                </div>
+                <div class="credit-member-card">
+                    <div class="member-avatar">X</div>
+                    <div class="member-info">
+                        <h3 class="member-name">x9jm</h3>
+                        <p class="member-role">Frontend Designer / Engineer</p>
                     </div>
                 </div>
             </div>
@@ -223,97 +215,60 @@
     <!-- Glowing toast notification system -->
     <div id="toast" class="toast-notification">Copied invite code to clipboard!</div>
 
+    <!-- Global Chat Drawer -->
+    <div id="chat-widget" class="chat-widget">
+        <button id="chat-toggle-btn" class="chat-toggle-btn">
+            <span class="chat-icon">💬</span>
+            <span class="chat-badge hidden" id="chat-badge">0</span>
+            <span class="chat-label">GLOBAL CHAT</span>
+        </button>
+        <div id="chat-box" class="chat-box hidden">
+            <div class="chat-header">
+                <h3>Global Chat</h3>
+                <button id="chat-close-btn">×</button>
+            </div>
+            <div id="chat-messages" class="chat-messages">
+                <p class="no-messages-msg">No messages yet. Send a message to start the conversation!</p>
+            </div>
+            <div id="chat-input-area" class="chat-input-area"></div>
+        </div>
+    </div>
+
     <!-- Dedicated Firebase Auth Login Modal -->
     <div id="login-modal" class="login-modal hidden">
         <div class="login-modal-overlay"></div>
         <div class="login-card">
             <button id="login-close-btn" class="login-close-btn">×</button>
-            
-            <!-- Login/Signup Panel -->
-            <div id="login-form-container">
-                <h2 id="login-modal-title">SIGN IN</h2>
-                <p class="login-subtitle">Access your Area 12 account</p>
-                
-                <form id="login-form" class="login-form">
-                    <div class="input-group hidden" id="username-input-group">
-                        <label for="login-username">USERNAME</label>
-                        <input type="text" id="login-username" placeholder="Choose a username" minlength="3" maxlength="15">
-                    </div>
-                    <div class="input-group">
-                        <label id="email-label" for="login-email">EMAIL ADDRESS</label>
-                        <input type="text" id="login-email" required placeholder="name@domain.com or username">
-                    </div>
-                    <div class="input-group">
-                        <label for="login-password">PASSWORD</label>
-                        <input type="password" id="login-password" required placeholder="••••••••">
-                    </div>
-                    
-                    <div class="forgot-pwd-container">
-                        <button type="button" id="forgot-password-link" class="forgot-password-link">Forgot Password?</button>
-                    </div>
-                    
-                    <div id="login-error-msg" class="login-error-msg hidden"></div>
-                    <button type="button" id="resend-verification-btn" class="login-resend-btn hidden">Resend Verification Email</button>
-                    
-                    <button type="submit" id="login-submit-btn" class="login-submit-btn">SIGN IN</button>
-                </form>
-                
-                <div class="login-toggle-mode">
-                    <span id="login-toggle-text">Don't have an account?</span>
-                    <button id="login-toggle-btn" class="login-toggle-btn">Sign Up</button>
-                </div>
-            </div>
+            <h2 id="login-modal-title">SIGN IN</h2>
+            <p class="login-subtitle">Access your Area 12 account</p>
 
-            <!-- Forgot Password Panel -->
-            <div id="reset-form-container" class="hidden">
-                <h2>RESET PASSWORD</h2>
-                <p class="login-subtitle">Send a recovery link to your inbox</p>
-                
-                <form id="reset-password-form" class="login-form">
-                    <div class="input-group">
-                        <label for="reset-email">EMAIL OR USERNAME</label>
-                        <input type="text" id="reset-email" required placeholder="Enter email or username">
-                    </div>
-                    
-                    <div id="reset-error-msg" class="login-error-msg hidden"></div>
-                    
-                    <button type="submit" id="reset-submit-btn" class="login-submit-btn">SEND RESET LINK</button>
-                </form>
-                
-                <div class="login-toggle-mode">
-                    <button id="reset-back-btn" class="login-toggle-btn">Back to Sign In</button>
+            <form id="login-form" class="login-form">
+                <div class="input-group hidden" id="username-group">
+                    <label for="login-username">USERNAME</label>
+                    <input type="text" id="login-username" placeholder="gamer123">
                 </div>
-            </div>
-        </div>
-    </div>
+                <div class="input-group">
+                    <label for="login-email">EMAIL ADDRESS</label>
+                    <input type="email" id="login-email" required placeholder="name@domain.com">
+                </div>
+                <div class="input-group">
+                    <label for="login-password">PASSWORD</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
 
-    <!-- Collapsible Global Chat Widget -->
-    <div id="global-chat-widget" class="global-chat-widget collapsed">
-        <button id="chat-toggle-btn" class="chat-toggle-btn">
-            <span class="chat-icon">💬</span>
-            <span class="chat-toggle-text">GLOBAL CHAT</span>
-            <span id="chat-unread-badge" class="chat-unread-badge hidden">0</span>
-        </button>
-        <div class="chat-window">
-            <div class="chat-header">
-                <h4>GLOBAL CHAT</h4>
-                <button id="chat-close-btn" class="chat-close-btn">&times;</button>
-            </div>
-            <div id="chat-messages" class="chat-messages">
-                <div class="chat-loading">Connecting to chat stream...</div>
-            </div>
-            <div id="chat-input-area" class="chat-input-area">
-                <form id="chat-form" class="chat-form">
-                    <input type="text" id="chat-msg-input" placeholder="Type a message..." maxlength="120" autocomplete="off" required>
-                    <button type="submit" class="chat-send-btn">SEND</button>
-                </form>
-                <div id="chat-login-prompt" class="chat-login-prompt hidden">
-                    Please <button type="button" id="chat-signin-trigger" class="prompt-link">Sign In</button> to chat.
-                </div>
+                <div id="login-error-msg" class="login-error-msg hidden"></div>
+
+                <button type="submit" id="login-submit-btn" class="login-submit-btn">SIGN IN</button>
+            </form>
+
+            <div class="login-toggle-mode">
+                <span id="login-toggle-text">Don't have an account?</span>
+                <button id="login-toggle-btn" class="login-toggle-btn">Sign Up</button>
             </div>
         </div>
     </div>
 
     <script type="module" src="app.js"></script>
 </body>
+
 </html>

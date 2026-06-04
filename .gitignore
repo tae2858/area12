@@ -3,3 +3,8 @@
 
 # Ignore Discord Bot Config credentials
 backend/config.json
+
+# Ignore local FastAPI backend files
+backend/app.py
+backend/Dockerfile
+backend/__pycache__/
