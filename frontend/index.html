@@ -32,8 +32,10 @@
         </div>
     </div>
 
-    <!-- Invisible Audio Element for Background Music -->
-    <audio id="bg-audio" loop src="background.mp3"></audio>
+    <!-- YouTube Background Music Player -->
+    <div id="youtube-player-container" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;z-index:-1;" aria-hidden="true">
+        <div id="yt-player"></div>
+    </div>
 
     <!-- Floating Guns.lol Audio Player Panel -->
     <div id="music-player-widget" class="music-player-widget">
@@ -229,6 +231,9 @@
             </div>
         </div>
     </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script type="module" src="app.js"></script>
 
     <!-- Glowing toast notification system -->
     <div id="toast" class="toast-notification">Copied invite code to clipboard!</div>

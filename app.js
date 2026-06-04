@@ -19,6 +19,10 @@ const auth = getAuth(firebaseApp);
 
 let allServers = [];
 let currentUsername = null;
+let ytPlayer = null;
+let playerReady = false;
+let isPlaying = false;
+const YOUTUBE_VIDEO_ID = "LTphVIore3A";
 
 // Environment-aware backend API URL binding
 const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
@@ -67,6 +71,54 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, function (m) { return map[m]; });
 }
 
+function toggleVisualizer(play) {
+    const visualizer = document.querySelector(".visualizer");
+    if (!visualizer) return;
+    const bars = visualizer.querySelectorAll(".bar");
+    bars.forEach(bar => {
+        bar.style.animationPlayState = play ? "running" : "paused";
+    });
+}
+
+window.onYouTubeIframeAPIReady = function () {
+    ytPlayer = new YT.Player("yt-player", {
+        height: "0",
+        width: "0",
+        videoId: YOUTUBE_VIDEO_ID,
+        playerVars: {
+            autoplay: 0,
+            controls: 0,
+            modestbranding: 1,
+            loop: 1,
+            playlist: YOUTUBE_VIDEO_ID,
+            rel: 0,
+            iv_load_policy: 3,
+            disablekb: 1,
+            fs: 0
+        },
+        events: {
+            onReady: (event) => {
+                playerReady = true;
+                const volumeSlider = document.getElementById("volume-slider");
+                const initialVolume = volumeSlider ? volumeSlider.value : 0.5;
+                event.target.setVolume(initialVolume * 100);
+                if (isPlaying) {
+                    event.target.playVideo();
+                }
+            },
+            onStateChange: (event) => {
+                if (event.data === YT.PlayerState.PLAYING) {
+                    document.querySelector(".song-status").innerText = "PLAYING";
+                    toggleVisualizer(true);
+                } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                    document.querySelector(".song-status").innerText = "PAUSED";
+                    toggleVisualizer(false);
+                }
+            }
+        }
+    });
+};
+
 // 1. Entry Overlay & Music Controller
 document.addEventListener("DOMContentLoaded", () => {
     const isEmbed = window.self !== window.top || new URLSearchParams(window.location.search).has('embed');
@@ -80,8 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const volumeSlider = document.getElementById("volume-slider");
     const visualizer = document.querySelector(".visualizer");
 
-    let isPlaying = false;
-    const bgAudio = document.getElementById("bg-audio");
+    const bgAudio = null;
 
     // Typewriter effect trigger
     startTypewriter();
@@ -106,11 +157,9 @@ document.addEventListener("DOMContentLoaded", () => {
     enterBtn.addEventListener("click", () => {
         enterOverlay.classList.add("hide");
         isPlaying = true;
-        if (bgAudio) {
-            bgAudio.volume = volumeSlider ? volumeSlider.value : 0.5;
-            bgAudio.play().catch(err => {
-                console.error("Audio playback failed to start: ", err);
-            });
+
+        if (playerReady && ytPlayer) {
+            ytPlayer.playVideo();
         }
 
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
@@ -129,17 +178,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Play/Pause Button handler
     playPauseBtn.addEventListener("click", () => {
-        if (!bgAudio) return;
+        if (!playerReady || !ytPlayer) return;
         if (!isPlaying) {
-            bgAudio.play().catch(err => {
-                console.error("Audio play failed: ", err);
-            });
+            ytPlayer.playVideo();
             playPauseBtn.innerText = "⏸";
             document.querySelector(".song-status").innerText = "PLAYING";
             toggleVisualizer(true);
             isPlaying = true;
         } else {
-            bgAudio.pause();
+            ytPlayer.pauseVideo();
             playPauseBtn.innerText = "▶";
             document.querySelector(".song-status").innerText = "PAUSED";
             toggleVisualizer(false);
@@ -150,8 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Volume Slider handler
     if (volumeSlider) {
         volumeSlider.addEventListener("input", (e) => {
-            if (bgAudio) {
-                bgAudio.volume = e.target.value;
+            if (playerReady && ytPlayer) {
+                ytPlayer.setVolume(e.target.value * 100);
             }
         });
     }
