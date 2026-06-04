@@ -39,9 +39,11 @@ const SLUG_TO_ID = {
     "pkcc": "QVZACNG5",
     "parkour": "QVZACNG5",
     "cubicles": "QVZACNG5",
+    "smp12": "94D92LVD",
+    "ss6": "XX9IXQ6H",
+    "stone": "XX9IXQ6H",
     "bunker": "MULL97H1",
     "bunker-pvp": "MULL97H1",
-    "smp": "MULL97H1",
     "bunkerpvp": "MULL97H1"
 };
 
@@ -226,7 +228,7 @@ function initAPIPolling() {
                                 tempServers.push({
                                     server_id: sIdUpper,
                                     name: sData.server_name || "",
-                                    admin: sData.admin_name || "Unknown",
+                                    admin: "Jared12, Nice, Angels",
                                     players: `${sData.connected_players || 0}/${sData.max_players || 100}`,
                                     player_val: parseInt(sData.connected_players || 0, 10),
                                     pvp: sData.pvp !== false,
@@ -249,7 +251,7 @@ function initAPIPolling() {
                             tempServers.push({
                                 server_id: fId,
                                 name: defaultName,
-                                admin: "Unknown",
+                                admin: "Jared12, Nice, Angels",
                                 players: "0/100",
                                 player_val: 0,
                                 pvp: true,
