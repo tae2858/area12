@@ -598,10 +598,14 @@ function checkRoute(servers) {
 
         onValue(statsViewsRef, (snapshot) => {
             document.getElementById("bio-views-count").innerText = (snapshot.val() || 0).toLocaleString();
+        }, (error) => {
+            console.error("Failed to load views: ", error);
         });
 
         onValue(statsLikesRef, (snapshot) => {
             document.getElementById("bio-likes-count").innerText = (snapshot.val() || 0).toLocaleString();
+        }, (error) => {
+            console.error("Failed to load likes: ", error);
         });
 
         const bioLikeBtn = document.getElementById("bio-like-btn");
@@ -800,6 +804,8 @@ function initFirebaseAuth() {
                 currentUsername = dbUsername || user.displayName || user.email.split("@")[0];
                 signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
                 signinNavBtn.style.color = "var(--accent-cyan)";
+            }, (error) => {
+                console.error("Failed to load user username ref: ", error);
             });
         } else {
             currentUsername = null;
@@ -912,6 +918,9 @@ function initGlobalChat() {
         } else {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+    }, (error) => {
+        console.error("Chat fetch error: ", error);
+        chatMessages.innerHTML = `<p class="no-messages-msg" style="color: var(--accent-pink);">Failed to load chat messages (Permission Denied). Please verify your Firebase Database Rules allow public read access.</p>`;
     });
 }
 
@@ -1002,6 +1011,9 @@ function loadServerComments(serverId) {
 
             commentsContainer.appendChild(item);
         });
+    }, (error) => {
+        console.error("Comments fetch error: ", error);
+        commentsContainer.innerHTML = `<p class="no-comments-msg" style="color: var(--accent-pink);">Failed to load comments (Permission Denied). Please verify your Firebase Database Rules allow public read access.</p>`;
     });
 }
 
