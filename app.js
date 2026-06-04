@@ -164,6 +164,8 @@ document.addEventListener("DOMContentLoaded", () => {
     enterBtn.addEventListener("click", () => {
         enterOverlay.classList.add("hide");
         isPlaying = true;
+        // Mute first to satisfy autoplay policies, then start playback.
+        sendYTCommand("mute");
         sendYTCommand("playVideo");
         sendYTCommand("setVolume", [Math.floor(volumeSlider.value * 100)]);
 
@@ -184,6 +186,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Play/Pause Button handler
     playPauseBtn.addEventListener("click", () => {
         if (!isPlaying) {
+            // Unmute on explicit user gesture, restore volume, then play.
+            sendYTCommand("unMute");
+            sendYTCommand("setVolume", [Math.floor(volumeSlider.value * 100)]);
             sendYTCommand("playVideo");
             playPauseBtn.innerText = "⏸";
             document.querySelector(".song-status").innerText = "PLAYING";

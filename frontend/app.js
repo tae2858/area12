@@ -110,6 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Start background YouTube music stream via Player API
         isPlaying = true;
+        // Mute first so browsers will allow autoplay, then attempt to play.
+        if (player && typeof player.mute === 'function') {
+            try { player.mute(); } catch (e) {}
+        }
         syncVolumeWithSlider();
         safePlayVideo();
 
@@ -151,6 +155,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // Play/Pause Button handler
     playPauseBtn.addEventListener("click", () => {
         if (!isPlaying) {
+            // Unmute on explicit user gesture and restore volume, then play.
+            if (player && typeof player.unMute === 'function') {
+                try {
+                    player.unMute();
+                    const volumeSlider = document.getElementById("volume-slider");
+                    if (volumeSlider && typeof player.setVolume === 'function') {
+                        player.setVolume(Math.floor(volumeSlider.value * 100));
+                    }
+                } catch (e) {}
+            }
             safePlayVideo();
             playPauseBtn.innerText = "⏸";
             document.querySelector(".song-status").innerText = "PLAYING";
