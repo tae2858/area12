@@ -1,17 +1,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getDatabase, ref, onValue, runTransaction, push, set, serverTimestamp, query, limitToLast, get, child } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-
+import { getDatabase, ref, onValue, runTransaction, push, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDzM4EG7aqCSW3QuAYKBJw0_gZeo1UedbI",
-  authDomain: "link-mtc.firebaseapp.com",
-  databaseURL: "https://link-mtc-default-rtdb.firebaseio.com",
-  projectId: "link-mtc",
-  storageBucket: "link-mtc.firebasestorage.app",
-  messagingSenderId: "1069066043873",
-  appId: "1:1069066043873:web:d8ad0d0a0ef9be239f12a0",
-  measurementId: "G-6F0WDLXP26"
+    apiKey: "AIzaSyDSDszN2saYnDRW_9SLPBdo-8cPWIZ709U",
+    authDomain: "area--12.firebaseapp.com",
+    databaseURL: "https://area--12-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "area--12",
+    storageBucket: "area--12.firebasestorage.app",
+    messagingSenderId: "258520899123",
+    appId: "1:258520899123:web:b73f0db735cd9f2a2b0d46",
+    measurementId: "G-50K0RZ39JK"
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -19,74 +18,62 @@ const db = getDatabase(firebaseApp);
 const auth = getAuth(firebaseApp);
 
 let allServers = [];
+let currentUsername = null;
+
+// Environment-aware backend API URL binding
+const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8080"
+    : "https://multicraft-production.up.railway.app/proxy/find-nearby-servers";
 
 // Typewriter taglines for Guns.lol overlay effect
 const TAGLINES = [
     "Scraping the MultiCraft network...",
     "Live server indicators & caps.",
-    "Click anywhere to copy tokens.",
+    "Click cards to open profile.",
     "Real-time multiplayer lobbies.",
     "Powered by Area 12."
 ];
 
-// Load YouTube IFrame Player API dynamically
-const tag = document.createElement('script');
-tag.src = "https://www.youtube.com/iframe_api";
-const firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-let player = null;
-let playerReady = false;
-let pendingPlay = false;
-
-window.onYouTubeIframeAPIReady = function() {
-    player = new YT.Player('yt-player', {
-        videoId: '5qap5aO4i9A',
-        playerVars: {
-            autoplay: 0,
-            controls: 0,
-            disablekb: 1,
-            modestbranding: 1,
-            rel: 0,
-            loop: 1,
-            playlist: '5qap5aO4i9A',
-            playsinline: 1,
-            origin: window.location.origin
-        },
-        events: {
-            'onReady': () => {
-                playerReady = true;
-                syncVolumeWithSlider();
-                if (pendingPlay) {
-                    pendingPlay = false;
-                    safePlayVideo();
-                }
-            }
-        }
-    });
+// Slug maps for specific high-priority rooms
+const SLUG_TO_ID = {
+    "pkcc": "QVZACNG5",
+    "parkour": "QVZACNG5",
+    "cubicles": "QVZACNG5",
+    "smp12": "94D92LVD",
+    "ss6": "XX9IXQ6H",
+    "stone": "XX9IXQ6H",
+    "bunker": "MULL97H1",
+    "bunker-pvp": "MULL97H1",
+    "bunkerpvp": "MULL97H1"
 };
 
-function safePlayVideo() {
-    if (player && typeof player.playVideo === 'function') {
-        try {
-            player.playVideo();
-            return;
-        } catch (error) {
-            console.warn('YouTube playVideo failed, deferring until ready:', error);
-        }
+function getSlug(name, id) {
+    for (const [slug, mappedId] of Object.entries(SLUG_TO_ID)) {
+        if (mappedId === id) return slug;
     }
-    pendingPlay = true;
+    return name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
 }
 
-function syncVolumeWithSlider() {
-    const volumeSlider = document.getElementById("volume-slider");
-    if (volumeSlider && player && typeof player.setVolume === 'function') {
-        player.setVolume(Math.floor(volumeSlider.value * 100));
-    }
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function (m) { return map[m]; });
 }
 
 // 1. Entry Overlay & Music Controller
 document.addEventListener("DOMContentLoaded", () => {
+    const isEmbed = window.self !== window.top || new URLSearchParams(window.location.search).has('embed');
+    if (isEmbed) {
+        document.body.classList.add("is-embedded");
+    }
+
     const enterBtn = document.getElementById("enter-btn");
     const enterOverlay = document.getElementById("enter-overlay");
     const playPauseBtn = document.getElementById("player-play-pause");
@@ -94,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const visualizer = document.querySelector(".visualizer");
 
     let isPlaying = false;
+    const bgAudio = document.getElementById("bg-audio");
 
     // Typewriter effect trigger
     startTypewriter();
@@ -104,76 +92,55 @@ document.addEventListener("DOMContentLoaded", () => {
         checkRoute(allServers);
     });
 
+    document.getElementById("credits-link").addEventListener("click", (e) => {
+        e.preventDefault();
+        window.history.pushState({}, '', '/credits');
+        checkRoute(allServers);
+    });
+
+    document.getElementById("credits-back-btn").addEventListener("click", () => {
+        window.history.pushState({}, '', '/');
+        checkRoute(allServers);
+    });
+
     enterBtn.addEventListener("click", () => {
-        // Hide entry overlay
         enterOverlay.classList.add("hide");
-        
-        // Start background YouTube music stream via Player API
         isPlaying = true;
-        // Mute first so browsers will allow autoplay, then attempt to play.
-        if (player && typeof player.mute === 'function') {
-            try { player.mute(); } catch (e) {}
+        
+        if (bgAudio) {
+            bgAudio.volume = volumeSlider ? volumeSlider.value : 0.5;
+            bgAudio.play().catch(err => {
+                console.error("Audio playback failed to start: ", err);
+            });
         }
-        syncVolumeWithSlider();
-        safePlayVideo();
 
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
         toggleVisualizer(true);
     });
 
-    // Initialize Realtime Database Sync
-    initRealtimeDatabaseSync();
-
-    // Initialize Firebase Auth
+    // Initialize Components
+    initAPIPolling();
     initFirebaseAuth();
-
-    // Initialize Global Chat
     initGlobalChat();
 
-    // Initialize Reviews
-    initReviews();
-
-    // Setup credits link navigation
-    const creditsLink = document.getElementById("credits-link");
-    if (creditsLink) {
-        creditsLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            window.history.pushState({}, '', '/credits');
-            checkRoute(allServers);
-        });
-    }
-
-    // Credits back button listener
-    const creditsBackBtn = document.getElementById("credits-back-btn");
-    if (creditsBackBtn) {
-        creditsBackBtn.addEventListener("click", () => {
-            window.history.pushState({}, '', '/');
-            checkRoute(allServers);
-        });
-    }
+    // Browser navigation back/forward listeners
+    window.addEventListener("popstate", () => {
+        checkRoute(allServers);
+    });
 
     // Play/Pause Button handler
     playPauseBtn.addEventListener("click", () => {
+        if (!bgAudio) return;
         if (!isPlaying) {
-            // Unmute on explicit user gesture and restore volume, then play.
-            if (player && typeof player.unMute === 'function') {
-                try {
-                    player.unMute();
-                    const volumeSlider = document.getElementById("volume-slider");
-                    if (volumeSlider && typeof player.setVolume === 'function') {
-                        player.setVolume(Math.floor(volumeSlider.value * 100));
-                    }
-                } catch (e) {}
-            }
-            safePlayVideo();
+            bgAudio.play().catch(err => {
+                console.error("Audio play failed: ", err);
+            });
             playPauseBtn.innerText = "⏸";
             document.querySelector(".song-status").innerText = "PLAYING";
             toggleVisualizer(true);
             isPlaying = true;
         } else {
-            if (player && typeof player.pauseVideo === 'function') {
-                player.pauseVideo();
-            }
+            bgAudio.pause();
             playPauseBtn.innerText = "▶";
             document.querySelector(".song-status").innerText = "PAUSED";
             toggleVisualizer(false);
@@ -182,12 +149,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Volume Slider handler
-    volumeSlider.addEventListener("input", (e) => {
-        const volumeVal = Math.floor(e.target.value * 100);
-        if (player && typeof player.setVolume === 'function') {
-            player.setVolume(volumeVal);
-        }
-    });
+    if (volumeSlider) {
+        volumeSlider.addEventListener("input", (e) => {
+            if (bgAudio) {
+                bgAudio.volume = e.target.value;
+            }
+        });
+    }
 
     function toggleVisualizer(play) {
         const bars = visualizer.querySelectorAll(".bar");
@@ -200,6 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // 2. Typewriter Effect
 function startTypewriter() {
     const element = document.getElementById("typewriter");
+    if (!element) return;
     let lineIdx = 0;
     let charIdx = 0;
     let isDeleting = false;
@@ -216,7 +185,7 @@ function startTypewriter() {
 
         let delay = 100;
         if (!isDeleting && charIdx === currentLine.length) {
-            delay = 2000; // Pause at end of text
+            delay = 2000;
             isDeleting = true;
         } else if (isDeleting && charIdx === 0) {
             isDeleting = false;
@@ -229,30 +198,138 @@ function startTypewriter() {
     tick();
 }
 
+// 3. API Polling Loop (Fetches from Railway proxy every 5 seconds)
+function initAPIPolling() {
+    const favoriteIds = ["94D92LVD", "QVZACNG5", "XX9IXQ6H"];
+    const fetchServers = async () => {
+        try {
+            const response = await fetch("https://multicraft-production.up.railway.app/proxy/find-nearby-servers", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ favorites: "94D92LVD,QVZACNG5,XX9IXQ6H" })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data) {
+                    const hasFavorites = data.favorites && typeof data.favorites === "object" && Object.keys(data.favorites).length > 0;
+                    const hasNearby = data.nearby && Array.isArray(data.nearby) && data.nearby.length > 0;
 
+                    // Skip updating if response is empty (likely rate-limited) and we already have cached servers
+                    if (!hasFavorites && !hasNearby && allServers.length > 0) {
+                        console.warn("API returned empty data; keeping cached servers to prevent flickering.");
+                        return;
+                    }
 
-// 4. API Fetching & Render Dashboard Loop
-// 4. Real-time Firebase Database Synchronizer
-function initRealtimeDatabaseSync() {
-    const serversRef = ref(db, 'servers');
-    onValue(serversRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            allServers = data;
-            renderPinnedFavorites(allServers);
-            renderDirectoryGrid(allServers);
-            checkRoute(allServers); // Evaluate routing on new data
-        } else {
-            document.getElementById("lobby-counter").innerText = "Waiting for background server engine synchronizer...";
+                    const tempServers = [];
+                    const foundFavorites = new Set();
+
+                    // 1. Process favorites block (nested dict keyed by server ID)
+                    if (data.favorites && typeof data.favorites === "object") {
+                        for (const [sId, sData] of Object.entries(data.favorites)) {
+                            const sIdUpper = sId.toUpperCase();
+                            if (favoriteIds.includes(sIdUpper) && sData && typeof sData === "object") {
+                                foundFavorites.add(sIdUpper);
+                                const desc = (sData.description || "").replace(/\n/g, " ").trim();
+                                tempServers.push({
+                                    server_id: sIdUpper,
+                                    name: sData.server_name || "",
+                                    admin: "Jared12, Nice, Angels",
+                                    players: `${sData.connected_players || 0}/${sData.max_players || 100}`,
+                                    player_val: parseInt(sData.connected_players || 0, 10),
+                                    pvp: sData.pvp !== false,
+                                    online: sData.online !== false,
+                                    description: desc || "No room description provided.",
+                                    is_favorite: true
+                                });
+                            }
+                        }
+                    }
+
+                    // 2. Inject missing/offline favorites
+                    for (const fId of favoriteIds) {
+                        if (!foundFavorites.has(fId)) {
+                            let defaultName = "Unknown Server";
+                            if (fId === "QVZACNG5") defaultName = "Parkour Cubicles [12+]";
+                            else if (fId === "94D92LVD") defaultName = "[12+] ※SMP12※";
+                            else if (fId === "XX9IXQ6H") defaultName = "[12+] ※Stone Simulator!※";
+
+                            tempServers.push({
+                                server_id: fId,
+                                name: defaultName,
+                                admin: "Jared12, Nice, Angels",
+                                players: "0/100",
+                                player_val: 0,
+                                pvp: true,
+                                online: false,
+                                description: "Server is currently sleeping or offline.",
+                                is_favorite: true
+                            });
+                        }
+                    }
+
+                    // 3. Process nearby servers from the list
+                    if (data.nearby && Array.isArray(data.nearby)) {
+                        for (const sData of data.nearby) {
+                            if (!sData || typeof sData !== "object") continue;
+                            const sId = (sData.server_id || sData.id || "").toUpperCase();
+                            if (favoriteIds.includes(sId)) continue; // skip, already handled
+
+                            const desc = (sData.description || "").replace(/\n/g, " ").trim();
+                            tempServers.push({
+                                server_id: sId || "UNKNOWN",
+                                name: sData.server_name || sData.name || "MultiCraft Server",
+                                admin: sData.admin_name || sData.admin || "Unknown",
+                                players: `${sData.connected_players || sData.clients || 0}/${sData.max_players || sData.clients_max || 50}`,
+                                player_val: parseInt(sData.connected_players || sData.clients || 0, 10),
+                                pvp: sData.pvp !== false,
+                                online: sData.online !== false,
+                                description: desc || "No room description provided.",
+                                is_favorite: false
+                            });
+                        }
+                    }
+
+                    // Sort: Favorites first, then other online servers by player count descending
+                    tempServers.sort((a, b) => {
+                        if (a.is_favorite && !b.is_favorite) return -1;
+                        if (!a.is_favorite && b.is_favorite) return 1;
+                        return b.player_val - a.player_val;
+                    });
+
+                    allServers = tempServers;
+
+                    // Update total online counts or lobby label based on total active players
+                    let totalPlayers = 0;
+                    allServers.forEach(s => {
+                        if (s.online) {
+                            const count = parseInt(s.players.split("/")[0], 10) || 0;
+                            totalPlayers += count;
+                        }
+                    });
+                    document.getElementById("lobby-counter").innerText = `${totalPlayers} PLAYERS ONLINE ACROSS ALL NETWORKS`;
+
+                    renderPinnedFavorites(allServers);
+                    renderDirectoryGrid(allServers);
+                    checkRoute(allServers);
+                } else {
+                    document.getElementById("lobby-counter").innerText = "Waiting for background server engine synchronizer...";
+                }
+            } else {
+                document.getElementById("lobby-counter").innerText = "Backend error: Status " + response.status;
+            }
+        } catch (error) {
+            console.error("API polling failed: ", error);
+            document.getElementById("lobby-counter").innerText = "Backend connection offline. Retrying...";
         }
-    }, (error) => {
-        console.error("Firebase sync error: ", error);
-        document.getElementById("lobby-counter").innerText = "Database connection offline. Re-evaluating...";
-    });
+    };
+
+    fetchServers();
+    setInterval(fetchServers, 15000);
 }
 
-
-// 6. Render Pinned Favorites (Subscription-style Cards)
+// 4. Render Pinned Favorites (Subscription-style Cards)
 function renderPinnedFavorites(servers) {
     const favorites = servers.filter(s => s.is_favorite === true);
     const container = document.getElementById("favorites-grid");
@@ -266,6 +343,17 @@ function renderPinnedFavorites(servers) {
     favorites.forEach(server => {
         const card = document.createElement("div");
         card.className = "slot-card slot-favorite";
+        card.style.cursor = "pointer";
+
+        card.addEventListener("click", (e) => {
+            if (e.target.tagName === "BUTTON" || e.target.closest("button")) {
+                return;
+            }
+            const slug = getSlug(server.name, server.server_id);
+            window.history.pushState({}, '', '/' + slug);
+            checkRoute(allServers);
+        });
+
         card.innerHTML = `
             <div>
                 <span class="slot-badge-top">⭐ FAVORITE</span>
@@ -298,16 +386,14 @@ function renderPinnedFavorites(servers) {
     });
 }
 
-// 7. Render All Active Servers (Searchable Grid)
+// 5. Render All Active Servers (Searchable Grid)
 function renderDirectoryGrid(servers) {
     const searchVal = document.getElementById("search-input").value.toLowerCase();
     const container = document.getElementById("server-grid");
     container.innerHTML = "";
 
-    // Exclude favorites already displayed in upper slots to prevent redundancy
     const filtered = servers.filter(s => {
-        const matchSearch = s.name.toLowerCase().includes(searchVal) || s.server_id.toLowerCase().includes(searchVal);
-        return matchSearch;
+        return s.name.toLowerCase().includes(searchVal) || s.server_id.toLowerCase().includes(searchVal);
     });
 
     document.getElementById("lobby-counter").innerText = `Showing ${filtered.length} Live Network Rooms`;
@@ -318,17 +404,27 @@ function renderDirectoryGrid(servers) {
     }
 
     filtered.forEach(server => {
-        // Calculate player capacity percentage for progress bars
         let pct = 0;
         try {
             const parts = server.players.split("/");
             if (parts.length === 2 && parseInt(parts[1]) > 0) {
                 pct = (parseInt(parts[0]) / parseInt(parts[1])) * 100;
             }
-        } catch(e){}
+        } catch (e) { }
 
         const card = document.createElement("div");
         card.className = "server-card";
+        card.style.cursor = "pointer";
+
+        card.addEventListener("click", (e) => {
+            if (e.target.tagName === "BUTTON" || e.target.closest("button")) {
+                return;
+            }
+            const slug = getSlug(server.name, server.server_id);
+            window.history.pushState({}, '', '/' + slug);
+            checkRoute(allServers);
+        });
+
         card.innerHTML = `
             <div>
                 <div class="server-header">
@@ -360,13 +456,13 @@ function renderDirectoryGrid(servers) {
     });
 }
 
-// 8. Dynamic Search Input Key Listener
+// 6. Dynamic Search Input Key Listener
 document.getElementById("search-input").addEventListener("input", () => {
     renderDirectoryGrid(allServers);
 });
 
-// 9. Clipboard Copy Utility with Toast triggers
-window.copyToClipboard = function(text) {
+// 7. Clipboard Copy Utility with Toast triggers
+window.copyToClipboard = function (text) {
     navigator.clipboard.writeText(text).then(() => {
         showToast(`Invite code "${text}" copied! Paste into MultiCraft. 🎮`);
     }).catch(err => {
@@ -383,7 +479,7 @@ function showToast(message) {
     }, 3000);
 }
 
-// 10. Guns.lol Profile Routing System
+// 8. Guns.lol Profile Routing System
 function checkRoute(servers) {
     const rawPath = window.location.pathname.replace(/^\/|\/$/g, '').trim();
     if (!rawPath || rawPath.toLowerCase() === "index.html" || rawPath.toLowerCase() === "index") {
@@ -405,59 +501,66 @@ function checkRoute(servers) {
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
         return;
     }
-    
-    // Locate server matching ID or sanitized title (alphanumeric only)
-    const matched = servers.find(s => {
+
+    // Locate server matching ID or slug or sanitized title (alphanumeric only)
+    let matched = servers.find(s => {
         const sId = s.server_id.toLowerCase();
+        const slug = getSlug(s.name, s.server_id);
         const sNameSanitized = s.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
         const pathSanitized = path.replace(/[^a-zA-Z0-9]/g, '');
-        return sId === path || sNameSanitized === pathSanitized;
+        return sId === path || slug === path || sNameSanitized === pathSanitized;
     });
 
+    // Fuzzy fallback 1: Prefix match on server ID (min 3 chars)
+    if (!matched && path.length >= 3) {
+        matched = servers.find(s => s.server_id.toLowerCase().startsWith(path));
+    }
+
+    // Fuzzy fallback 2: Check if path is contained inside the server name
+    if (!matched && path.length >= 3) {
+        matched = servers.find(s => s.name.toLowerCase().includes(path));
+    }
+
     if (matched) {
-        // Swap UI panels
         document.getElementById("bio-page-container").classList.remove("hidden");
+        document.getElementById("credits-page-container").classList.add("hidden");
         document.querySelector(".main-navbar").classList.add("hidden");
         document.querySelector(".content-container").classList.add("hidden");
-        document.getElementById("enter-overlay").classList.add("hide"); // Hide entry dialog
+        document.getElementById("enter-overlay").classList.add("hide");
 
-        // Fill bio card elements
         document.getElementById("bio-server-name").innerText = matched.name.toUpperCase();
         document.getElementById("bio-maker").innerText = matched.admin;
         document.getElementById("bio-players").innerText = matched.players;
         document.getElementById("bio-pvp").innerText = matched.pvp ? "⚔️ PvP Enabled" : "🌾 Safe Zone";
         document.getElementById("bio-invite-code").innerText = matched.server_id;
 
-        // Auto trigger background player visible indicator
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
 
-        // Start typing tagline
         startBioTypewriter(matched.description);
 
-        // 9. Setup stats references in Firebase RTDB
         const serverId = matched.server_id;
         const statsViewsRef = ref(db, `stats/${serverId}/views`);
         const statsLikesRef = ref(db, `stats/${serverId}/likes`);
 
-        // Increment view count transaction (only once per route load)
         if (window.currentRouteId !== serverId) {
             window.currentRouteId = serverId;
             runTransaction(statsViewsRef, (currentViews) => {
                 return (currentViews || 0) + 1;
             });
         }
-        loadReviews(serverId);
 
-        // Setup real-time listeners for views and likes counts
         onValue(statsViewsRef, (snapshot) => {
             document.getElementById("bio-views-count").innerText = (snapshot.val() || 0).toLocaleString();
+        }, (error) => {
+            console.error("Failed to load views: ", error);
         });
 
         onValue(statsLikesRef, (snapshot) => {
             document.getElementById("bio-likes-count").innerText = (snapshot.val() || 0).toLocaleString();
+        }, (error) => {
+            console.error("Failed to load likes: ", error);
         });
 
-        // Like button handler (1 like per device using localStorage)
         const bioLikeBtn = document.getElementById("bio-like-btn");
         bioLikeBtn.onclick = () => {
             const likeKey = `area12_liked_${serverId}`;
@@ -465,7 +568,7 @@ function checkRoute(servers) {
                 showToast("You've already liked this server!");
                 return;
             }
-            
+
             runTransaction(statsLikesRef, (currentLikes) => {
                 return (currentLikes || 0) + 1;
             }).then((result) => {
@@ -478,6 +581,9 @@ function checkRoute(servers) {
             });
         };
 
+        // Load Comments
+        loadServerComments(serverId);
+
         // Bind copy triggers
         const copyBtn = document.getElementById("bio-copy-btn");
         const codeBox = document.getElementById("bio-invite-code");
@@ -489,17 +595,11 @@ function checkRoute(servers) {
         document.getElementById("bio-copy-btn").addEventListener("click", copyAction);
         document.getElementById("bio-invite-code").addEventListener("click", copyAction);
     } else {
-        // Safe redirect to main page index if path not found
         window.history.replaceState({}, '', '/');
         document.getElementById("bio-page-container").classList.add("hidden");
         document.getElementById("credits-page-container").classList.add("hidden");
         document.querySelector(".main-navbar").classList.remove("hidden");
         document.querySelector(".content-container").classList.remove("hidden");
-        if (window.unsubscribeReviews) {
-            window.unsubscribeReviews();
-            window.unsubscribeReviews = null;
-        }
-        window.currentRouteId = null;
     }
 }
 
@@ -519,7 +619,7 @@ function startBioTypewriter(text) {
     tick();
 }
 
-// 11. Firebase Authentication Controller
+// 9. Firebase Authentication Controller
 function initFirebaseAuth() {
     const loginModal = document.getElementById("login-modal");
     const loginForm = document.getElementById("login-form");
@@ -530,43 +630,21 @@ function initFirebaseAuth() {
     const loginModalTitle = document.getElementById("login-modal-title");
     const loginSubmitBtn = document.getElementById("login-submit-btn");
     const errorMsgDiv = document.getElementById("login-error-msg");
-
-    const usernameInputGroup = document.getElementById("username-input-group");
-    const usernameInput = document.getElementById("login-username");
-    const emailLabel = document.getElementById("email-label");
-    const loginEmailInput = document.getElementById("login-email");
-    const forgotPasswordLink = document.getElementById("forgot-password-link");
-
-    const loginFormContainer = document.getElementById("login-form-container");
-    const resetFormContainer = document.getElementById("reset-form-container");
-    const resetPasswordForm = document.getElementById("reset-password-form");
-    const resetEmailInput = document.getElementById("reset-email");
-    const resetErrorMsg = document.getElementById("reset-error-msg");
-    const resetBackBtn = document.getElementById("reset-back-btn");
+    const usernameGroup = document.getElementById("username-group");
 
     let isSignUpMode = false;
 
-    // Toggle modal visibility
     const showModal = () => {
         errorMsgDiv.classList.add("hidden");
         loginForm.reset();
-        
-        // Reset to sign in mode first
         isSignUpMode = false;
+        usernameGroup.classList.add("hidden");
+        document.getElementById("login-username").required = false;
         loginModalTitle.innerText = "SIGN IN";
         document.querySelector(".login-subtitle").innerText = "Access your Area 12 account";
         loginSubmitBtn.innerText = "SIGN IN";
         loginToggleText.innerText = "Don't have an account?";
         loginToggleBtn.innerText = "Sign Up";
-        usernameInputGroup.classList.add("hidden");
-        usernameInput.required = false;
-        emailLabel.innerText = "EMAIL ADDRESS OR USERNAME";
-        loginEmailInput.placeholder = "name@domain.com or username";
-        
-        // Hide reset password view
-        loginFormContainer.classList.remove("hidden");
-        resetFormContainer.classList.add("hidden");
-        
         loginModal.classList.remove("hidden");
     };
 
@@ -591,424 +669,322 @@ function initFirebaseAuth() {
     loginCloseBtn.addEventListener("click", hideModal);
     document.querySelector(".login-modal-overlay").addEventListener("click", hideModal);
 
-    // Switch between Register/Login modes
     loginToggleBtn.addEventListener("click", () => {
         isSignUpMode = !isSignUpMode;
         errorMsgDiv.classList.add("hidden");
-        loginForm.reset();
-        
         if (isSignUpMode) {
             loginModalTitle.innerText = "SIGN UP";
             document.querySelector(".login-subtitle").innerText = "Create your Area 12 account";
             loginSubmitBtn.innerText = "SIGN UP";
             loginToggleText.innerText = "Already have an account?";
             loginToggleBtn.innerText = "Sign In";
-            usernameInputGroup.classList.remove("hidden");
-            usernameInput.required = true;
-            emailLabel.innerText = "EMAIL ADDRESS";
-            loginEmailInput.placeholder = "name@domain.com";
+            usernameGroup.classList.remove("hidden");
+            document.getElementById("login-username").required = true;
         } else {
             loginModalTitle.innerText = "SIGN IN";
             document.querySelector(".login-subtitle").innerText = "Access your Area 12 account";
             loginSubmitBtn.innerText = "SIGN IN";
             loginToggleText.innerText = "Don't have an account?";
             loginToggleBtn.innerText = "Sign Up";
-            usernameInputGroup.classList.add("hidden");
-            usernameInput.required = false;
-            emailLabel.innerText = "EMAIL ADDRESS OR USERNAME";
-            loginEmailInput.placeholder = "name@domain.com or username";
+            usernameGroup.classList.add("hidden");
+            document.getElementById("login-username").required = false;
         }
     });
 
-    // Toggle forgot password form view
-    forgotPasswordLink.addEventListener("click", () => {
-        loginFormContainer.classList.add("hidden");
-        resetFormContainer.classList.remove("hidden");
-        resetPasswordForm.reset();
-        resetErrorMsg.classList.add("hidden");
-    });
-
-    resetBackBtn.addEventListener("click", () => {
-        resetFormContainer.classList.add("hidden");
-        loginFormContainer.classList.remove("hidden");
-    });
-
-    // Handle password reset
-    resetPasswordForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        resetErrorMsg.classList.add("hidden");
-        const resetVal = resetEmailInput.value.trim();
-        if (!resetVal) return;
-
-        let emailPromise;
-        if (!resetVal.includes("@")) {
-            // Treat as username
-            const usernameLower = resetVal.toLowerCase();
-            emailPromise = get(ref(db, "usernames/" + usernameLower)).then(snap => {
-                if (!snap.exists()) {
-                    throw new Error("Username not found.");
-                }
-                return snap.val().email;
-            });
-        } else {
-            emailPromise = Promise.resolve(resetVal);
-        }
-
-        emailPromise.then(email => {
-            return sendPasswordResetEmail(auth, email);
-        }).then(() => {
-            showToast("Password reset link sent to your email!");
-            resetFormContainer.classList.add("hidden");
-            loginFormContainer.classList.remove("hidden");
-        }).catch(err => {
-            resetErrorMsg.innerText = err.message.replace("Firebase: ", "");
-            resetErrorMsg.classList.remove("hidden");
-        });
-    });
-
-    // Handle authentication submissions
     loginForm.addEventListener("submit", (e) => {
         e.preventDefault();
         errorMsgDiv.classList.add("hidden");
-        
-        const identifier = loginEmailInput.value.trim();
+
+        const email = document.getElementById("login-email").value.trim();
         const password = document.getElementById("login-password").value;
 
         if (isSignUpMode) {
-            const username = usernameInput.value.trim();
-            const usernameLower = username.toLowerCase();
-
-            // Validate username formatting (alphanumeric and underscores, 3-15 chars)
-            const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
-            if (!usernameRegex.test(username)) {
-                errorMsgDiv.innerText = "Username must be 3-15 characters and contain only letters, numbers, or underscores.";
-                errorMsgDiv.classList.remove("hidden");
-                return;
-            }
-
-            // Check username uniqueness
-            get(ref(db, "usernames/" + usernameLower)).then((snapshot) => {
-                if (snapshot.exists()) {
-                    throw new Error("This username is already taken.");
-                }
-                return createUserWithEmailAndPassword(auth, identifier, password);
-            })
-            .then((userCredential) => {
-                const user = userCredential.user;
-                // Update profile display name with username
-                return updateProfile(user, { displayName: username }).then(() => {
-                    // Save mapping in database
-                    return set(ref(db, "usernames/" + usernameLower), {
-                        email: identifier,
-                        displayName: username
-                    });
-                }).then(() => {
-                    // Send verification email
-                    return sendEmailVerification(user);
-                }).then(() => {
-                    // Log out immediately
-                    return signOut(auth);
-                });
-            })
-            .then(() => {
-                showToast("Account registered! Please check your email to verify.");
-                hideModal();
-            })
-            .catch((error) => {
-                errorMsgDiv.innerText = error.message.replace("Firebase: ", "");
-                errorMsgDiv.classList.remove("hidden");
-            });
-
-        } else {
-            // Sign in mode: resolve identifier (could be email or username)
-            let emailPromise;
-            if (!identifier.includes("@")) {
-                const usernameLower = identifier.toLowerCase();
-                emailPromise = get(ref(db, "usernames/" + usernameLower)).then(snap => {
-                    if (!snap.exists()) {
-                        throw new Error("Username not found.");
-                    }
-                    return snap.val().email;
-                });
-            } else {
-                emailPromise = Promise.resolve(identifier);
-            }
-
-            emailPromise.then(resolvedEmail => {
-                return signInWithEmailAndPassword(auth, resolvedEmail, password);
-            })
-            .then((userCredential) => {
-                const user = userCredential.user;
-                if (!user.emailVerified) {
-                    errorMsgDiv.innerText = "Please verify your email address. A verification link has been sent to your inbox.";
-                    errorMsgDiv.classList.remove("hidden");
-                    
-                    // Send verification email before signing out (waiting for it to complete)
-                    sendEmailVerification(user)
+            const usernameInput = document.getElementById("login-username").value.trim();
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    updateProfile(user, { displayName: usernameInput })
                         .then(() => {
-                            showToast("Verification link sent!");
+                            set(ref(db, `users/${user.uid}`), { username: usernameInput }).then(() => {
+                                currentUsername = usernameInput;
+                                signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                                signinNavBtn.style.color = "var(--accent-cyan)";
+                                showToast("Account created successfully!");
+                                hideModal();
+                            }).catch(err => {
+                                console.error("Database save error: ", err);
+                                currentUsername = usernameInput;
+                                signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                                signinNavBtn.style.color = "var(--accent-cyan)";
+                                showToast("Account created!");
+                                hideModal();
+                            });
                         })
-                        .catch(err => {
-                            console.error("Verification email send error: ", err);
-                            showToast("Could not send verification email.");
-                        })
-                        .finally(() => {
-                            signOut(auth);
+                        .catch((err) => {
+                            console.error("Profile update error: ", err);
+                            currentUsername = usernameInput;
+                            signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                            signinNavBtn.style.color = "var(--accent-cyan)";
+                            showToast("Account created!");
+                            hideModal();
                         });
-                } else {
-                    showToast(`Welcome back, ${user.displayName || user.email}!`);
+                })
+                .catch((error) => {
+                    errorMsgDiv.innerText = error.message.replace("Firebase: ", "");
+                    errorMsgDiv.classList.remove("hidden");
+                });
+        } else {
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    currentUsername = user.displayName || user.email.split("@")[0];
+                    signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                    signinNavBtn.style.color = "var(--accent-cyan)";
+                    showToast("Welcome back!");
                     hideModal();
-                }
-            })
-            .catch((error) => {
-                errorMsgDiv.innerText = error.message.replace("Firebase: ", "");
-                errorMsgDiv.classList.remove("hidden");
-            });
+                })
+                .catch((error) => {
+                    errorMsgDiv.innerText = error.message.replace("Firebase: ", "");
+                    errorMsgDiv.classList.remove("hidden");
+                });
         }
     });
 
-    // Monitor Auth State Changes to update top navbar, chat prompt, and review prompt
     onAuthStateChanged(auth, (user) => {
-        const signinNavBtn = document.getElementById("signin-nav-btn");
-        const chatForm = document.getElementById("chat-form");
-        const chatPrompt = document.getElementById("chat-login-prompt");
-        const reviewForm = document.getElementById("bio-review-form");
-        const reviewPrompt = document.getElementById("bio-review-login-prompt");
-
         if (user) {
-            const username = user.displayName || user.email.split("@")[0];
-            signinNavBtn.innerText = `LOG OUT (${username.toUpperCase()})`;
-            signinNavBtn.style.color = "var(--accent-cyan)";
-            
-            // Global Chat UI toggle
-            if (chatForm) chatForm.classList.remove("hidden");
-            if (chatPrompt) chatPrompt.classList.add("hidden");
-            
-            // Reviews UI toggle
-            if (reviewForm) reviewForm.classList.remove("hidden");
-            if (reviewPrompt) reviewPrompt.classList.add("hidden");
+            onValue(ref(db, `users/${user.uid}/username`), (snapshot) => {
+                const dbUsername = snapshot.val();
+                currentUsername = dbUsername || user.displayName || user.email.split("@")[0];
+                signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                signinNavBtn.style.color = "var(--accent-cyan)";
+            }, (error) => {
+                console.error("Failed to load user username ref: ", error);
+            });
         } else {
+            currentUsername = null;
             signinNavBtn.innerText = "SIGN IN";
             signinNavBtn.style.color = "var(--text-secondary)";
-            
-            // Global Chat UI toggle
-            if (chatForm) chatForm.classList.add("hidden");
-            if (chatPrompt) chatPrompt.classList.remove("hidden");
-            
-            // Reviews UI toggle
-            if (reviewForm) reviewForm.classList.add("hidden");
-            if (reviewPrompt) reviewPrompt.classList.remove("hidden");
         }
     });
 }
 
-// 12. Global Chat Controller
+// 10. Global Chat Controller
 function initGlobalChat() {
-    const chatWidget = document.getElementById("global-chat-widget");
     const chatToggleBtn = document.getElementById("chat-toggle-btn");
     const chatCloseBtn = document.getElementById("chat-close-btn");
-    const chatForm = document.getElementById("chat-form");
-    const chatMsgInput = document.getElementById("chat-msg-input");
-    const chatSigninTrigger = document.getElementById("chat-signin-trigger");
+    const chatBox = document.getElementById("chat-box");
+    const chatMessages = document.getElementById("chat-messages");
+    const chatInputArea = document.getElementById("chat-input-area");
+    const chatBadge = document.getElementById("chat-badge");
+
+    let unreadCount = 0;
+    let isChatOpen = false;
 
     chatToggleBtn.addEventListener("click", () => {
-        chatWidget.classList.remove("collapsed");
-        const badge = document.getElementById("chat-unread-badge");
-        badge.innerText = "0";
-        badge.classList.add("hidden");
-        
-        // Scroll messages to bottom on expand
-        const messagesDiv = document.getElementById("chat-messages");
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        isChatOpen = !isChatOpen;
+        chatBox.classList.toggle("hidden");
+        if (isChatOpen) {
+            unreadCount = 0;
+            chatBadge.classList.add("hidden");
+            chatBadge.innerText = "0";
+            setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 100);
+        }
     });
 
     chatCloseBtn.addEventListener("click", () => {
-        chatWidget.classList.add("collapsed");
+        isChatOpen = false;
+        chatBox.classList.add("hidden");
     });
 
-    chatSigninTrigger.addEventListener("click", () => {
-        document.getElementById("signin-nav-btn").click();
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            chatInputArea.innerHTML = `
+                <form id="chat-form" class="chat-form">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." required maxlength="120" autocomplete="off">
+                    <button type="submit" class="chat-send-btn">➔</button>
+                </form>
+            `;
+            const chatForm = document.getElementById("chat-form");
+            chatForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const chatInput = document.getElementById("chat-input");
+                const text = chatInput.value.trim();
+                if (!text) return;
+
+                push(ref(db, 'global_chat'), {
+                    uid: user.uid,
+                    username: currentUsername || user.displayName || user.email.split("@")[0],
+                    text: text,
+                    timestamp: Date.now()
+                }).then(() => {
+                    chatInput.value = "";
+                }).catch(err => {
+                    console.error("Chat error: ", err);
+                });
+            });
+        } else {
+            chatInputArea.innerHTML = `
+                <div class="chat-signin-cta">
+                    <p>You must be signed in to chat.</p>
+                    <button class="chat-signin-btn" id="chat-signin-btn-widget">SIGN IN</button>
+                </div>
+            `;
+            const signinBtn = document.getElementById("chat-signin-btn-widget");
+            signinBtn.addEventListener("click", () => {
+                document.getElementById("login-modal").classList.remove("hidden");
+            });
+        }
     });
 
-    // Hook login trigger in reviews too
-    const reviewSigninTrigger = document.getElementById("review-signin-trigger");
-    if (reviewSigninTrigger) {
-        reviewSigninTrigger.addEventListener("click", () => {
-            document.getElementById("signin-nav-btn").click();
-        });
-    }
-
-    // Connect to Firebase chat stream
-    const chatRef = ref(db, 'chat');
-    const chatQuery = query(chatRef, limitToLast(50));
-    
-    window.chatLoadedOnce = false;
-
+    const chatQuery = query(ref(db, 'global_chat'), limitToLast(50));
     onValue(chatQuery, (snapshot) => {
-        const messagesDiv = document.getElementById("chat-messages");
-        messagesDiv.innerHTML = "";
+        chatMessages.innerHTML = "";
         const data = snapshot.val();
         if (!data) {
-            messagesDiv.innerHTML = '<div class="no-reviews">No messages yet. Say hello! 👋</div>';
+            chatMessages.innerHTML = `<p class="no-messages-msg">No messages yet. Send a message to start the conversation!</p>`;
             return;
         }
 
-        const sortedKeys = Object.keys(data).sort();
-        sortedKeys.forEach(key => {
-            const msg = data[key];
+        const messages = Object.entries(data).map(([id, msg]) => ({ id, ...msg }));
+        messages.sort((a, b) => a.timestamp - b.timestamp);
+
+        messages.forEach(msg => {
             const msgEl = document.createElement("div");
-            const isSelf = auth.currentUser && (auth.currentUser.displayName === msg.username);
+            const isSelf = auth.currentUser && msg.uid === auth.currentUser.uid;
             msgEl.className = `chat-msg ${isSelf ? 'self' : ''}`;
-            
-            let timeStr = "";
-            try {
-                if (msg.timestamp) {
-                    const date = new Date(msg.timestamp);
-                    timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                }
-            } catch(e){}
 
+            const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             msgEl.innerHTML = `
-                <div class="chat-msg-meta">
-                    <span class="chat-msg-user">${msg.username || 'Anonymous'}</span>
-                    <span class="chat-msg-time">${timeStr}</span>
+                <div class="chat-msg-header">
+                    <span class="chat-msg-user">${msg.username.toUpperCase()}</span>
+                    <span class="chat-msg-time">${time}</span>
                 </div>
-                <div class="chat-msg-text">${escapeHTML(msg.text)}</div>
+                <div class="chat-msg-text">${escapeHtml(msg.text)}</div>
             `;
-            messagesDiv.appendChild(msgEl);
+            chatMessages.appendChild(msgEl);
         });
 
-        // Scroll to bottom
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-        // If collapsed, increment badge
-        if (chatWidget.classList.contains("collapsed")) {
-            if (window.chatLoadedOnce) {
-                const badge = document.getElementById("chat-unread-badge");
-                let currentCount = parseInt(badge.innerText) || 0;
-                badge.innerText = currentCount + 1;
-                badge.classList.remove("hidden");
-            }
+        if (!isChatOpen) {
+            unreadCount++;
+            chatBadge.innerText = unreadCount;
+            chatBadge.classList.remove("hidden");
+        } else {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-        window.chatLoadedOnce = true;
-    });
-
-    chatForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const user = auth.currentUser;
-        if (!user) {
-            showToast("Please sign in to send messages.");
-            return;
-        }
-
-        const text = chatMsgInput.value.trim();
-        if (!text) return;
-
-        const newMsgRef = push(ref(db, 'chat'));
-        set(newMsgRef, {
-            username: user.displayName || user.email.split("@")[0],
-            text: text,
-            timestamp: serverTimestamp()
-        }).then(() => {
-            chatMsgInput.value = "";
-        }).catch(err => {
-            console.error("Chat send error: ", err);
-            showToast("Failed to send message.");
-        });
+    }, (error) => {
+        console.error("Chat fetch error: ", error);
+        chatMessages.innerHTML = `<p class="no-messages-msg" style="color: var(--accent-pink);">Failed to load chat messages (Permission Denied). Please verify your Firebase Database Rules allow public read access.</p>`;
     });
 }
 
-// 13. Server Reviews Controller
-function initReviews() {
-    const reviewForm = document.getElementById("bio-review-form");
-    const reviewText = document.getElementById("bio-review-text");
+// 11. Comments Controller
+function loadServerComments(serverId) {
+    const commentsContainer = document.getElementById("comments-container");
+    const commentInputArea = document.getElementById("comment-input-area");
 
-    reviewForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const user = auth.currentUser;
-        if (!user) {
-            showToast("Please sign in to post a review.");
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            commentInputArea.innerHTML = `
+                <form id="comment-form" class="comment-form">
+                    <textarea id="comment-textarea" class="comment-textarea" placeholder="Share your feedback..." required maxlength="300"></textarea>
+                    <button type="submit" class="comment-submit-btn">POST COMMENT</button>
+                </form>
+            `;
+            const commentForm = document.getElementById("comment-form");
+            commentForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const textEl = document.getElementById("comment-textarea");
+                const text = textEl.value.trim();
+                if (!text) return;
+
+                push(ref(db, `server_comments/${serverId}`), {
+                    uid: user.uid,
+                    username: currentUsername || user.displayName || user.email.split("@")[0],
+                    text: text,
+                    timestamp: Date.now(),
+                    likes: 0,
+                    dislikes: 0
+                }).then(() => {
+                    textEl.value = "";
+                    showToast("Comment posted!");
+                }).catch(err => {
+                    console.error("Comment error: ", err);
+                });
+            });
+        } else {
+            commentInputArea.innerHTML = `
+                <div class="comment-signin-cta">
+                    <p>You must be signed in to comment.</p>
+                    <button class="comment-signin-btn" id="comment-signin-btn-bio">SIGN IN</button>
+                </div>
+            `;
+            document.getElementById("comment-signin-btn-bio").addEventListener("click", () => {
+                document.getElementById("login-modal").classList.remove("hidden");
+            });
+        }
+    });
+
+    onValue(ref(db, `server_comments/${serverId}`), (snapshot) => {
+        commentsContainer.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) {
+            commentsContainer.innerHTML = `<p class="no-comments-msg">No comments yet. Be the first to share your thoughts!</p>`;
             return;
         }
 
-        if (!window.currentRouteId) {
-            showToast("No server selected.");
-            return;
-        }
+        const comments = Object.entries(data).map(([id, c]) => ({ id, ...c }));
+        comments.sort((a, b) => b.timestamp - a.timestamp);
 
-        const text = reviewText.value.trim();
-        if (!text) return;
+        comments.forEach(comment => {
+            const item = document.createElement("div");
+            item.className = "comment-item";
 
-        const reviewRef = push(ref(db, `reviews/${window.currentRouteId}`));
-        set(reviewRef, {
-            username: user.displayName || user.email.split("@")[0],
-            text: text,
-            timestamp: serverTimestamp()
-        }).then(() => {
-            reviewText.value = "";
-            showToast("Review posted successfully! 💬");
-        }).catch(err => {
-            console.error("Error posting review: ", err);
-            showToast("Failed to post review.");
+            const date = new Date(comment.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            item.innerHTML = `
+                <div class="comment-header">
+                    <span class="comment-author">${comment.username.toUpperCase()}</span>
+                    <span class="comment-date">${date}</span>
+                </div>
+                <div class="comment-text">${escapeHtml(comment.text)}</div>
+                <div class="comment-footer">
+                    <button class="comment-vote-btn like" data-id="${comment.id}">
+                        👍 <span>${comment.likes || 0}</span>
+                    </button>
+                    <button class="comment-vote-btn dislike" data-id="${comment.id}">
+                        👎 <span>${comment.dislikes || 0}</span>
+                    </button>
+                </div>
+            `;
+
+            const likeBtn = item.querySelector(".comment-vote-btn.like");
+            const dislikeBtn = item.querySelector(".comment-vote-btn.dislike");
+
+            likeBtn.onclick = () => voteComment(serverId, comment.id, 'likes');
+            dislikeBtn.onclick = () => voteComment(serverId, comment.id, 'dislikes');
+
+            commentsContainer.appendChild(item);
         });
+    }, (error) => {
+        console.error("Comments fetch error: ", error);
+        commentsContainer.innerHTML = `<p class="no-comments-msg" style="color: var(--accent-pink);">Failed to load comments (Permission Denied). Please verify your Firebase Database Rules allow public read access.</p>`;
     });
 }
 
-function loadReviews(serverId) {
-    const reviewsRef = ref(db, `reviews/${serverId}`);
-    
-    if (window.unsubscribeReviews) {
-        window.unsubscribeReviews();
+function voteComment(serverId, commentId, voteType) {
+    const voteKey = `voted_${commentId}`;
+    if (localStorage.getItem(voteKey)) {
+        showToast("You have already voted on this comment.");
+        return;
     }
 
-    window.unsubscribeReviews = onValue(reviewsRef, (snapshot) => {
-        const listDiv = document.getElementById("bio-reviews-list");
-        listDiv.innerHTML = "";
-        const data = snapshot.val();
-        if (!data) {
-            listDiv.innerHTML = '<div class="no-reviews">No reviews yet. Be the first to share your thoughts!</div>';
-            return;
+    const voteRef = ref(db, `server_comments/${serverId}/${commentId}/${voteType}`);
+    runTransaction(voteRef, (curr) => {
+        return (curr || 0) + 1;
+    }).then((result) => {
+        if (result.committed) {
+            localStorage.setItem(voteKey, "true");
         }
-
-        const sortedKeys = Object.keys(data).sort();
-        sortedKeys.forEach(key => {
-            const review = data[key];
-            const itemEl = document.createElement("div");
-            itemEl.className = "review-item";
-
-            let dateStr = "Recently";
-            try {
-                if (review.timestamp) {
-                    const date = new Date(review.timestamp);
-                    dateStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                }
-            } catch(e){}
-
-            itemEl.innerHTML = `
-                <div class="review-meta">
-                    <span class="review-author">${review.username || 'Anonymous'}</span>
-                    <span class="review-date">${dateStr}</span>
-                </div>
-                <div class="review-content">${escapeHTML(review.text)}</div>
-            `;
-            listDiv.appendChild(itemEl);
-        });
-
-        // Scroll reviews to bottom
-        listDiv.scrollTop = listDiv.scrollHeight;
+    }).catch(err => {
+        console.error("Voting error: ", err);
     });
-}
-
-// Utility to escape HTML and prevent XSS
-function escapeHTML(str) {
-    if (!str) return '';
-    return str.replace(/[&<>'"]/g, 
-        tag => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            "'": '&#39;',
-            '"': '&quot;'
-        }[tag] || tag)
-    );
 }

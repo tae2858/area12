@@ -81,71 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const visualizer = document.querySelector(".visualizer");
 
     let isPlaying = false;
-    let player = null;
-    let playerReady = false;
-    const ytCommandQueue = [];
-
-    const ytApiScript = document.createElement("script");
-    ytApiScript.src = "https://www.youtube.com/iframe_api";
-    ytApiScript.async = true;
-    document.head.appendChild(ytApiScript);
-
-    window.onYouTubeIframeAPIReady = function () {
-        const playerVars = {
-            autoplay: 0,
-            controls: 0,
-            disablekb: 1,
-            modestbranding: 1,
-            rel: 0,
-            loop: 1,
-            playlist: "EWrX250Zhko",
-            playsinline: 1
-        };
-
-        if (/^https?:\/\//.test(window.location.origin)) {
-            playerVars.origin = window.location.origin;
-        }
-
-        player = new YT.Player("yt-player", {
-            height: "1",
-            width: "1",
-            videoId: "n61ULEU7CO0",
-            playerVars: {
-                ...playerVars,
-                playlist: "n61ULEU7CO0"
-            },
-            events: {
-                onReady: () => {
-                    playerReady = true;
-                    if (volumeSlider) {
-                        player.setVolume(Math.floor(volumeSlider.value * 100));
-                    }
-                    flushYTCommandQueue();
-                }
-            }
-        });
-    };
-
-    function flushYTCommandQueue() {
-        while (playerReady && ytCommandQueue.length) {
-            const { func, args } = ytCommandQueue.shift();
-            try {
-                if (player && typeof player[func] === "function") {
-                    player[func](...args);
-                }
-            } catch (error) {
-                console.warn("YT command failed during flush:", error);
-            }
-        }
-    }
-
-    function sendYTCommand(func, args = []) {
-        if (playerReady && player && typeof player[func] === "function") {
-            player[func](...args);
-            return;
-        }
-        ytCommandQueue.push({ func, args });
-    }
+    const bgAudio = document.getElementById("bg-audio");
 
     // Typewriter effect trigger
     startTypewriter();
@@ -170,10 +106,13 @@ document.addEventListener("DOMContentLoaded", () => {
     enterBtn.addEventListener("click", () => {
         enterOverlay.classList.add("hide");
         isPlaying = true;
-        // Mute first to satisfy autoplay policies, then start playback.
-        sendYTCommand("mute");
-        sendYTCommand("playVideo");
-        sendYTCommand("setVolume", [Math.floor(volumeSlider.value * 100)]);
+        
+        if (bgAudio) {
+            bgAudio.volume = volumeSlider ? volumeSlider.value : 0.5;
+            bgAudio.play().catch(err => {
+                console.error("Audio playback failed to start: ", err);
+            });
+        }
 
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
         toggleVisualizer(true);
@@ -191,17 +130,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Play/Pause Button handler
     playPauseBtn.addEventListener("click", () => {
+        if (!bgAudio) return;
         if (!isPlaying) {
-            // Unmute on explicit user gesture, restore volume, then play.
-            sendYTCommand("unMute");
-            sendYTCommand("setVolume", [Math.floor(volumeSlider.value * 100)]);
-            sendYTCommand("playVideo");
+            bgAudio.play().catch(err => {
+                console.error("Audio play failed: ", err);
+            });
             playPauseBtn.innerText = "⏸";
             document.querySelector(".song-status").innerText = "PLAYING";
             toggleVisualizer(true);
             isPlaying = true;
         } else {
-            sendYTCommand("pauseVideo");
+            bgAudio.pause();
             playPauseBtn.innerText = "▶";
             document.querySelector(".song-status").innerText = "PAUSED";
             toggleVisualizer(false);
@@ -210,10 +149,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Volume Slider handler
-    volumeSlider.addEventListener("input", (e) => {
-        const volumeVal = Math.floor(e.target.value * 100);
-        sendYTCommand("setVolume", [volumeVal]);
-    });
+    if (volumeSlider) {
+        volumeSlider.addEventListener("input", (e) => {
+            if (bgAudio) {
+                bgAudio.volume = e.target.value;
+            }
+        });
+    }
 
     function toggleVisualizer(play) {
         const bars = visualizer.querySelectorAll(".bar");
