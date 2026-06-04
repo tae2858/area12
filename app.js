@@ -204,7 +204,7 @@ function initAPIPolling() {
                 const data = await response.json();
                 if (data && data.nearby && data.nearby.length > 0) {
                     allServers = data.nearby.map(s => {
-                        const isFavorite = s.server_id === "QVZACNG5"
+                        const isFavorite = s.server_id === "94D92LVD" || s.server_id === "QVZACNG5" || s.server_id === "XX9IXQ6H";
                         return {
                             server_id: s.server_id,
                             name: s.server_name || "",
