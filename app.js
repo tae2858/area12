@@ -3,14 +3,14 @@ import { getDatabase, ref, onValue, runTransaction, push, set, query, limitToLas
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDSDszN2saYnDRW_9SLPBdo-8cPWIZ709U",
-  authDomain: "area--12.firebaseapp.com",
-  databaseURL: "https://area--12-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "area--12",
-  storageBucket: "area--12.firebasestorage.app",
-  messagingSenderId: "258520899123",
-  appId: "1:258520899123:web:b73f0db735cd9f2a2b0d46",
-  measurementId: "G-50K0RZ39JK"
+    apiKey: "AIzaSyDSDszN2saYnDRW_9SLPBdo-8cPWIZ709U",
+    authDomain: "area--12.firebaseapp.com",
+    databaseURL: "https://area--12-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "area--12",
+    storageBucket: "area--12.firebasestorage.app",
+    messagingSenderId: "258520899123",
+    appId: "1:258520899123:web:b73f0db735cd9f2a2b0d46",
+    measurementId: "G-50K0RZ39JK"
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -62,7 +62,7 @@ function escapeHtml(text) {
         '"': '&quot;',
         "'": '&#039;'
     };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    return text.replace(/[&<>"']/g, function (m) { return map[m]; });
 }
 
 // 1. Entry Overlay & Music Controller
@@ -199,7 +199,7 @@ function initAPIPolling() {
                 const data = await response.json();
                 if (data && data.nearby && data.nearby.length > 0) {
                     allServers = data.nearby.map(s => {
-                        const isFavorite = s.server_id === "QVZACNG5" || s.server_id === "MULL97H1";
+                        const isFavorite = s.server_id === "QVZACNG5"
                         return {
                             server_id: s.server_id,
                             name: s.server_name || "",
@@ -213,7 +213,7 @@ function initAPIPolling() {
                     });
                     renderPinnedFavorites(allServers);
                     renderDirectoryGrid(allServers);
-                    checkRoute(allServers); 
+                    checkRoute(allServers);
                 } else {
                     document.getElementById("lobby-counter").innerText = "Waiting for background server engine synchronizer...";
                 }
@@ -245,7 +245,7 @@ function renderPinnedFavorites(servers) {
         const card = document.createElement("div");
         card.className = "slot-card slot-favorite";
         card.style.cursor = "pointer";
-        
+
         card.addEventListener("click", (e) => {
             if (e.target.tagName === "BUTTON" || e.target.closest("button")) {
                 return;
@@ -311,7 +311,7 @@ function renderDirectoryGrid(servers) {
             if (parts.length === 2 && parseInt(parts[1]) > 0) {
                 pct = (parseInt(parts[0]) / parseInt(parts[1])) * 100;
             }
-        } catch(e){}
+        } catch (e) { }
 
         const card = document.createElement("div");
         card.className = "server-card";
@@ -363,7 +363,7 @@ document.getElementById("search-input").addEventListener("input", () => {
 });
 
 // 7. Clipboard Copy Utility with Toast triggers
-window.copyToClipboard = function(text) {
+window.copyToClipboard = function (text) {
     navigator.clipboard.writeText(text).then(() => {
         showToast(`Invite code "${text}" copied! Paste into MultiCraft. 🎮`);
     }).catch(err => {
@@ -402,7 +402,7 @@ function checkRoute(servers) {
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
         return;
     }
-    
+
     // Locate server matching ID or slug or sanitized title (alphanumeric only)
     let matched = servers.find(s => {
         const sId = s.server_id.toLowerCase();
@@ -465,7 +465,7 @@ function checkRoute(servers) {
                 showToast("You've already liked this server!");
                 return;
             }
-            
+
             runTransaction(statsLikesRef, (currentLikes) => {
                 return (currentLikes || 0) + 1;
             }).then((result) => {
@@ -544,7 +544,7 @@ function initFirebaseAuth() {
         loginToggleBtn.innerText = "Sign Up";
         loginModal.classList.remove("hidden");
     };
-    
+
     const hideModal = () => {
         loginModal.classList.add("hidden");
     };
@@ -591,7 +591,7 @@ function initFirebaseAuth() {
     loginForm.addEventListener("submit", (e) => {
         e.preventDefault();
         errorMsgDiv.classList.add("hidden");
-        
+
         const email = document.getElementById("login-email").value.trim();
         const password = document.getElementById("login-password").value;
 
@@ -653,7 +653,7 @@ function initGlobalChat() {
     const chatMessages = document.getElementById("chat-messages");
     const chatInputArea = document.getElementById("chat-input-area");
     const chatBadge = document.getElementById("chat-badge");
-    
+
     let unreadCount = 0;
     let isChatOpen = false;
 
@@ -687,7 +687,7 @@ function initGlobalChat() {
                 const chatInput = document.getElementById("chat-input");
                 const text = chatInput.value.trim();
                 if (!text) return;
-                
+
                 push(ref(db, 'global_chat'), {
                     uid: user.uid,
                     username: currentUsername || user.displayName || user.email.split("@")[0],
@@ -721,15 +721,15 @@ function initGlobalChat() {
             chatMessages.innerHTML = `<p class="no-messages-msg">No messages yet. Send a message to start the conversation!</p>`;
             return;
         }
-        
+
         const messages = Object.entries(data).map(([id, msg]) => ({ id, ...msg }));
         messages.sort((a, b) => a.timestamp - b.timestamp);
-        
+
         messages.forEach(msg => {
             const msgEl = document.createElement("div");
             const isSelf = auth.currentUser && msg.uid === auth.currentUser.uid;
             msgEl.className = `chat-msg ${isSelf ? 'self' : ''}`;
-            
+
             const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             msgEl.innerHTML = `
                 <div class="chat-msg-header">
@@ -755,7 +755,7 @@ function initGlobalChat() {
 function loadServerComments(serverId) {
     const commentsContainer = document.getElementById("comments-container");
     const commentInputArea = document.getElementById("comment-input-area");
-    
+
     onAuthStateChanged(auth, (user) => {
         if (user) {
             commentInputArea.innerHTML = `
@@ -770,7 +770,7 @@ function loadServerComments(serverId) {
                 const textEl = document.getElementById("comment-textarea");
                 const text = textEl.value.trim();
                 if (!text) return;
-                
+
                 push(ref(db, `server_comments/${serverId}`), {
                     uid: user.uid,
                     username: currentUsername || user.displayName || user.email.split("@")[0],
@@ -812,7 +812,7 @@ function loadServerComments(serverId) {
         comments.forEach(comment => {
             const item = document.createElement("div");
             item.className = "comment-item";
-            
+
             const date = new Date(comment.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             item.innerHTML = `
                 <div class="comment-header">
@@ -832,10 +832,10 @@ function loadServerComments(serverId) {
 
             const likeBtn = item.querySelector(".comment-vote-btn.like");
             const dislikeBtn = item.querySelector(".comment-vote-btn.dislike");
-            
+
             likeBtn.onclick = () => voteComment(serverId, comment.id, 'likes');
             dislikeBtn.onclick = () => voteComment(serverId, comment.id, 'dislikes');
-            
+
             commentsContainer.appendChild(item);
         });
     });
