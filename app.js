@@ -748,13 +748,27 @@ function initFirebaseAuth() {
                     const user = userCredential.user;
                     updateProfile(user, { displayName: usernameInput })
                         .then(() => {
-                            set(ref(db, `users/${user.uid}`), { username: usernameInput });
-                            showToast("Account created successfully!");
-                            hideModal();
+                            set(ref(db, `users/${user.uid}`), { username: usernameInput }).then(() => {
+                                currentUsername = usernameInput;
+                                signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                                signinNavBtn.style.color = "var(--accent-cyan)";
+                                showToast("Account created successfully!");
+                                hideModal();
+                            }).catch(err => {
+                                console.error("Database save error: ", err);
+                                currentUsername = usernameInput;
+                                signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                                signinNavBtn.style.color = "var(--accent-cyan)";
+                                showToast("Account created!");
+                                hideModal();
+                            });
                         })
                         .catch((err) => {
                             console.error("Profile update error: ", err);
-                            showToast("Account created, but failed to set username.");
+                            currentUsername = usernameInput;
+                            signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                            signinNavBtn.style.color = "var(--accent-cyan)";
+                            showToast("Account created!");
                             hideModal();
                         });
                 })
@@ -765,6 +779,10 @@ function initFirebaseAuth() {
         } else {
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
+                    const user = userCredential.user;
+                    currentUsername = user.displayName || user.email.split("@")[0];
+                    signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                    signinNavBtn.style.color = "var(--accent-cyan)";
                     showToast("Welcome back!");
                     hideModal();
                 })
@@ -782,7 +800,7 @@ function initFirebaseAuth() {
                 currentUsername = dbUsername || user.displayName || user.email.split("@")[0];
                 signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
                 signinNavBtn.style.color = "var(--accent-cyan)";
-            }, { onlyOnce: true });
+            });
         } else {
             currentUsername = null;
             signinNavBtn.innerText = "SIGN IN";
