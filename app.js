@@ -106,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
     enterBtn.addEventListener("click", () => {
         enterOverlay.classList.add("hide");
         isPlaying = true;
-        
         if (bgAudio) {
             bgAudio.volume = volumeSlider ? volumeSlider.value : 0.5;
             bgAudio.play().catch(err => {
@@ -200,7 +199,7 @@ function startTypewriter() {
 
 // 3. API Polling Loop (Fetches from Railway proxy every 5 seconds)
 function initAPIPolling() {
-    const favoriteIds = ["94D92LVD", "QVZACNG5", "XX9IXQ6H"];
+    const favoriteIds = ["94D92LVD", "QVZACNG5", "XX9IXQ6H"]; // add server code here
     const fetchServers = async () => {
         try {
             const response = await fetch("https://multicraft-production.up.railway.app/proxy/find-nearby-servers", {
