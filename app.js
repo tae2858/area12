@@ -94,7 +94,9 @@ window.onYouTubeIframeAPIReady = function () {
             rel: 0,
             iv_load_policy: 3,
             disablekb: 1,
-            fs: 0
+            fs: 0,
+            enablejsapi: 1,
+            playsinline: 1
         },
         events: {
             onReady: (event) => {
