@@ -107,7 +107,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         player = new YT.Player("yt-player", {
-            playerVars,
+            height: "1",
+            width: "1",
+            videoId: "n61ULEU7CO0",
+            playerVars: {
+                ...playerVars,
+                playlist: "n61ULEU7CO0"
+            },
             events: {
                 onReady: () => {
                     playerReady = true;
