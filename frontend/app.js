@@ -67,11 +67,15 @@ window.onYouTubeIframeAPIReady = function() {
 };
 
 function safePlayVideo() {
-    if (playerReady && player && typeof player.playVideo === 'function') {
-        player.playVideo();
-    } else {
-        pendingPlay = true;
+    if (player && typeof player.playVideo === 'function') {
+        try {
+            player.playVideo();
+            return;
+        } catch (error) {
+            console.warn('YouTube playVideo failed, deferring until ready:', error);
+        }
     }
+    pendingPlay = true;
 }
 
 function syncVolumeWithSlider() {

@@ -82,6 +82,47 @@ document.addEventListener("DOMContentLoaded", () => {
     const visualizer = document.querySelector(".visualizer");
 
     let isPlaying = false;
+    const ytCommandQueue = [];
+
+    function sendYTCommand(func, args = []) {
+        if (!ytPlayer || !ytPlayer.contentWindow) {
+            ytCommandQueue.push({ func, args });
+            scheduleYTQueueFlush();
+            return;
+        }
+
+        const command = {
+            event: "command",
+            func,
+            args,
+            id: 1
+        };
+
+        try {
+            ytPlayer.contentWindow.postMessage(JSON.stringify(command), "*");
+        } catch (error) {
+            ytCommandQueue.push({ func, args });
+            scheduleYTQueueFlush();
+        }
+    }
+
+    function scheduleYTQueueFlush() {
+        if (window.ytQueueFlushTimer) return;
+        window.ytQueueFlushTimer = setInterval(() => {
+            if (!ytPlayer || !ytPlayer.contentWindow) return;
+            while (ytCommandQueue.length) {
+                const { func, args } = ytCommandQueue.shift();
+                try {
+                    ytPlayer.contentWindow.postMessage(JSON.stringify({ event: "command", func, args, id: 1 }), "*");
+                } catch (err) {
+                    ytCommandQueue.unshift({ func, args });
+                    return;
+                }
+            }
+            clearInterval(window.ytQueueFlushTimer);
+            window.ytQueueFlushTimer = null;
+        }, 500);
+    }
 
     // Typewriter effect trigger
     startTypewriter();
@@ -106,12 +147,8 @@ document.addEventListener("DOMContentLoaded", () => {
     enterBtn.addEventListener("click", () => {
         enterOverlay.classList.add("hide");
         isPlaying = true;
-        try {
-            ytPlayer.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-            ytPlayer.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[' + (volumeSlider.value * 100) + '], "id": 1}', '*');
-        } catch (e) {
-            console.error("YouTube autoplay setup failed: ", e);
-        }
+        sendYTCommand("playVideo");
+        sendYTCommand("setVolume", [Math.floor(volumeSlider.value * 100)]);
 
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
         toggleVisualizer(true);
@@ -130,13 +167,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Play/Pause Button handler
     playPauseBtn.addEventListener("click", () => {
         if (!isPlaying) {
-            ytPlayer.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+            sendYTCommand("playVideo");
             playPauseBtn.innerText = "⏸";
             document.querySelector(".song-status").innerText = "PLAYING";
             toggleVisualizer(true);
             isPlaying = true;
         } else {
-            ytPlayer.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            sendYTCommand("pauseVideo");
             playPauseBtn.innerText = "▶";
             document.querySelector(".song-status").innerText = "PAUSED";
             toggleVisualizer(false);
@@ -147,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Volume Slider handler
     volumeSlider.addEventListener("input", (e) => {
         const volumeVal = Math.floor(e.target.value * 100);
-        ytPlayer.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[' + volumeVal + '], "id": 1}', '*');
+        sendYTCommand("setVolume", [volumeVal]);
     });
 
     function toggleVisualizer(play) {
