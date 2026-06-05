@@ -91,6 +91,100 @@ document.addEventListener("DOMContentLoaded", () => {
     const visualizer = document.querySelector(".visualizer");
 
     const bgAudio = document.getElementById("bg-audio");
+    const youtubePlayerContainer = document.getElementById("youtube-player-container");
+    let youtubePlayer = null;
+    let youtubeApiReady = false;
+    let youtubePendingPlay = false;
+    const youtubeVideoId = "X4VbdwhkE10";
+
+    function loadYouTubeAPI() {
+        if (window.YT || document.getElementById("youtube-iframe-api")) return;
+        const tag = document.createElement("script");
+        tag.id = "youtube-iframe-api";
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+    }
+
+    function createYouTubePlayer() {
+        if (!youtubeApiReady || youtubePlayer || !youtubePlayerContainer) return;
+        youtubePlayer = new YT.Player("youtube-player-container", {
+            height: "0",
+            width: "0",
+            videoId: youtubeVideoId,
+            playerVars: {
+                controls: 0,
+                modestbranding: 1,
+                rel: 0,
+                autoplay: 0,
+                loop: 1,
+                playlist: youtubeVideoId,
+                playsinline: 1
+            },
+            events: {
+                onReady: (event) => {
+                    setBackgroundVolume(volumeSlider ? volumeSlider.value : 0.5);
+                    if (isPlaying || youtubePendingPlay) {
+                        event.target.playVideo();
+                        youtubePendingPlay = false;
+                    }
+                },
+                onStateChange: (event) => {
+                    const statusLabel = document.querySelector(".song-status");
+                    if (!statusLabel) return;
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        statusLabel.innerText = "PLAYING";
+                    } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                        statusLabel.innerText = "PAUSED";
+                    }
+                }
+            }
+        });
+    }
+
+    window.onYouTubeIframeAPIReady = function() {
+        youtubeApiReady = true;
+        createYouTubePlayer();
+    };
+
+    function playBackgroundMusic() {
+        if (youtubePlayer) {
+            youtubePlayer.playVideo();
+            return;
+        }
+        if (window.YT && youtubeApiReady) {
+            createYouTubePlayer();
+            youtubePendingPlay = true;
+            return;
+        }
+        if (bgAudio) {
+            bgAudio.volume = volumeSlider ? volumeSlider.value : 0.5;
+            bgAudio.play().catch(err => {
+                console.error("Audio playback failed to start: ", err);
+            });
+        }
+    }
+
+    function pauseBackgroundMusic() {
+        if (youtubePlayer) {
+            youtubePlayer.pauseVideo();
+            return;
+        }
+        if (bgAudio) {
+            bgAudio.pause();
+        }
+    }
+
+    function setBackgroundVolume(value) {
+        if (youtubePlayer) {
+            youtubePlayer.setVolume(value * 100);
+            return;
+        }
+        if (bgAudio) {
+            bgAudio.volume = value;
+        }
+    }
+
+    loadYouTubeAPI();
 
     // Typewriter effect trigger
     startTypewriter();
@@ -116,12 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
         enterOverlay.classList.add("hide");
         isPlaying = true;
 
-        if (bgAudio) {
-            bgAudio.volume = volumeSlider ? volumeSlider.value : 0.5;
-            bgAudio.play().catch(err => {
-                console.error("Audio playback failed to start: ", err);
-            });
-        }
+        playBackgroundMusic();
 
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
         toggleVisualizer(true);
@@ -145,17 +234,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Play/Pause Button handler
     playPauseBtn.addEventListener("click", () => {
-        if (!bgAudio) return;
         if (!isPlaying) {
-            bgAudio.play().catch(err => {
-                console.error("Audio play failed: ", err);
-            });
+            playBackgroundMusic();
             playPauseBtn.innerText = "⏸";
             document.querySelector(".song-status").innerText = "PLAYING";
             toggleVisualizer(true);
             isPlaying = true;
         } else {
-            bgAudio.pause();
+            pauseBackgroundMusic();
             playPauseBtn.innerText = "▶";
             document.querySelector(".song-status").innerText = "PAUSED";
             toggleVisualizer(false);
@@ -166,9 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Volume Slider handler
     if (volumeSlider) {
         volumeSlider.addEventListener("input", (e) => {
-            if (bgAudio) {
-                bgAudio.volume = e.target.value;
-            }
+            setBackgroundVolume(e.target.value);
         });
     }
 
