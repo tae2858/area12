@@ -1,2 +1,6 @@
-/beta      /beta/index.html   200
-/beta/*    /beta/index.html   200
+/robots.txt         /robots.txt         200
+/sitemap.xml        /sitemap.xml        200
+/beta/robots.txt    /beta/robots.txt    200
+/beta/sitemap.xml   /beta/sitemap.xml   200
+/beta               /beta/index.html    200
+/beta/*             /beta/index.html    200
