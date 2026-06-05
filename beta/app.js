@@ -118,14 +118,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 autoplay: 0,
                 loop: 1,
                 playlist: youtubeVideoId,
-                playsinline: 1
+                playsinline: 1,
+                fs: 0,
+                iv_load_policy: 3
             },
             events: {
                 onReady: (event) => {
+                    console.log("YouTube player ready");
+                    event.target.unMute();
                     setBackgroundVolume(volumeSlider ? volumeSlider.value : 0.5);
                     if (isPlaying || youtubePendingPlay) {
-                        event.target.playVideo();
-                        youtubePendingPlay = false;
+                        setTimeout(() => {
+                            event.target.playVideo();
+                            console.log("YouTube playback initiated");
+                            youtubePendingPlay = false;
+                        }, 100);
                     }
                 },
                 onStateChange: (event) => {
@@ -133,9 +140,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!statusLabel) return;
                     if (event.data === YT.PlayerState.PLAYING) {
                         statusLabel.innerText = "PLAYING";
+                        console.log("YouTube now PLAYING");
                     } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
                         statusLabel.innerText = "PAUSED";
+                        console.log("YouTube now PAUSED");
                     }
+                },
+                onError: (event) => {
+                    console.error("YouTube player error:", event.data);
                 }
             }
         });
