@@ -131,10 +131,16 @@ document.addEventListener("DOMContentLoaded", () => {
     initAPIPolling();
     initFirebaseAuth();
     initGlobalChat();
+    if (window.initMobileUI) {
+        window.initMobileUI();
+    }
 
     // Browser navigation back/forward listeners
     window.addEventListener("popstate", () => {
         checkRoute(allServers);
+        if (window.syncMobileIndexWithRoute) {
+            window.syncMobileIndexWithRoute();
+        }
     });
 
     // Play/Pause Button handler
@@ -322,6 +328,12 @@ function initAPIPolling() {
                     renderPinnedFavorites(allServers);
                     renderDirectoryGrid(allServers);
                     checkRoute(allServers);
+                    if (window.renderMobileUI) {
+                        window.renderMobileUI();
+                    }
+                    if (window.updateSidebarPortals) {
+                        window.updateSidebarPortals();
+                    }
                 } else {
                     document.getElementById("lobby-counter").innerText = "Waiting for background server engine synchronizer...";
                 }
@@ -1008,3 +1020,518 @@ function voteComment(serverId, commentId, voteType) {
         console.error("Voting error: ", err);
     });
 }
+
+/* ==========================================================================
+   Mobile UI Controller (Wireframe Design)
+   ========================================================================== */
+let mobileActiveIndex = 0;
+let mobileCurrentFilter = "ALL";
+let mobileCurrentScale = 1.0;
+
+window.initMobileUI = function() {
+    const menuToggle = document.getElementById("mobile-menu-toggle");
+    const sidebar = document.getElementById("mobile-sidebar");
+    const sidebarClose = document.getElementById("mobile-sidebar-close");
+    const profileBtn = document.getElementById("mobile-profile-btn");
+    const profileDropdown = document.getElementById("mobile-profile-dropdown");
+    const logoutBtn = document.getElementById("mobile-logout-btn");
+    const searchToggle = document.getElementById("mobile-search-toggle");
+    const searchBar = document.getElementById("mobile-search-bar");
+    const searchInput = document.getElementById("mobile-search-input");
+    const prevBtn = document.getElementById("mobile-carousel-prev");
+    const nextBtn = document.getElementById("mobile-carousel-next");
+    const infoBtn = document.getElementById("mobile-info-btn");
+    const zoomInBtn = document.getElementById("mobile-zoom-in");
+    const zoomOutBtn = document.getElementById("mobile-zoom-out");
+
+    // Sidebar Toggles (Panel 2)
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener("click", () => {
+            sidebar.classList.add("open");
+        });
+    }
+    if (sidebarClose && sidebar) {
+        sidebarClose.addEventListener("click", () => {
+            sidebar.classList.remove("open");
+        });
+    }
+
+    // Profile Dropdown Actions (Panel 3)
+    if (profileBtn && profileDropdown) {
+        profileBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const user = auth.currentUser;
+            if (!user) {
+                document.getElementById("login-modal").classList.remove("hidden");
+            } else {
+                profileDropdown.classList.toggle("hidden");
+            }
+        });
+    }
+
+    document.addEventListener("click", () => {
+        if (profileDropdown) profileDropdown.classList.add("hidden");
+    });
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            signOut(auth).then(() => {
+                showToast("Logged out successfully.");
+                profileDropdown.classList.add("hidden");
+            });
+        });
+    }
+
+    // Search Toggle Handler
+    if (searchToggle && searchBar) {
+        searchToggle.addEventListener("click", () => {
+            searchBar.classList.toggle("hidden");
+            if (!searchBar.classList.contains("hidden") && searchInput) {
+                searchInput.focus();
+            }
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("input", () => {
+            mobileActiveIndex = 0;
+            window.renderMobileUI();
+        });
+    }
+
+    // Carousel Slider Arrows (Panel 1)
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            mobileActiveIndex--;
+            window.renderMobileUI();
+        });
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            mobileActiveIndex++;
+            window.renderMobileUI();
+        });
+    }
+
+    // Controls Bar Zoom and Info Actions
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener("click", () => {
+            if (mobileCurrentScale < 1.2) {
+                mobileCurrentScale += 0.05;
+                const card = document.getElementById("mobile-active-card");
+                if (card) card.style.transform = `scale(${mobileCurrentScale})`;
+            }
+        });
+    }
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener("click", () => {
+            if (mobileCurrentScale > 0.8) {
+                mobileCurrentScale -= 0.05;
+                const card = document.getElementById("mobile-active-card");
+                if (card) card.style.transform = `scale(${mobileCurrentScale})`;
+            }
+        });
+    }
+
+    if (infoBtn) {
+        infoBtn.addEventListener("click", () => {
+            const detailsTab = document.querySelector(".bottom-tabs .tab-btn[data-tab='details']");
+            if (detailsTab) detailsTab.click();
+        });
+    }
+
+    // Bottom Tabs Selector (Comments, Chat, Details)
+    const tabButtons = document.querySelectorAll(".bottom-tabs .tab-btn");
+    const tabPanels = document.querySelectorAll(".bottom-content-panel .tab-panel");
+    tabButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            tabButtons.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            
+            const target = btn.dataset.tab;
+            tabPanels.forEach(panel => {
+                if (panel.id === `mobile-${target}-panel`) {
+                    panel.classList.remove("hidden");
+                } else {
+                    panel.classList.add("hidden");
+                }
+            });
+        });
+    });
+
+    // Category Filter Buttons inside Drawer
+    const filterButtons = document.querySelectorAll(".sidebar-filters .filter-btn");
+    filterButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            filterButtons.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            mobileCurrentFilter = btn.dataset.filter;
+            mobileActiveIndex = 0;
+            window.renderMobileUI();
+            if (sidebar) sidebar.classList.remove("open");
+        });
+    });
+
+    // Portals Menu Drawer Toggler
+    const portalsLink = document.querySelector(".sidebar-nav [data-target='portals']");
+    const portalsContent = document.getElementById("mobile-sidebar-portals");
+    if (portalsLink && portalsContent) {
+        portalsLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            portalsContent.classList.toggle("hidden");
+            const arrow = portalsLink.querySelector(".arrow");
+            if (arrow) {
+                arrow.innerText = portalsContent.classList.contains("hidden") ? "▼" : "▲";
+            }
+        });
+    }
+
+    // Initialize Auth state mapping for mobile elements
+    onAuthStateChanged(auth, (user) => {
+        const dropdownUsername = document.getElementById("mobile-dropdown-username");
+        if (user) {
+            const displayName = currentUsername || user.displayName || user.email.split("@")[0];
+            if (profileBtn) profileBtn.innerText = displayName.toUpperCase();
+            if (dropdownUsername) dropdownUsername.innerText = displayName;
+        } else {
+            if (profileBtn) profileBtn.innerText = "SIGN IN";
+            if (dropdownUsername) dropdownUsername.innerText = "Guest User";
+        }
+    });
+
+    // Initialize Global Chat and Render Mobile Layout
+    initMobileGlobalChat();
+    window.renderMobileUI();
+    window.updateSidebarPortals();
+};
+
+window.renderMobileUI = function() {
+    const mobileActiveCard = document.getElementById("mobile-active-card");
+    if (!mobileActiveCard) return;
+
+    let filtered = allServers;
+
+    // Apply Search Filter
+    const searchInput = document.getElementById("mobile-search-input");
+    const searchVal = searchInput ? searchInput.value.toLowerCase() : "";
+    if (searchVal) {
+        filtered = filtered.filter(s => s.name.toLowerCase().includes(searchVal) || s.server_id.toLowerCase().includes(searchVal));
+    }
+
+    // Apply Category Filters
+    if (mobileCurrentFilter === "PREMIUM") {
+        filtered = filtered.filter(s => s.is_favorite);
+    } else if (mobileCurrentFilter === "LIKED") {
+        filtered = filtered.filter(s => localStorage.getItem(`area12_liked_${s.server_id}`));
+    } else if (mobileCurrentFilter === "LIT") {
+        filtered = filtered.filter(s => s.online && (parseInt(s.players.split("/")[0], 10) || 0) > 0);
+    } else if (mobileCurrentFilter === "FOREIGN") {
+        filtered = filtered.filter(s => !s.is_favorite);
+    }
+
+    if (filtered.length === 0) {
+        mobileActiveCard.innerHTML = `
+            <div class="card-top">
+                <h2 class="card-server-name">No Servers</h2>
+                <p class="card-server-maker">No results matching active filters.</p>
+            </div>
+        `;
+        const codeBadge = document.getElementById("mobile-lit-badge");
+        if (codeBadge) codeBadge.innerText = "LIT +0";
+        const descPanel = document.getElementById("mobile-details-desc");
+        if (descPanel) descPanel.innerText = "No description available.";
+        return;
+    }
+
+    // Bounds checking
+    if (mobileActiveIndex >= filtered.length) {
+        mobileActiveIndex = 0;
+    } else if (mobileActiveIndex < 0) {
+        mobileActiveIndex = filtered.length - 1;
+    }
+
+    const server = filtered[mobileActiveIndex];
+    const isLiked = localStorage.getItem(`area12_liked_${server.server_id}`);
+
+    // Update active card HTML
+    mobileActiveCard.innerHTML = `
+        <div class="card-top">
+            <h2 class="card-server-name">
+                <span>${server.name}</span>
+                ${server.is_favorite ? '<span class="star">★</span>' : ''}
+            </h2>
+            <p class="card-server-maker">${server.admin}</p>
+        </div>
+        <div class="card-meta">
+            <span class="card-invite-code" id="mobile-invite-code-btn">${server.server_id}</span>
+            <div class="card-stats">
+                <button id="mobile-like-btn" style="color: ${isLiked ? 'var(--accent-yellow)' : 'var(--text-secondary)'}">
+                    👍 <span id="mobile-likes-count">0</span>
+                </button>
+                <button>
+                    👁️ <span id="mobile-views-count">0</span>
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Handle invite code copy action
+    const inviteBtn = document.getElementById("mobile-invite-code-btn");
+    if (inviteBtn) {
+        inviteBtn.addEventListener("click", () => {
+            copyToClipboard(server.server_id);
+        });
+    }
+
+    // Set up Views & Likes stats listeners
+    const viewsRef = ref(db, `stats/${server.server_id}/views`);
+    const likesRef = ref(db, `stats/${server.server_id}/likes`);
+
+    onValue(viewsRef, (snap) => {
+        const val = snap.val() || 0;
+        const el = document.getElementById("mobile-views-count");
+        if (el) el.innerText = val.toLocaleString();
+    }, (err) => console.error(err));
+
+    onValue(likesRef, (snap) => {
+        const val = snap.val() || 0;
+        const el = document.getElementById("mobile-likes-count");
+        if (el) el.innerText = val.toLocaleString();
+    }, (err) => console.error(err));
+
+    const likeActionBtn = document.getElementById("mobile-like-btn");
+    if (likeActionBtn) {
+        likeActionBtn.addEventListener("click", () => {
+            const likeKey = `area12_liked_${server.server_id}`;
+            if (localStorage.getItem(likeKey)) {
+                showToast("You've already liked this server!");
+                return;
+            }
+            runTransaction(likesRef, (curr) => (curr || 0) + 1).then((res) => {
+                if (res.committed) {
+                    localStorage.setItem(likeKey, "true");
+                    showToast("Server liked! 👍");
+                    window.renderMobileUI();
+                }
+            }).catch(err => console.error(err));
+        });
+    }
+
+    // Update Lit Player Count Badge
+    const activeCount = parseInt(server.players.split("/")[0], 10) || 0;
+    const litBadge = document.getElementById("mobile-lit-badge");
+    if (litBadge) {
+        litBadge.innerText = `LIT +${activeCount}`;
+    }
+
+    // Update Details tab text
+    const descPanel = document.getElementById("mobile-details-desc");
+    if (descPanel) {
+        descPanel.innerText = server.description || "No description provided for this server.";
+    }
+
+    // Load dynamic server comments in tabs
+    loadMobileComments(server.server_id);
+};
+
+window.updateSidebarPortals = function() {
+    const list = document.getElementById("mobile-sidebar-portals");
+    if (!list) return;
+    list.innerHTML = "";
+
+    allServers.forEach((server, index) => {
+        const link = document.createElement("a");
+        link.href = "#";
+        link.className = "sidebar-dropdown-link";
+        link.innerText = server.name;
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            mobileActiveIndex = index;
+            mobileCurrentFilter = "ALL";
+            
+            // Activate ALL filter button in sidebar
+            const allBtn = document.querySelector(".sidebar-filters [data-filter='ALL']");
+            if (allBtn) {
+                const filters = document.querySelectorAll(".sidebar-filters .filter-btn");
+                filters.forEach(f => f.classList.remove("active"));
+                allBtn.classList.add("active");
+            }
+
+            window.renderMobileUI();
+            
+            const sidebar = document.getElementById("mobile-sidebar");
+            if (sidebar) sidebar.classList.remove("open");
+        });
+        list.appendChild(link);
+    });
+};
+
+window.syncMobileIndexWithRoute = function() {
+    let path = window.location.pathname.toLowerCase();
+    if (path.startsWith('/beta')) {
+        path = path.substring(5);
+    }
+    path = path.replace(/^\/|\/$/g, '').trim();
+    if (!path || path === "credits" || path === "index.html") return;
+
+    const matchedIdx = allServers.findIndex(s => {
+        const sId = s.server_id.toLowerCase();
+        const slug = getSlug(s.name, s.server_id);
+        return sId === path || slug === path;
+    });
+
+    if (matchedIdx !== -1) {
+        mobileActiveIndex = matchedIdx;
+        mobileCurrentFilter = "ALL";
+        window.renderMobileUI();
+    }
+};
+
+function loadMobileComments(serverId) {
+    const list = document.getElementById("mobile-comments-list");
+    const inputArea = document.getElementById("mobile-comment-input-area");
+    if (!list) return;
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            inputArea.innerHTML = `
+                <form id="mobile-comment-form" class="comment-form" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    <textarea id="mobile-comment-textarea" class="comment-textarea" placeholder="Share your feedback..." required maxlength="300" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; border-radius: 6px; height: 50px; font-family: inherit; font-size: 0.85rem; resize: none;"></textarea>
+                    <button type="submit" class="comment-submit-btn" style="align-self: flex-end; background: var(--accent-cyan); color: var(--bg-primary); border: none; padding: 6px 14px; border-radius: 4px; font-weight: 800; font-size: 0.75rem;">POST</button>
+                </form>
+            `;
+            const form = document.getElementById("mobile-comment-form");
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const textEl = document.getElementById("mobile-comment-textarea");
+                const text = textEl.value.trim();
+                if (!text) return;
+
+                push(ref(db, `server_comments/${serverId}`), {
+                    uid: user.uid,
+                    username: currentUsername || user.displayName || user.email.split("@")[0],
+                    text: text,
+                    timestamp: Date.now(),
+                    likes: 0,
+                    dislikes: 0
+                }).then(() => {
+                    textEl.value = "";
+                    showToast("Comment posted!");
+                }).catch(err => console.error("Comment error: ", err));
+            });
+        } else {
+            inputArea.innerHTML = `
+                <div class="comment-signin-cta">
+                    <p style="font-size: 0.8rem;">You must be signed in to comment.</p>
+                    <button class="comment-signin-btn" id="mobile-comment-signin-btn">SIGN IN</button>
+                </div>
+            `;
+            document.getElementById("mobile-comment-signin-btn").addEventListener("click", () => {
+                document.getElementById("login-modal").classList.remove("hidden");
+            });
+        }
+    });
+
+    onValue(ref(db, `server_comments/${serverId}`), (snapshot) => {
+        list.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) {
+            list.innerHTML = `<p class="no-comments-msg" style="font-size: 0.8rem; text-align: center; color: var(--text-secondary);">No comments yet.</p>`;
+            return;
+        }
+
+        const comments = Object.entries(data).map(([id, c]) => ({ id, ...c }));
+        comments.sort((a, b) => b.timestamp - a.timestamp);
+
+        comments.forEach(comment => {
+            const item = document.createElement("div");
+            item.className = "comment-item";
+            const date = new Date(comment.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            item.innerHTML = `
+                <div class="comment-header" style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 6px;">
+                    <span class="comment-author" style="font-weight: 800; color: var(--accent-cyan);">${comment.username.toUpperCase()}</span>
+                    <span class="comment-date" style="color: var(--text-secondary); opacity: 0.7;">${date}</span>
+                </div>
+                <div class="comment-text" style="font-size: 0.85rem; line-height: 1.4; word-break: break-word;">${escapeHtml(comment.text)}</div>
+            `;
+            list.appendChild(item);
+        });
+    }, (error) => {
+        console.error("Comments fetch error: ", error);
+        list.innerHTML = `<p class="no-comments-msg" style="color: var(--accent-pink); font-size: 0.8rem;">Failed to load comments.</p>`;
+    });
+}
+
+function initMobileGlobalChat() {
+    const chatMessages = document.getElementById("mobile-chat-messages");
+    const chatInputArea = document.getElementById("mobile-chat-input-area");
+    if (!chatMessages) return;
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            chatInputArea.innerHTML = `
+                <form id="mobile-chat-form" class="chat-form" style="margin-top: 12px; display: flex; flex-direction: row; gap: 8px;">
+                    <input type="text" id="mobile-chat-input" class="chat-input" placeholder="Type a message..." required maxlength="120" style="flex: 1; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; border-radius: 6px; font-size: 0.85rem; outline: none;">
+                    <button type="submit" class="chat-send-btn" style="background: var(--accent-cyan); color: var(--bg-primary); border: none; padding: 8px 14px; border-radius: 6px; font-weight: 800;">➔</button>
+                </form>
+            `;
+            const form = document.getElementById("mobile-chat-form");
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const input = document.getElementById("mobile-chat-input");
+                const text = input.value.trim();
+                if (!text) return;
+
+                push(ref(db, 'global_chat'), {
+                    uid: user.uid,
+                    username: currentUsername || user.displayName || user.email.split("@")[0],
+                    text: text,
+                    timestamp: Date.now()
+                }).then(() => {
+                    input.value = "";
+                }).catch(err => console.error("Chat error: ", err));
+            });
+        } else {
+            chatInputArea.innerHTML = `
+                <div class="chat-signin-cta">
+                    <p style="font-size: 0.8rem;">You must be signed in to chat.</p>
+                    <button class="chat-signin-btn" id="mobile-chat-signin-btn">SIGN IN</button>
+                </div>
+            `;
+            document.getElementById("mobile-chat-signin-btn").addEventListener("click", () => {
+                document.getElementById("login-modal").classList.remove("hidden");
+            });
+        }
+    });
+
+    const chatQuery = query(ref(db, 'global_chat'), limitToLast(50));
+    onValue(chatQuery, (snapshot) => {
+        chatMessages.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) {
+            chatMessages.innerHTML = `<p class="no-messages-msg" style="font-size: 0.8rem; text-align: center; color: var(--text-secondary);">No messages yet.</p>`;
+            return;
+        }
+
+        const messages = Object.entries(data).map(([id, msg]) => ({ id, ...msg }));
+        messages.sort((a, b) => a.timestamp - b.timestamp);
+
+        messages.forEach(msg => {
+            const msgEl = document.createElement("div");
+            const isSelf = auth.currentUser && msg.uid === auth.currentUser.uid;
+            msgEl.className = `chat-msg ${isSelf ? 'self' : ''}`;
+            const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            msgEl.innerHTML = `
+                <div class="chat-msg-header">
+                    <span class="chat-msg-user">${msg.username.toUpperCase()}</span>
+                    <span class="chat-msg-time">${time}</span>
+                </div>
+                <div class="chat-msg-text">${escapeHtml(msg.text)}</div>
+            `;
+            chatMessages.appendChild(msgEl);
+        });
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+}
+

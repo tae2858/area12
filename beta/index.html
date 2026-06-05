@@ -275,3 +275,124 @@
                     <label for="login-password">PASSWORD</label>
                     <input type="password" id="login-password" required placeholder="••••••••">
                 </div>
+
+                <div id="login-error-msg" class="login-error-msg hidden"></div>
+
+                <button type="submit" id="login-submit-btn" class="login-submit-btn">SIGN IN</button>
+            </form>
+
+            <div class="login-toggle-mode">
+                <span id="login-toggle-text">Don't have an account?</span>
+                <button id="login-toggle-btn" class="login-toggle-btn">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Layout Container (Wireframe design) -->
+    <div class="mobile-layout-container">
+        <!-- Header -->
+        <header class="mobile-header">
+            <button id="mobile-menu-toggle">☰</button>
+            <span class="mobile-logo-text">Area 12</span>
+            <div class="mobile-header-actions">
+                <button id="mobile-search-toggle">🔍</button>
+                <button id="mobile-profile-btn" class="mobile-profile-btn">SIGN IN</button>
+            </div>
+            
+            <!-- Profile Dropdown (Panel 3) -->
+            <div id="mobile-profile-dropdown" class="mobile-profile-dropdown hidden">
+                <div class="dropdown-header">
+                    <span id="mobile-dropdown-username">Guest User</span>
+                </div>
+                <a href="#" class="dropdown-item">My Portals</a>
+                <a href="#" class="dropdown-item">My Profile</a>
+                <a href="#" id="mobile-logout-btn" class="dropdown-item">Log Out</a>
+            </div>
+        </header>
+
+        <!-- Sidebar Navigation Drawer (Panel 2) -->
+        <div id="mobile-sidebar" class="mobile-sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-title">Area 12</span>
+                <button id="mobile-sidebar-close">×</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-link active" data-target="home">home</a>
+                <div class="sidebar-dropdown-group">
+                    <a href="#" class="sidebar-link" data-target="portals">portals <span class="arrow">▼</span></a>
+                    <div id="mobile-sidebar-portals" class="sidebar-dropdown-content hidden">
+                        <!-- Dynamic portals list -->
+                    </div>
+                </div>
+                <a href="#" class="sidebar-link" data-target="makers">makers</a>
+                <a href="#" class="sidebar-link" data-target="about">about</a>
+            </nav>
+            
+            <div class="sidebar-filters">
+                <div class="filter-box">
+                    <button class="filter-btn active" data-filter="ALL">ALL</button>
+                    <button class="filter-btn" data-filter="LIT">LIT</button>
+                    <button class="filter-btn" data-filter="LIKED">LIKED</button>
+                    <button class="filter-btn" data-filter="PREMIUM">PREMIUM</button>
+                    <button class="filter-btn" data-filter="FOREIGN">FOREIGN</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Server Slider Card (Panel 1) -->
+        <div class="mobile-main-content">
+            <!-- Search bar -->
+            <div id="mobile-search-bar" class="mobile-search-bar hidden">
+                <input type="text" id="mobile-search-input" placeholder="Search servers...">
+            </div>
+
+            <div class="mobile-carousel">
+                <button class="carousel-arrow" id="mobile-carousel-prev">◀</button>
+                
+                <div class="carousel-card" id="mobile-active-card">
+                    <!-- Dynamic Card content will load here -->
+                </div>
+                
+                <button class="carousel-arrow" id="mobile-carousel-next">▶</button>
+            </div>
+
+            <!-- Controls Bar -->
+            <div class="mobile-controls-bar">
+                <button class="control-btn info-btn" id="mobile-info-btn">i</button>
+                <div class="zoom-controls">
+                    <button class="zoom-btn" id="mobile-zoom-in">+</button>
+                    <button class="zoom-btn" id="mobile-zoom-out">−</button>
+                </div>
+                <span class="popularity-badge" id="mobile-lit-badge">LIT +0</span>
+            </div>
+
+            <!-- Scrollable Bottom Section -->
+            <div class="mobile-bottom-section">
+                <div class="bottom-tabs">
+                    <button class="tab-btn active" data-tab="comments">Comments</button>
+                    <button class="tab-btn" data-tab="chat">Global Chat</button>
+                    <button class="tab-btn" data-tab="details">Details</button>
+                </div>
+                
+                <div class="bottom-content-panel">
+                    <!-- Comments Panel -->
+                    <div id="mobile-comments-panel" class="tab-panel">
+                        <div id="mobile-comments-list" class="comments-container"></div>
+                        <div id="mobile-comment-input-area" class="comment-input-area"></div>
+                    </div>
+                    <!-- Chat Panel -->
+                    <div id="mobile-chat-panel" class="tab-panel hidden">
+                        <div id="mobile-chat-messages" class="chat-messages" style="max-height: 200px; overflow-y: auto;"></div>
+                        <div id="mobile-chat-input-area" class="chat-input-area"></div>
+                    </div>
+                    <!-- Details Panel -->
+                    <div id="mobile-details-panel" class="tab-panel hidden">
+                        <p id="mobile-details-desc" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary);"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
