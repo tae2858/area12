@@ -31,9 +31,15 @@
         </div>
     </div>
 
-    <!-- YouTube background music player container -->
-    <div id="youtube-player-container" style="width:0;height:0;overflow:hidden;"></div>
-    <audio id="bg-audio" loop src="background.mp3" style="display:none;"></audio>
+    <!-- YouTube background music player (hidden) -->
+    <iframe id="youtube-player" 
+            src="about:blank" 
+            frameborder="0" 
+            allow="autoplay; encrypted-media" 
+            style="width:0;height:0;border:none;display:none;" 
+            allowfullscreen="false">
+    </iframe>
+    <audio id="bg-audio" loop style="display:none;"></audio>
 
     <!-- Floating Guns.lol Audio Player Panel -->
     <div id="music-player-widget" class="music-player-widget">

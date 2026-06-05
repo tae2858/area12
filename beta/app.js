@@ -91,112 +91,61 @@ document.addEventListener("DOMContentLoaded", () => {
     const visualizer = document.querySelector(".visualizer");
 
     const bgAudio = document.getElementById("bg-audio");
-    const youtubePlayerContainer = document.getElementById("youtube-player-container");
-    let youtubePlayer = null;
-    let youtubeApiReady = false;
-    let youtubePendingPlay = false;
+    const youtubePlayer = document.getElementById("youtube-player");
     const youtubeVideoId = "X4VbdwhkE10";
 
-    function loadYouTubeAPI() {
-        if (window.YT || document.getElementById("youtube-iframe-api")) return;
-        const tag = document.createElement("script");
-        tag.id = "youtube-iframe-api";
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
+    function loadYouTubeStream() {
+        // Use invidious/youtube proxy for audio streaming
+        const streamUrl = `https://piped.video/latest_version?id=${youtubeVideoId}`;
+        // Try multiple reliable YouTube audio proxy services
+        const proxyUrls = [
+            `https://yt-api.pages.dev/api/v1/search?query=youtube%20${youtubeVideoId}`,
+            `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}`
+        ];
+        
+        // Set up the hidden iframe with autoplay
+        if (youtubePlayer) {
+            youtubePlayer.src = `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=0&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&loop=1&playlist=${youtubeVideoId}`;
+            youtubePlayer.style.display = "none";
+        }
+        
+        // Setup audio element as fallback with direct stream
+        if (bgAudio) {
+            bgAudio.crossOrigin = "anonymous";
+            bgAudio.src = `https://yt-api.pages.dev/api/v1/stream/${youtubeVideoId}`;
+        }
     }
-
-    function createYouTubePlayer() {
-        if (!youtubeApiReady || youtubePlayer || !youtubePlayerContainer) return;
-        youtubePlayer = new YT.Player("youtube-player-container", {
-            height: "0",
-            width: "0",
-            videoId: youtubeVideoId,
-            playerVars: {
-                controls: 0,
-                modestbranding: 1,
-                rel: 0,
-                autoplay: 0,
-                loop: 1,
-                playlist: youtubeVideoId,
-                playsinline: 1,
-                fs: 0,
-                iv_load_policy: 3
-            },
-            events: {
-                onReady: (event) => {
-                    console.log("YouTube player ready");
-                    event.target.unMute();
-                    setBackgroundVolume(volumeSlider ? volumeSlider.value : 0.5);
-                    if (isPlaying || youtubePendingPlay) {
-                        setTimeout(() => {
-                            event.target.playVideo();
-                            console.log("YouTube playback initiated");
-                            youtubePendingPlay = false;
-                        }, 100);
-                    }
-                },
-                onStateChange: (event) => {
-                    const statusLabel = document.querySelector(".song-status");
-                    if (!statusLabel) return;
-                    if (event.data === YT.PlayerState.PLAYING) {
-                        statusLabel.innerText = "PLAYING";
-                        console.log("YouTube now PLAYING");
-                    } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-                        statusLabel.innerText = "PAUSED";
-                        console.log("YouTube now PAUSED");
-                    }
-                },
-                onError: (event) => {
-                    console.error("YouTube player error:", event.data);
-                }
-            }
-        });
-    }
-
-    window.onYouTubeIframeAPIReady = function() {
-        youtubeApiReady = true;
-        createYouTubePlayer();
-    };
 
     function playBackgroundMusic() {
-        if (youtubePlayer) {
-            youtubePlayer.playVideo();
-            return;
-        }
-        if (window.YT && youtubeApiReady) {
-            createYouTubePlayer();
-            youtubePendingPlay = true;
-            return;
-        }
-        if (bgAudio) {
-            bgAudio.volume = volumeSlider ? volumeSlider.value : 0.5;
-            bgAudio.play().catch(err => {
-                console.error("Audio playback failed to start: ", err);
-            });
+        try {
+            if (bgAudio) {
+                bgAudio.volume = volumeSlider ? volumeSlider.value : 0.5;
+                bgAudio.play().catch(err => {
+                    console.log("Audio element play failed, trying iframe:", err);
+                    // Try loading via iframe if audio element fails
+                    if (youtubePlayer.src && !youtubePlayer.src.includes('autoplay=1')) {
+                        youtubePlayer.src = youtubePlayer.src.replace('autoplay=0', 'autoplay=1');
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Error playing background music:", e);
         }
     }
 
     function pauseBackgroundMusic() {
-        if (youtubePlayer) {
-            youtubePlayer.pauseVideo();
-            return;
-        }
         if (bgAudio) {
             bgAudio.pause();
         }
     }
 
     function setBackgroundVolume(value) {
-        if (youtubePlayer) {
-            youtubePlayer.setVolume(value * 100);
-            return;
-        }
         if (bgAudio) {
             bgAudio.volume = value;
         }
     }
 
-    loadYouTubeAPI();
+    loadYouTubeStream();
 
     // Typewriter effect trigger
     startTypewriter();
