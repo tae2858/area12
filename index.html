@@ -97,9 +97,95 @@
                 <span id="minutes" class="number">00</span>
                 <span class="label">Minutes</span>
             </div>
-            <div class="time-segment">
-                <span id="seconds" class="number">00</span>
-                <span class="label">Seconds</span>
+
+            <div class="slots-grid" id="favorites-grid">
+                <!-- Loading placeholder cards -->
+                <div class="slot-card-skeleton"></div>
+                <div class="slot-card-skeleton"></div>
+            </div>
+        </section>
+
+        <!-- Master Directory Section -->
+        <section id="directory" class="directory-section">
+            <div class="directory-toolbar">
+                <div class="toolbar-title-section">
+                    <h3 class="section-title">ALL ACTIVE SERVERS</h3>
+                    <p class="section-subtitle" id="lobby-counter">Polling server arrays...</p>
+                </div>
+                <!-- Search bar styling with HSL tailors -->
+                <div class="search-wrapper">
+                    <input type="text" id="search-input" placeholder="Search servers or invites..."
+                        class="search-input">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+
+            <!-- Directory Grid List -->
+            <div class="server-grid" id="server-grid">
+                <!-- Loaded servers will append here -->
+            </div>
+        </section>
+
+        <!-- Footer Description (Guns.lol styling) -->
+        <footer id="about" class="about-section">
+            <div class="about-card">
+                <h4>AREA 12 DIRECTORY</h4>
+                <p>Real-time monitor index for active multiplayer servers. Search active lobbies, analyze server player
+                    counts, and join by copying the unique server invite codes directly to your clipboard.</p>
+                <div class="about-credits">
+                    <span>© 2026 Area 12. All Rights Reserved.</span>
+                    <span class="heart-pulse">Made with 🤍 for the gaming community</span>
+                    <span><a href="/credits" id="credits-link" class="credits-footer-btn">Team Credits</a></span>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Dedicated Guns.lol Server Bio Page Section (Hidden by default) -->
+    <div id="bio-page-container" class="bio-page-container hidden">
+        <div class="bio-glow-back"></div>
+        <div class="bio-card">
+            <button id="bio-back-btn" class="bio-back-btn">← Back to Index</button>
+            <img src="logo.png" alt="Server Logo" class="bio-logo">
+            <h1 id="bio-server-name" class="bio-title">SERVER NAME</h1>
+            <p id="bio-typewriter" class="bio-tagline"></p>
+
+            <div class="bio-details-grid">
+                <div class="bio-detail-box">
+                    <span class="lbl">MAKER</span>
+                    <span id="bio-maker" class="val">---</span>
+                </div>
+                <div class="bio-detail-box">
+                    <span class="lbl">PLAYERS ONLINE</span>
+                    <span id="bio-players" class="val">0/0</span>
+                </div>
+                <div class="bio-detail-box">
+                    <span class="lbl">BATTLE MODE</span>
+                    <span id="bio-pvp" class="val">---</span>
+                </div>
+            </div>
+
+            <div class="bio-stats-bar">
+                <span class="bio-stat-item">👁️ <span id="bio-views-count">0</span> Views</span>
+                <button id="bio-like-btn" class="bio-like-btn">❤️ <span id="bio-likes-count">0</span> Likes</button>
+            </div>
+
+            <div class="bio-code-label">CLICK CODE TO COPY</div>
+            <div id="bio-invite-code" class="bio-invite-code" title="Click to Copy">
+                -----
+            </div>
+
+            <button id="bio-copy-btn" class="bio-copy-btn">COPY INVITE CODE</button>
+
+            <!-- Comments Section -->
+            <div class="bio-comments-section">
+                <h3>Comments</h3>
+                <div id="comments-container" class="comments-container">
+                    <p class="no-comments-msg">No comments yet. Be the first to share your thoughts!</p>
+                </div>
+
+                <div id="comment-input-area" class="comment-input-area"></div>
             </div>
         </div>
         <div id="completion-message" class="message" style="display: none;">

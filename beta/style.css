@@ -839,6 +839,83 @@ body {
     margin-bottom: 18px;
 }
 
+.bug-report-section {
+    margin-top: 60px;
+}
+
+.bug-report-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 28px;
+}
+
+.bug-report-form {
+    display: grid;
+    gap: 18px;
+}
+
+.bug-report-form textarea,
+.bug-report-form select,
+.bug-report-form input {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    outline: none;
+    width: 100%;
+}
+
+.bug-report-form textarea:focus,
+.bug-report-form select:focus,
+.bug-report-form input:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.12);
+}
+
+.bug-note {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.bug-report-btn {
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-weight: 800;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: background 0.25s ease;
+}
+
+.bug-report-btn:hover {
+    background: var(--accent-blue);
+}
+
+.bug-report-status {
+    min-height: 24px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.bug-report-status.bug-report-success {
+    color: #7ef2a7;
+}
+
+.bug-report-status.bug-report-error {
+    color: var(--accent-pink);
+}
+
+.bug-report-status.bug-report-warning {
+    color: var(--accent-yellow);
+}
+
 .copy-card-btn {
     width: 100%;
     background: rgba(255, 255, 255, 0.02);

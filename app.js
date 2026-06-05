@@ -26,6 +26,10 @@ const API_BASE_URL = window.location.hostname === "localhost" || window.location
     ? "http://localhost:8080"
     : "https://multicraft-production.up.railway.app/proxy/find-nearby-servers";
 
+// Discord webhook for bug reporting. Replace with your webhook URL before deployment.
+const DISCORD_BUG_WEBHOOK_URL = "<https://discord.com/api/webhooks/1512497029199429813/cGDLfNeNOAI7ED7z1ZxE7o8_sWZlILqsbD3A1513MTitMNyxdt-uTAaw5tTkA04OS1D5>";
+const BUG_REPORT_ENABLED = DISCORD_BUG_WEBHOOK_URL && !DISCORD_BUG_WEBHOOK_URL.includes("<YOUR_DISCORD_WEBHOOK_URL_HERE>");
+
 // Typewriter taglines for Guns.lol overlay effect
 const TAGLINES = [
     "Scraping the MultiCraft network...",
@@ -131,9 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initAPIPolling();
     initFirebaseAuth();
     initGlobalChat();
-    if (window.initMobileUI) {
-        window.initMobileUI();
-    }
 
     // Browser navigation back/forward listeners
     window.addEventListener("popstate", () => {
@@ -498,6 +499,136 @@ function showToast(message) {
     setTimeout(() => {
         toast.classList.remove("show");
     }, 3000);
+}
+
+function getBugSeverityColor(level) {
+    switch (level) {
+        case "critical": return 0xff2d55;
+        case "high": return 0xff9500;
+        case "medium": return 0x8b5cf6;
+        default: return 0x22c55e;
+    }
+}
+
+function getBugOriginMeta() {
+    return {
+        path: window.location.pathname + window.location.search,
+        userAgent: navigator.userAgent || "Unknown"
+    };
+}
+
+function createDiscordBugPayload({ reporter, severity, description, origin }) {
+    return {
+        embeds: [{
+            title: "Area 12 Bug Report",
+            description: description.substring(0, 4096),
+            color: getBugSeverityColor(severity),
+            fields: [
+                { name: "Reporter", value: reporter || "Anonymous", inline: true },
+                { name: "Severity", value: severity.toUpperCase(), inline: true },
+                { name: "Page", value: origin.path || "/", inline: false },
+                { name: "User Agent", value: origin.userAgent, inline: false }
+            ],
+            timestamp: new Date().toISOString()
+        }]
+    };
+}
+
+async function sendDiscordBugReport(payload) {
+    if (!BUG_REPORT_ENABLED) {
+        throw new Error("Discord bug webhook is not configured.");
+    }
+
+    const response = await fetch(DISCORD_BUG_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(`Discord webhook returned ${response.status} ${response.statusText} ${text}`);
+    }
+
+    return response;
+}
+
+async function submitBugReport({ reporter, severity, description }) {
+    const payload = createDiscordBugPayload({
+        reporter,
+        severity,
+        description,
+        origin: getBugOriginMeta()
+    });
+    return sendDiscordBugReport(payload);
+}
+
+function initBugReporter() {
+    const form = document.getElementById("bug-report-form");
+    const status = document.getElementById("bug-report-status");
+    if (!form || !status) return;
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const reporter = document.getElementById("bug-reporter").value.trim();
+        const severity = document.getElementById("bug-severity").value;
+        const description = document.getElementById("bug-description").value.trim();
+
+        if (!description) {
+            status.innerText = "Please describe the issue before sending.";
+            status.className = "bug-report-status bug-report-error";
+            return;
+        }
+
+        status.innerText = "Submitting bug report...";
+        status.className = "bug-report-status";
+
+        try {
+            await submitBugReport({ reporter, severity, description });
+            status.innerText = "Bug report sent to Discord. Thank you!";
+            status.className = "bug-report-status bug-report-success";
+            form.reset();
+        } catch (error) {
+            console.error("Bug report failed:", error);
+            status.innerText = "Unable to send bug report. Verify the webhook and browser CORS.";
+            status.className = "bug-report-status bug-report-error";
+        }
+    });
+
+    if (!BUG_REPORT_ENABLED) {
+        status.innerText = "Discord webhook is not configured in app.js. Please set DISCORD_BUG_WEBHOOK_URL.";
+        status.className = "bug-report-status bug-report-warning";
+    }
+
+    window.addEventListener("error", (event) => {
+        if (!BUG_REPORT_ENABLED) return;
+        const errorInfo = `Unhandled error: ${event.message}\nSource: ${event.filename}:${event.lineno}:${event.colno}\nStack:\n${event.error?.stack || "N/A"}`;
+        sendDiscordBugReport(createDiscordBugPayload({
+            reporter: "Auto reporter",
+            severity: "critical",
+            description: errorInfo,
+            origin: getBugOriginMeta()
+        })).catch(err => {
+            console.error("Auto bug report failed:", err);
+        });
+    });
+
+    window.addEventListener("unhandledrejection", (event) => {
+        if (!BUG_REPORT_ENABLED) return;
+        const reason = event.reason || "Unknown rejection";
+        const description = typeof reason === "string" ? reason : JSON.stringify(reason, Object.getOwnPropertyNames(reason), 2);
+        sendDiscordBugReport(createDiscordBugPayload({
+            reporter: "Auto reporter",
+            severity: "high",
+            description: `Unhandled Promise rejection:\n${description}`,
+            origin: getBugOriginMeta()
+        })).catch(err => {
+            console.error("Auto bug report failed:", err);
+        });
+    });
 }
 
 // 8. Guns.lol Profile Routing System
