@@ -198,6 +198,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
         playBackgroundMusic();
 
+        // Overwrite system MediaSession details to display "Area 12 Lo-Fi" instead of third-party iframe properties
+        if ('mediaSession' in navigator) {
+            const updateMediaSession = () => {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: 'Area 12 Lo-Fi',
+                    artist: 'Area 12',
+                    album: 'Soundtrack',
+                    artwork: [
+                        { src: window.location.origin + '/beta/logo.png', sizes: '512x512', type: 'image/png' }
+                    ]
+                });
+                
+                // Clear controls handlers to block user pause/skip from OS controls
+                navigator.mediaSession.setActionHandler('play', null);
+                navigator.mediaSession.setActionHandler('pause', null);
+                navigator.mediaSession.setActionHandler('seekbackward', null);
+                navigator.mediaSession.setActionHandler('seekforward', null);
+                navigator.mediaSession.setActionHandler('previoustrack', null);
+                navigator.mediaSession.setActionHandler('nexttrack', null);
+            };
+
+            updateMediaSession();
+            // Continuously enforce every 3 seconds to override rumble.com updates
+            setInterval(updateMediaSession, 3000);
+        }
+
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
         toggleVisualizer(true);
     });
@@ -1668,23 +1694,38 @@ window.initMobileUI = function() {
         });
     }
 
-    // Controls Bar Zoom and Info Actions
+    // Controls Bar Zoom (+ / -) mapped to Cycle Filters
+    const MOBILE_FILTERS = ["ALL", "LIT", "LIKED", "PREMIUM", "FOREIGN"];
+
+    const updateFilterUI = (newFilter) => {
+        mobileCurrentFilter = newFilter;
+        mobileActiveIndex = 0;
+        
+        // Highlight active filter button in drawer
+        const filterBtns = document.querySelectorAll(".sidebar-filters .filter-btn");
+        filterBtns.forEach(btn => {
+            if (btn.dataset.filter === mobileCurrentFilter) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+        });
+        
+        window.renderMobileUI();
+    };
+
     if (zoomInBtn) {
         zoomInBtn.addEventListener("click", () => {
-            if (mobileCurrentScale < 1.2) {
-                mobileCurrentScale += 0.05;
-                const card = document.getElementById("mobile-active-card");
-                if (card) card.style.transform = `scale(${mobileCurrentScale})`;
-            }
+            let idx = MOBILE_FILTERS.indexOf(mobileCurrentFilter);
+            idx = (idx + 1) % MOBILE_FILTERS.length;
+            updateFilterUI(MOBILE_FILTERS[idx]);
         });
     }
     if (zoomOutBtn) {
         zoomOutBtn.addEventListener("click", () => {
-            if (mobileCurrentScale > 0.8) {
-                mobileCurrentScale -= 0.05;
-                const card = document.getElementById("mobile-active-card");
-                if (card) card.style.transform = `scale(${mobileCurrentScale})`;
-            }
+            let idx = MOBILE_FILTERS.indexOf(mobileCurrentFilter);
+            idx = (idx - 1 + MOBILE_FILTERS.length) % MOBILE_FILTERS.length;
+            updateFilterUI(MOBILE_FILTERS[idx]);
         });
     }
 
