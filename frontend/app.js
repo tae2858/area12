@@ -329,7 +329,15 @@ function initAPIPolling() {
                 pvp: pvpVal,
                 online: isLive,
                 description: sData.description || "No room description provided.",
-                is_favorite: isFav
+                is_favorite: isFav,
+                premium: sData.premium === true || isFav,
+                creative_mode: sData.creative_mode === true,
+                game: sData.game || "default",
+                global_server: sData.global_server === true,
+                international: sData.international === true,
+                adult: sData.adult === true,
+                hardcore: sData.hardcore === true,
+                url: sData.url || ""
             });
         }
 
@@ -348,7 +356,15 @@ function initAPIPolling() {
                     pvp: sData.pvp !== false,
                     online: true,
                     description: desc || "No room description provided.",
-                    is_favorite: isFav
+                    is_favorite: isFav || sData.premium === true,
+                    premium: sData.premium === true || isFav,
+                    creative_mode: sData.creative_mode === true,
+                    game: sData.game || "default",
+                    global_server: sData.global_server === true,
+                    international: sData.international === true,
+                    adult: sData.adult === true,
+                    hardcore: sData.hardcore === true,
+                    url: sData.url || ""
                 });
             }
         }
@@ -371,7 +387,15 @@ function initAPIPolling() {
                     pvp: true,
                     online: false,
                     description: "Server is currently sleeping or offline.",
-                    is_favorite: true
+                    is_favorite: true,
+                    premium: true,
+                    creative_mode: false,
+                    game: "default",
+                    global_server: true,
+                    international: true,
+                    adult: false,
+                    hardcore: false,
+                    url: fId === "94D92LVD" ? "https://discord.gg/v9NUPx3p78" : ""
                 });
             }
         }
@@ -442,7 +466,15 @@ function initAPIPolling() {
                                     max_players: sData.max_players || 100,
                                     pvp: sData.pvp !== false,
                                     description: sData.description || "",
-                                    admin_name: "Jared12, Nice, Angels"
+                                    admin_name: sData.admin_name || sData.admin || "Jared12",
+                                    premium: sData.premium === true,
+                                    creative_mode: sData.creative_mode === true,
+                                    game: sData.game || "default",
+                                    global_server: sData.global_server === true,
+                                    international: sData.international === true,
+                                    adult: sData.adult === true,
+                                    hardcore: sData.hardcore === true,
+                                    url: sData.url || ""
                                 });
                             }
                         }
@@ -460,7 +492,15 @@ function initAPIPolling() {
                                     max_players: sData.max_players || sData.clients_max || 50,
                                     pvp: sData.pvp !== false,
                                     description: sData.description || "",
-                                    admin_name: sData.admin_name || sData.admin || "Unknown"
+                                    admin_name: sData.admin_name || sData.admin || "Unknown",
+                                    premium: sData.premium === true,
+                                    creative_mode: sData.creative_mode === true,
+                                    game: sData.game || "default",
+                                    global_server: sData.global_server === true,
+                                    international: sData.international === true,
+                                    adult: sData.adult === true,
+                                    hardcore: sData.hardcore === true,
+                                    url: sData.url || ""
                                 });
                             }
                         }
@@ -477,7 +517,15 @@ function initAPIPolling() {
                             max_players: parseInt(sData.max_players || 50, 10),
                             pvp: sData.pvp !== false,
                             description: desc || "No room description provided.",
-                            is_favorite: isFav
+                            is_favorite: isFav || sData.premium === true,
+                            premium: sData.premium === true || isFav,
+                            creative_mode: sData.creative_mode === true,
+                            game: sData.game || "default",
+                            global_server: sData.global_server === true,
+                            international: sData.international === true,
+                            adult: sData.adult === true,
+                            hardcore: sData.hardcore === true,
+                            url: sData.url || ""
                         }).catch(err => console.error("Firebase caching failed: ", err));
                     }
 
@@ -714,6 +762,40 @@ function checkRoute(servers) {
         document.getElementById("bio-players").innerText = matched.players;
         document.getElementById("bio-pvp").innerText = matched.pvp ? "⚔️ PvP Enabled" : "🌾 Safe Zone";
         document.getElementById("bio-invite-code").innerText = matched.server_id;
+
+        // Render Badges
+        const badgesContainer = document.getElementById("bio-badges-container");
+        if (badgesContainer) {
+            badgesContainer.innerHTML = "";
+            if (matched.premium) {
+                badgesContainer.innerHTML += `<span class="badge premium">⭐ PREMIUM</span>`;
+            }
+            if (matched.creative_mode) {
+                badgesContainer.innerHTML += `<span class="badge creative">🎨 CREATIVE</span>`;
+            } else {
+                badgesContainer.innerHTML += `<span class="badge survival">🌲 SURVIVAL</span>`;
+            }
+            if (matched.hardcore) {
+                badgesContainer.innerHTML += `<span class="badge hardcore">💀 HARDCORE</span>`;
+            }
+            if (matched.global_server) {
+                badgesContainer.innerHTML += `<span class="badge global">🌍 GLOBAL</span>`;
+            }
+            if (matched.international) {
+                badgesContainer.innerHTML += `<span class="badge intl">🏳️ Intl</span>`;
+            }
+        }
+
+        // Render Discord/Website button
+        const linkBtn = document.getElementById("bio-link-btn");
+        if (linkBtn) {
+            if (matched.url) {
+                linkBtn.href = matched.url;
+                linkBtn.classList.remove("hidden");
+            } else {
+                linkBtn.classList.add("hidden");
+            }
+        }
 
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
 
