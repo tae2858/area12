@@ -93,40 +93,63 @@ document.addEventListener("DOMContentLoaded", () => {
     const bgAudio = document.getElementById("bg-audio");
     const youtubePlayer = document.getElementById("youtube-player");
     const youtubeVideoId = "X4VbdwhkE10";
+    let audioSource = null;
 
     function loadYouTubeStream() {
-        // Use invidious/youtube proxy for audio streaming
-        const streamUrl = `https://piped.video/latest_version?id=${youtubeVideoId}`;
-        // Try multiple reliable YouTube audio proxy services
-        const proxyUrls = [
-            `https://yt-api.pages.dev/api/v1/search?query=youtube%20${youtubeVideoId}`,
-            `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}`
-        ];
-        
-        // Set up the hidden iframe with autoplay
-        if (youtubePlayer) {
-            youtubePlayer.src = `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=0&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&loop=1&playlist=${youtubeVideoId}`;
-            youtubePlayer.style.display = "none";
-        }
-        
-        // Setup audio element as fallback with direct stream
+        // Use Piped API to get direct audio stream from YouTube
         if (bgAudio) {
             bgAudio.crossOrigin = "anonymous";
-            bgAudio.src = `https://yt-api.pages.dev/api/v1/stream/${youtubeVideoId}`;
+            bgAudio.volume = 1.0; // Max volume
+            bgAudio.autoplay = false;
+            
+            // Try Piped first - more reliable for livestreams
+            fetch(`https://piped-api.kavin.rocks/streams/${youtubeVideoId}`)
+                .then(r => r.json())
+                .then(data => {
+                    console.log("Piped API response:", data);
+                    if (data.audioStreams && data.audioStreams.length > 0) {
+                        const audioUrl = data.audioStreams[0].url;
+                        bgAudio.src = audioUrl;
+                        audioSource = audioUrl;
+                        console.log("Audio URL set from Piped:", audioUrl);
+                    }
+                })
+                .catch(err => {
+                    console.log("Piped API failed:", err);
+                    // Fallback to direct YouTube embed
+                    console.log("Using direct YouTube embed fallback");
+                });
+        }
+        
+        // Setup iframe as visual backup
+        if (youtubePlayer) {
+            youtubePlayer.src = `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&controls=0&modestbranding=1&rel=0&playsinline=1&loop=1&playlist=${youtubeVideoId}`;
         }
     }
 
     function playBackgroundMusic() {
         try {
             if (bgAudio) {
-                bgAudio.volume = volumeSlider ? volumeSlider.value : 0.5;
-                bgAudio.play().catch(err => {
-                    console.log("Audio element play failed, trying iframe:", err);
-                    // Try loading via iframe if audio element fails
-                    if (youtubePlayer.src && !youtubePlayer.src.includes('autoplay=1')) {
-                        youtubePlayer.src = youtubePlayer.src.replace('autoplay=0', 'autoplay=1');
-                    }
-                });
+                console.log("Attempting to play audio...");
+                console.log("Audio volume:", bgAudio.volume);
+                console.log("Audio src:", bgAudio.src);
+                console.log("Audio readyState:", bgAudio.readyState);
+                console.log("Audio networkState:", bgAudio.networkState);
+                
+                bgAudio.volume = 1.0; // Force max volume
+                
+                const playPromise = bgAudio.play();
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => {
+                            console.log("✓ Audio playing successfully");
+                            document.querySelector(".song-status").innerText = "PLAYING";
+                        })
+                        .catch(err => {
+                            console.error("✗ Audio play error:", err.message);
+                            document.querySelector(".song-status").innerText = "ERROR";
+                        });
+                }
             }
         } catch (e) {
             console.error("Error playing background music:", e);
@@ -136,12 +159,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function pauseBackgroundMusic() {
         if (bgAudio) {
             bgAudio.pause();
+            console.log("Audio paused");
         }
     }
 
     function setBackgroundVolume(value) {
         if (bgAudio) {
-            bgAudio.volume = value;
+            bgAudio.volume = Math.max(value, 0.5); // Minimum 50% volume
+            console.log("Volume set to:", bgAudio.volume);
         }
     }
 
