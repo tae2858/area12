@@ -285,9 +285,129 @@ function startTypewriter() {
     tick();
 }
 
-// 3. API Polling Loop (Fetches from Railway proxy every 5 seconds)
+// 3. API Polling Loop (Fetches from Railway proxy and synchronizes with Firebase cache)
 function initAPIPolling() {
-    const favoriteIds = ["94D92LVD", "QVZACNG5", "XX9IXQ6H"]; // add server code here
+    const favoriteIds = ["94D92LVD", "QVZACNG5", "XX9IXQ6H"]; // Pinned/favorite slots
+    let firebaseCachedServers = {};
+    let latestLiveServersMap = new Map();
+
+    // 3.1 Listen to Firebase Cached Servers path
+    onValue(ref(db, "cached_servers"), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            firebaseCachedServers = data;
+        } else {
+            firebaseCachedServers = {};
+        }
+        mergeAndRenderServers();
+    });
+
+    // Helper to merge live polling results with stored Firebase offline servers
+    function mergeAndRenderServers() {
+        const tempServers = [];
+        const mergedIds = new Set();
+
+        // A. Add servers from Firebase Cache (includes live + offline cached ones)
+        for (const [sId, sData] of Object.entries(firebaseCachedServers)) {
+            if (!sData) continue;
+            const sIdUpper = sId.toUpperCase();
+            mergedIds.add(sIdUpper);
+
+            const isLive = latestLiveServersMap.has(sIdUpper);
+            const liveData = isLive ? latestLiveServersMap.get(sIdUpper) : null;
+            const pvpVal = sData.pvp !== false;
+            const isFav = sData.is_favorite === true || favoriteIds.includes(sIdUpper);
+
+            tempServers.push({
+                server_id: sIdUpper,
+                name: sData.name || "Unknown Server",
+                admin: sData.admin || "Unknown",
+                players: isLive
+                    ? `${liveData.connected_players || 0}/${sData.max_players || 100}`
+                    : `0/${sData.max_players || 100}`,
+                player_val: isLive ? parseInt(liveData.connected_players || 0, 10) : 0,
+                pvp: pvpVal,
+                online: isLive,
+                description: sData.description || "No room description provided.",
+                is_favorite: isFav
+            });
+        }
+
+        // B. Add any live servers not yet represented in the Firebase Cache
+        for (const [sId, sData] of latestLiveServersMap.entries()) {
+            if (!mergedIds.has(sId)) {
+                mergedIds.add(sId);
+                const desc = (sData.description || "").replace(/\n/g, " ").trim();
+                const isFav = favoriteIds.includes(sId);
+                tempServers.push({
+                    server_id: sId,
+                    name: sData.server_name || "MultiCraft Server",
+                    admin: sData.admin_name || "Unknown",
+                    players: `${sData.connected_players || 0}/${sData.max_players || 50}`,
+                    player_val: parseInt(sData.connected_players || 0, 10),
+                    pvp: sData.pvp !== false,
+                    online: true,
+                    description: desc || "No room description provided.",
+                    is_favorite: isFav
+                });
+            }
+        }
+
+        // C. Safeguard: Fallback defaults for pinned favorites if DB is completely empty
+        for (const fId of favoriteIds) {
+            if (!mergedIds.has(fId)) {
+                mergedIds.add(fId);
+                let defaultName = "Unknown Server";
+                if (fId === "QVZACNG5") defaultName = "Parkour Cubicles [12+]";
+                else if (fId === "94D92LVD") defaultName = "[12+] ※SMP12※";
+                else if (fId === "XX9IXQ6H") defaultName = "[12+] ※Stone Simulator!※";
+
+                tempServers.push({
+                    server_id: fId,
+                    name: defaultName,
+                    admin: "Jared12, Nice, Angels",
+                    players: "0/100",
+                    player_val: 0,
+                    pvp: true,
+                    online: false,
+                    description: "Server is currently sleeping or offline.",
+                    is_favorite: true
+                });
+            }
+        }
+
+        // Sort: Favorites first, then online servers by player count descending, then offline servers
+        tempServers.sort((a, b) => {
+            if (a.is_favorite && !b.is_favorite) return -1;
+            if (!a.is_favorite && b.is_favorite) return 1;
+            if (a.online && !b.online) return -1;
+            if (!a.online && b.online) return 1;
+            return b.player_val - a.player_val;
+        });
+
+        allServers = tempServers;
+
+        // Render Lobby Stats Count based on live players
+        let totalPlayers = 0;
+        allServers.forEach(s => {
+            if (s.online) {
+                const count = parseInt(s.players.split("/")[0], 10) || 0;
+                totalPlayers += count;
+            }
+        });
+        document.getElementById("lobby-counter").innerText = `${totalPlayers} PLAYERS ONLINE ACROSS ALL NETWORKS`;
+
+        renderPinnedFavorites(allServers);
+        renderDirectoryGrid(allServers);
+        checkRoute(allServers);
+        if (window.renderMobileUI) {
+            window.renderMobileUI();
+        }
+        if (window.updateSidebarPortals) {
+            window.updateSidebarPortals();
+        }
+    }
+
     const fetchServers = async () => {
         try {
             const response = await fetch("https://multicraft-production.up.railway.app/proxy/find-nearby-servers", {
@@ -297,115 +417,72 @@ function initAPIPolling() {
                 },
                 body: JSON.stringify({ favorites: "94D92LVD,QVZACNG5,XX9IXQ6H" })
             });
+
             if (response.ok) {
                 const data = await response.json();
                 if (data) {
                     const hasFavorites = data.favorites && typeof data.favorites === "object" && Object.keys(data.favorites).length > 0;
                     const hasNearby = data.nearby && Array.isArray(data.nearby) && data.nearby.length > 0;
 
-                    // Skip updating if response is empty (likely rate-limited) and we already have cached servers
                     if (!hasFavorites && !hasNearby && allServers.length > 0) {
-                        console.warn("API returned empty data; keeping cached servers to prevent flickering.");
+                        console.warn("API returned empty data; keeping cached display to prevent flickering.");
                         return;
                     }
 
-                    const tempServers = [];
-                    const foundFavorites = new Set();
+                    latestLiveServersMap.clear();
 
-                    // 1. Process favorites block (nested dict keyed by server ID)
+                    // Parse live favorites
                     if (data.favorites && typeof data.favorites === "object") {
                         for (const [sId, sData] of Object.entries(data.favorites)) {
-                            const sIdUpper = sId.toUpperCase();
-                            if (favoriteIds.includes(sIdUpper) && sData && typeof sData === "object") {
-                                foundFavorites.add(sIdUpper);
-                                const desc = (sData.description || "").replace(/\n/g, " ").trim();
-                                tempServers.push({
-                                    server_id: sIdUpper,
-                                    name: sData.server_name || "",
-                                    admin: "Jared12, Nice, Angels",
-                                    players: `${sData.connected_players || 0}/${sData.max_players || 100}`,
-                                    player_val: parseInt(sData.connected_players || 0, 10),
+                            if (sData && typeof sData === "object") {
+                                const sIdUpper = sId.toUpperCase();
+                                latestLiveServersMap.set(sIdUpper, {
+                                    server_name: sData.server_name || "",
+                                    connected_players: sData.connected_players || 0,
+                                    max_players: sData.max_players || 100,
                                     pvp: sData.pvp !== false,
-                                    online: sData.online !== false,
-                                    description: desc || "No room description provided.",
-                                    is_favorite: true
+                                    description: sData.description || "",
+                                    admin_name: "Jared12, Nice, Angels"
                                 });
                             }
                         }
                     }
 
-                    // 2. Inject missing/offline favorites
-                    for (const fId of favoriteIds) {
-                        if (!foundFavorites.has(fId)) {
-                            let defaultName = "Unknown Server";
-                            if (fId === "QVZACNG5") defaultName = "Parkour Cubicles [12+]";
-                            else if (fId === "94D92LVD") defaultName = "[12+] ※SMP12※";
-                            else if (fId === "XX9IXQ6H") defaultName = "[12+] ※Stone Simulator!※";
-
-                            tempServers.push({
-                                server_id: fId,
-                                name: defaultName,
-                                admin: "Jared12, Nice, Angels",
-                                players: "0/100",
-                                player_val: 0,
-                                pvp: true,
-                                online: false,
-                                description: "Server is currently sleeping or offline.",
-                                is_favorite: true
-                            });
-                        }
-                    }
-
-                    // 3. Process nearby servers from the list
+                    // Parse live nearby list
                     if (data.nearby && Array.isArray(data.nearby)) {
                         for (const sData of data.nearby) {
                             if (!sData || typeof sData !== "object") continue;
                             const sId = (sData.server_id || sData.id || "").toUpperCase();
-                            if (favoriteIds.includes(sId)) continue; // skip, already handled
-
-                            const desc = (sData.description || "").replace(/\n/g, " ").trim();
-                            tempServers.push({
-                                server_id: sId || "UNKNOWN",
-                                name: sData.server_name || sData.name || "MultiCraft Server",
-                                admin: sData.admin_name || sData.admin || "Unknown",
-                                players: `${sData.connected_players || sData.clients || 0}/${sData.max_players || sData.clients_max || 50}`,
-                                player_val: parseInt(sData.connected_players || sData.clients || 0, 10),
-                                pvp: sData.pvp !== false,
-                                online: sData.online !== false,
-                                description: desc || "No room description provided.",
-                                is_favorite: false
-                            });
+                            if (sId) {
+                                latestLiveServersMap.set(sId, {
+                                    server_name: sData.server_name || sData.name || "MultiCraft Server",
+                                    connected_players: sData.connected_players || sData.clients || 0,
+                                    max_players: sData.max_players || sData.clients_max || 50,
+                                    pvp: sData.pvp !== false,
+                                    description: sData.description || "",
+                                    admin_name: sData.admin_name || sData.admin || "Unknown"
+                                });
+                            }
                         }
                     }
 
-                    // Sort: Favorites first, then other online servers by player count descending
-                    tempServers.sort((a, b) => {
-                        if (a.is_favorite && !b.is_favorite) return -1;
-                        if (!a.is_favorite && b.is_favorite) return 1;
-                        return b.player_val - a.player_val;
-                    });
-
-                    allServers = tempServers;
-
-                    // Update total online counts or lobby label based on total active players
-                    let totalPlayers = 0;
-                    allServers.forEach(s => {
-                        if (s.online) {
-                            const count = parseInt(s.players.split("/")[0], 10) || 0;
-                            totalPlayers += count;
-                        }
-                    });
-                    document.getElementById("lobby-counter").innerText = `${totalPlayers} PLAYERS ONLINE ACROSS ALL NETWORKS`;
-
-                    renderPinnedFavorites(allServers);
-                    renderDirectoryGrid(allServers);
-                    checkRoute(allServers);
-                    if (window.renderMobileUI) {
-                        window.renderMobileUI();
+                    // Cache/Update all live servers to Firebase Database in parallel
+                    for (const [sId, sData] of latestLiveServersMap.entries()) {
+                        const desc = (sData.description || "").replace(/\n/g, " ").trim();
+                        const isFav = favoriteIds.includes(sId);
+                        set(ref(db, `cached_servers/${sId}`), {
+                            server_id: sId,
+                            name: sData.server_name || "MultiCraft Server",
+                            admin: sData.admin_name || "Unknown",
+                            max_players: parseInt(sData.max_players || 50, 10),
+                            pvp: sData.pvp !== false,
+                            description: desc || "No room description provided.",
+                            is_favorite: isFav
+                        }).catch(err => console.error("Firebase caching failed: ", err));
                     }
-                    if (window.updateSidebarPortals) {
-                        window.updateSidebarPortals();
-                    }
+
+                    // Perform merge and render
+                    mergeAndRenderServers();
                 } else {
                     document.getElementById("lobby-counter").innerText = "Waiting for background server engine synchronizer...";
                 }
