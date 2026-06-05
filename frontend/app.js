@@ -219,21 +219,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Play/Pause Button handler
-    playPauseBtn.addEventListener("click", () => {
-        if (!isPlaying) {
-            playBackgroundMusic();
-            playPauseBtn.innerText = "⏸";
-            document.querySelector(".song-status").innerText = "PLAYING";
-            toggleVisualizer(true);
-            isPlaying = true;
-        } else {
-            pauseBackgroundMusic();
-            playPauseBtn.innerText = "▶";
-            document.querySelector(".song-status").innerText = "PAUSED";
-            toggleVisualizer(false);
-            isPlaying = false;
-        }
-    });
+    if (playPauseBtn) {
+        playPauseBtn.addEventListener("click", () => {
+            if (!isPlaying) {
+                playBackgroundMusic();
+                playPauseBtn.innerText = "⏸";
+                document.querySelector(".song-status").innerText = "PLAYING";
+                toggleVisualizer(true);
+                isPlaying = true;
+            } else {
+                pauseBackgroundMusic();
+                playPauseBtn.innerText = "▶";
+                document.querySelector(".song-status").innerText = "PAUSED";
+                toggleVisualizer(false);
+                isPlaying = false;
+            }
+        });
+    }
 
     // Volume Slider handler
     if (volumeSlider) {
