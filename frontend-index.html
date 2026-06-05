@@ -69,7 +69,7 @@
             <nav class="nav-links">
                 <a href="#" class="active">HOME</a>
                 <a href="#directory">DIRECTORY</a>
-                <a href="#about">ABOUT</a>
+                <a href="#" id="about-nav-link">ABOUT</a>
                 <a href="#" id="signin-nav-btn">SIGN IN</a>
             </nav>
 
@@ -240,6 +240,33 @@
                         <h3 class="member-name">x9jm</h3>
                         <p class="member-role">Vulkan Developer</p>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dedicated About Page Section (Hidden by default) -->
+    <div id="about-page-container" class="bio-page-container hidden">
+        <div class="bio-glow-back"></div>
+        <div class="bio-card" style="max-width: 650px; text-align: left; padding: 30px;">
+            <button id="about-back-btn" class="bio-back-btn" style="position: static; margin-bottom: 20px; display: inline-block;">← Back to Directory</button>
+            <h1 class="bio-title text-orchid-glow" style="text-align: center; margin-bottom: 8px;">AREA 12 FRANCHISE</h1>
+            <p class="overlay-tagline" style="text-align: center; font-size: 0.9rem; margin-bottom: 24px; color: var(--accent-cyan);">OFFICIAL franchise OVERVIEW</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px; color: var(--text-primary); font-size: 0.95rem; line-height: 1.6;">
+                <div>
+                    <h3 style="color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase;">About the Game</h3>
+                    <p style="color: var(--text-secondary);">Area 12 is a premier, high-fidelity sandbox construction and multiplayer warfare gaming franchise. Blending deep, community-driven survival architectures, modular builder modes, and responsive player-versus-player (PvP) match configurations, the franchise represents the pinnacle of creative cooperative gameplay.</p>
+                </div>
+                
+                <div>
+                    <h3 style="color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase;">The Network Eco-system</h3>
+                    <p style="color: var(--text-secondary);">This portal serves as the unified network bridge for the Area 12 gaming ecosystem. It connects users with dynamic servers (both official and community-run arrays), syncing live player directories, community join tokens, and verified creator profiles in real time.</p>
+                </div>
+
+                <div style="background: rgba(186, 85, 211, 0.05); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px;">
+                    <h4 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 4px; font-weight: 800;">🎮 Join the Action</h4>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">Copy any server invite code from the directory grid, launch your Area 12 game client, paste the token into the network server connection tab, and connect instantly.</p>
                 </div>
             </div>
         </div>

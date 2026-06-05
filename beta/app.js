@@ -192,6 +192,23 @@ document.addEventListener("DOMContentLoaded", () => {
         checkRoute(allServers);
     });
 
+    const aboutNavLink = document.getElementById("about-nav-link");
+    if (aboutNavLink) {
+        aboutNavLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.history.pushState({}, '', '/beta/about');
+            checkRoute(allServers);
+        });
+    }
+
+    const aboutBackBtn = document.getElementById("about-back-btn");
+    if (aboutBackBtn) {
+        aboutBackBtn.addEventListener("click", () => {
+            window.history.pushState({}, '', '/beta');
+            checkRoute(allServers);
+        });
+    }
+
     enterBtn.addEventListener("click", () => {
         enterOverlay.classList.add("hide");
         isPlaying = true;
@@ -750,6 +767,18 @@ function checkRoute(servers) {
     if (relativePath === "credits") {
         document.getElementById("credits-page-container").classList.remove("hidden");
         document.getElementById("bio-page-container").classList.add("hidden");
+        document.getElementById("about-page-container").classList.add("hidden");
+        document.querySelector(".main-navbar").classList.add("hidden");
+        document.querySelector(".content-container").classList.add("hidden");
+        document.getElementById("enter-overlay").classList.add("hide");
+        document.getElementById("music-player-widget").style.transform = "translateX(0)";
+        return;
+    }
+
+    if (relativePath === "about") {
+        document.getElementById("about-page-container").classList.remove("hidden");
+        document.getElementById("bio-page-container").classList.add("hidden");
+        document.getElementById("credits-page-container").classList.add("hidden");
         document.querySelector(".main-navbar").classList.add("hidden");
         document.querySelector(".content-container").classList.add("hidden");
         document.getElementById("enter-overlay").classList.add("hide");
@@ -887,6 +916,7 @@ function checkRoute(servers) {
         window.history.replaceState({}, '', '/beta');
         document.getElementById("bio-page-container").classList.add("hidden");
         document.getElementById("credits-page-container").classList.add("hidden");
+        document.getElementById("about-page-container").classList.add("hidden");
         document.querySelector(".main-navbar").classList.remove("hidden");
         document.querySelector(".content-container").classList.remove("hidden");
     }
@@ -1768,6 +1798,27 @@ window.initMobileUI = function() {
         });
     });
 
+    // Mobile Sidebar Navigation Links Actions
+    const mobileHomeLink = document.querySelector(".sidebar-nav [data-target='home']");
+    if (mobileHomeLink) {
+        mobileHomeLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.history.pushState({}, '', '/beta');
+            checkRoute(allServers);
+            if (sidebar) sidebar.classList.remove("open");
+        });
+    }
+
+    const mobileAboutLink = document.querySelector(".sidebar-nav [data-target='about']");
+    if (mobileAboutLink) {
+        mobileAboutLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.history.pushState({}, '', '/beta/about');
+            checkRoute(allServers);
+            if (sidebar) sidebar.classList.remove("open");
+        });
+    }
+
     // Portals Menu Drawer Toggler
     const portalsLink = document.querySelector(".sidebar-nav [data-target='portals']");
     const portalsContent = document.getElementById("mobile-sidebar-portals");
@@ -1968,7 +2019,7 @@ window.syncMobileIndexWithRoute = function() {
         path = path.substring(5);
     }
     path = path.replace(/^\/|\/$/g, '').trim();
-    if (!path || path === "credits" || path === "index.html") return;
+    if (!path || path === "credits" || path === "about" || path === "index.html") return;
 
     const matchedIdx = allServers.findIndex(s => {
         const sId = s.server_id.toLowerCase();
