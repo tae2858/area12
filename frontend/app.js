@@ -1,10 +1,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getDatabase, ref, onValue, runTransaction, push, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, GoogleAuthProvider, signInWithPopup, sendEmailVerification, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDSDszN2saYnDRW_9SLPBdo-8cPWIZ709U",
-    authDomain: "area--12.firebaseapp.com",
+    authDomain: "auth.area12.lol",
     databaseURL: "https://area--12-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "area--12",
     storageBucket: "area--12.firebasestorage.app",
@@ -665,11 +665,147 @@ function initFirebaseAuth() {
     const usernameGroup = document.getElementById("username-group");
 
     let isSignUpMode = false;
+    let isPasswordlessMode = false;
+    let mfaPendingUser = null;
+    let mfaPendingCode = null;
+    
+    // Globally accessible verification status
+    window.isUserEmailVerified = true;
+
+    // Handle Passwordless Sign-In landing link
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) {
+            email = window.prompt('Please enter your email to confirm sign-in:');
+        }
+        if (email) {
+            signInWithEmailLink(auth, email, window.location.href)
+                .then((result) => {
+                    window.localStorage.removeItem('emailForSignIn');
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    const user = result.user;
+                    showToast("Signed in successfully via email link!");
+                    
+                    // Setup database profile if new user
+                    const userRef = ref(db, `users/${user.uid}/username`);
+                    onValue(userRef, (snapshot) => {
+                        if (!snapshot.exists()) {
+                            const displayName = user.email.split("@")[0];
+                            set(ref(db, `users/${user.uid}`), {
+                                username: displayName,
+                                email: user.email,
+                                joinedAt: Date.now()
+                            });
+                        }
+                    }, { onlyOnce: true });
+                })
+                .catch((error) => {
+                    console.error("Email link sign in error:", error);
+                    showToast("Failed to sign in: " + error.message, 6000);
+                });
+        }
+    }
+
+    // Email Verification Resend logic
+    const resendVerificationBtn = document.getElementById("resend-verification-btn");
+    if (resendVerificationBtn) {
+        resendVerificationBtn.addEventListener("click", () => {
+            const user = auth.currentUser;
+            if (user) {
+                sendEmailVerification(user)
+                    .then(() => {
+                        showToast("Verification email resent! Please check your inbox.");
+                    })
+                    .catch((err) => {
+                        console.error("Resend error:", err);
+                        showToast("Error sending verification: " + err.message);
+                    });
+            }
+        });
+    }
+
+    // Profile Settings Modal logic
+    const profileModal = document.getElementById("profile-modal");
+    const profileCloseBtn = document.getElementById("profile-close-btn");
+    const profileEmailDisplay = document.getElementById("profile-email-display");
+    const profileMfaStatus = document.getElementById("profile-mfa-status");
+    const profileMfaToggleBtn = document.getElementById("profile-mfa-toggle-btn");
+    const profileLogoutActionBtn = document.getElementById("profile-logout-action-btn");
+
+    const showProfileModal = () => {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        profileEmailDisplay.value = user.email;
+        
+        onValue(ref(db, `users/${user.uid}/mfaEnabled`), (snapshot) => {
+            const mfaEnabled = snapshot.val() || false;
+            if (mfaEnabled) {
+                profileMfaStatus.innerText = "ENABLED";
+                profileMfaStatus.style.color = "var(--green-online)";
+                profileMfaToggleBtn.innerText = "DISABLE";
+                profileMfaToggleBtn.style.background = "var(--accent-pink)";
+            } else {
+                profileMfaStatus.innerText = "DISABLED";
+                profileMfaStatus.style.color = "var(--accent-pink)";
+                profileMfaToggleBtn.innerText = "ENABLE";
+                profileMfaToggleBtn.style.background = "var(--accent-cyan)";
+            }
+        }, { onlyOnce: true });
+
+        profileModal.classList.remove("hidden");
+    };
+
+    const hideProfileModal = () => {
+        profileModal.classList.add("hidden");
+    };
+
+    if (profileCloseBtn) profileCloseBtn.addEventListener("click", hideProfileModal);
+    if (profileModal) {
+        profileModal.querySelector(".login-modal-overlay").addEventListener("click", hideProfileModal);
+    }
+
+    if (profileMfaToggleBtn) {
+        profileMfaToggleBtn.addEventListener("click", () => {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const isEnabling = profileMfaToggleBtn.innerText === "ENABLE";
+            set(ref(db, `users/${user.uid}/mfaEnabled`), isEnabling)
+                .then(() => {
+                    showToast(isEnabling ? "2-Step Verification enabled!" : "2-Step Verification disabled.");
+                    showProfileModal();
+                })
+                .catch(err => {
+                    console.error("2FA setting error:", err);
+                    showToast("Error updating settings.");
+                });
+        });
+    }
+
+    if (profileLogoutActionBtn) {
+        profileLogoutActionBtn.addEventListener("click", () => {
+            signOut(auth).then(() => {
+                showToast("Logged out successfully.");
+                hideProfileModal();
+            });
+        });
+    }
 
     const showModal = () => {
         errorMsgDiv.classList.add("hidden");
         loginForm.reset();
         isSignUpMode = false;
+        isPasswordlessMode = false;
+        
+        // Reset passwordless layout state
+        const passwordGroup = document.getElementById("password-group");
+        passwordGroup.classList.remove("hidden");
+        document.getElementById("login-password").required = true;
+        loginToggleBtn.style.display = "inline-block";
+        loginToggleText.style.display = "inline-block";
+        document.getElementById("passwordless-toggle-btn").innerText = "Use Passwordless Email Sign-In";
+
         usernameGroup.classList.add("hidden");
         document.getElementById("login-username").required = false;
         loginModalTitle.innerText = "SIGN IN";
@@ -677,6 +813,13 @@ function initFirebaseAuth() {
         loginSubmitBtn.innerText = "SIGN IN";
         loginToggleText.innerText = "Don't have an account?";
         loginToggleBtn.innerText = "Sign Up";
+        
+        // Reset MFA panel state
+        document.getElementById("login-form-container").classList.remove("hidden");
+        document.getElementById("mfa-form-container").classList.add("hidden");
+        mfaPendingUser = null;
+        mfaPendingCode = null;
+
         loginModal.classList.remove("hidden");
     };
 
@@ -688,15 +831,22 @@ function initFirebaseAuth() {
         e.preventDefault();
         const user = auth.currentUser;
         if (user) {
-            signOut(auth).then(() => {
-                showToast("Logged out successfully.");
-            }).catch(err => {
-                console.error("Sign out error: ", err);
-            });
+            showProfileModal();
         } else {
             showModal();
         }
     });
+
+    // Mobile My Profile Trigger
+    const mobileMyProfileBtn = document.getElementById("mobile-my-profile-btn");
+    if (mobileMyProfileBtn) {
+        mobileMyProfileBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            showProfileModal();
+            const dropdown = document.getElementById("mobile-profile-dropdown");
+            if (dropdown) dropdown.classList.add("hidden");
+        });
+    }
 
     loginCloseBtn.addEventListener("click", hideModal);
     document.querySelector(".login-modal-overlay").addEventListener("click", hideModal);
@@ -712,6 +862,7 @@ function initFirebaseAuth() {
             loginToggleBtn.innerText = "Sign In";
             usernameGroup.classList.remove("hidden");
             document.getElementById("login-username").required = true;
+            document.getElementById("passwordless-toggle-btn").style.display = "none";
         } else {
             loginModalTitle.innerText = "SIGN IN";
             document.querySelector(".login-subtitle").innerText = "Access your Area 12 account";
@@ -720,14 +871,63 @@ function initFirebaseAuth() {
             loginToggleBtn.innerText = "Sign Up";
             usernameGroup.classList.add("hidden");
             document.getElementById("login-username").required = false;
+            document.getElementById("passwordless-toggle-btn").style.display = "block";
         }
     });
+
+    // Passwordless Link Mode Toggle
+    const passwordlessToggleBtn = document.getElementById("passwordless-toggle-btn");
+    const passwordGroup = document.getElementById("password-group");
+    if (passwordlessToggleBtn && passwordGroup) {
+        passwordlessToggleBtn.addEventListener("click", () => {
+            isPasswordlessMode = !isPasswordlessMode;
+            errorMsgDiv.classList.add("hidden");
+            if (isPasswordlessMode) {
+                loginModalTitle.innerText = "PASSWORDLESS SIGN-IN";
+                document.querySelector(".login-subtitle").innerText = "Enter your email to receive a passwordless sign-in link";
+                loginSubmitBtn.innerText = "SEND SIGN-IN LINK";
+                passwordlessToggleBtn.innerText = "Use Password Sign-In";
+                passwordGroup.classList.add("hidden");
+                document.getElementById("login-password").required = false;
+                loginToggleBtn.style.display = "none";
+                loginToggleText.style.display = "none";
+            } else {
+                loginModalTitle.innerText = "SIGN IN";
+                document.querySelector(".login-subtitle").innerText = "Access your Area 12 account";
+                loginSubmitBtn.innerText = "SIGN IN";
+                passwordlessToggleBtn.innerText = "Use Passwordless Email Sign-In";
+                passwordGroup.classList.remove("hidden");
+                document.getElementById("login-password").required = true;
+                loginToggleBtn.style.display = "inline-block";
+                loginToggleText.style.display = "inline-block";
+            }
+        });
+    }
 
     loginForm.addEventListener("submit", (e) => {
         e.preventDefault();
         errorMsgDiv.classList.add("hidden");
 
         const email = document.getElementById("login-email").value.trim();
+
+        if (isPasswordlessMode) {
+            const actionCodeSettings = {
+                url: window.location.href,
+                handleCodeInApp: true
+            };
+            sendSignInLinkToEmail(auth, email, actionCodeSettings)
+                .then(() => {
+                    window.localStorage.setItem('emailForSignIn', email);
+                    showToast("Sign-in link sent! Please check your email inbox.", 8000);
+                    hideModal();
+                })
+                .catch((error) => {
+                    errorMsgDiv.innerText = error.message.replace("Firebase: ", "");
+                    errorMsgDiv.classList.remove("hidden");
+                });
+            return;
+        }
+
         const password = document.getElementById("login-password").value;
 
         if (isSignUpMode) {
@@ -735,6 +935,10 @@ function initFirebaseAuth() {
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
+                    sendEmailVerification(user).then(() => {
+                        showToast("Verification email sent! Please check your inbox.");
+                    });
+
                     updateProfile(user, { displayName: usernameInput })
                         .then(() => {
                             set(ref(db, `users/${user.uid}`), { username: usernameInput }).then(() => {
@@ -769,11 +973,29 @@ function initFirebaseAuth() {
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
-                    currentUsername = user.displayName || user.email.split("@")[0];
-                    signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
-                    signinNavBtn.style.color = "var(--accent-cyan)";
-                    showToast("Welcome back!");
-                    hideModal();
+                    
+                    onValue(ref(db, `users/${user.uid}/mfaEnabled`), (snapshot) => {
+                        const mfaEnabled = snapshot.val() || false;
+                        if (mfaEnabled) {
+                            mfaPendingUser = user;
+                            mfaPendingCode = String(Math.floor(100000 + Math.random() * 900000));
+                            
+                            set(ref(db, `users/${user.uid}/mfaCode`), mfaPendingCode).then(() => {
+                                showToast(`🔑 [2-STEP SECURITY] Your code is: ${mfaPendingCode} (Check inbox/demo)`, 12000);
+                                
+                                document.getElementById("login-form-container").classList.add("hidden");
+                                document.getElementById("mfa-form-container").classList.remove("hidden");
+                                document.getElementById("mfa-code-input").value = "";
+                                document.getElementById("mfa-error-msg").classList.add("hidden");
+                            });
+                        } else {
+                            currentUsername = user.displayName || user.email.split("@")[0];
+                            signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                            signinNavBtn.style.color = "var(--accent-cyan)";
+                            showToast("Welcome back!");
+                            hideModal();
+                        }
+                    }, { onlyOnce: true });
                 })
                 .catch((error) => {
                     errorMsgDiv.innerText = error.message.replace("Firebase: ", "");
@@ -782,8 +1004,99 @@ function initFirebaseAuth() {
         }
     });
 
+    // Custom 2FA Input listeners
+    const mfaSubmitBtn = document.getElementById("mfa-submit-btn");
+    const mfaCancelBtn = document.getElementById("mfa-cancel-btn");
+    const mfaCodeInput = document.getElementById("mfa-code-input");
+    const mfaErrorMsg = document.getElementById("mfa-error-msg");
+
+    if (mfaSubmitBtn) {
+        mfaSubmitBtn.addEventListener("click", () => {
+            mfaErrorMsg.classList.add("hidden");
+            const inputVal = mfaCodeInput.value.trim();
+            if (inputVal === mfaPendingCode) {
+                const user = mfaPendingUser;
+                currentUsername = user.displayName || user.email.split("@")[0];
+                signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
+                signinNavBtn.style.color = "var(--accent-cyan)";
+                showToast("Welcome back!");
+                
+                document.getElementById("login-form-container").classList.remove("hidden");
+                document.getElementById("mfa-form-container").classList.add("hidden");
+                mfaPendingUser = null;
+                mfaPendingCode = null;
+                hideModal();
+            } else {
+                mfaErrorMsg.innerText = "Invalid 2-step verification code. Please check your code.";
+                mfaErrorMsg.classList.remove("hidden");
+            }
+        });
+    }
+
+    if (mfaCancelBtn) {
+        mfaCancelBtn.addEventListener("click", () => {
+            signOut(auth).then(() => {
+                document.getElementById("login-form-container").classList.remove("hidden");
+                document.getElementById("mfa-form-container").classList.add("hidden");
+                mfaPendingUser = null;
+                mfaPendingCode = null;
+                showToast("Verification cancelled.");
+            });
+        });
+    }
+
+    const googleProvider = new GoogleAuthProvider();
+    const googleLoginBtn = document.getElementById("google-login-btn");
+    if (googleLoginBtn) {
+        googleLoginBtn.addEventListener("click", () => {
+            errorMsgDiv.classList.add("hidden");
+            signInWithPopup(auth, googleProvider)
+                .then((result) => {
+                    const user = result.user;
+                    const userRef = ref(db, `users/${user.uid}/username`);
+                    
+                    onValue(userRef, (snapshot) => {
+                        if (!snapshot.exists()) {
+                            const displayName = user.displayName || user.email.split("@")[0];
+                            set(ref(db, `users/${user.uid}`), {
+                                username: displayName,
+                                email: user.email,
+                                joinedAt: Date.now()
+                            }).then(() => {
+                                currentUsername = displayName;
+                                showToast(`Welcome ${displayName.toUpperCase()}!`);
+                            });
+                        } else {
+                            currentUsername = snapshot.val();
+                            showToast(`Welcome back ${currentUsername.toUpperCase()}!`);
+                        }
+                    }, { onlyOnce: true });
+
+                    hideModal();
+                })
+                .catch((error) => {
+                    console.error("Google Auth error: ", error);
+                    errorMsgDiv.innerText = error.message.replace("Firebase: ", "");
+                    errorMsgDiv.classList.remove("hidden");
+                });
+        });
+    }
+
     onAuthStateChanged(auth, (user) => {
+        const verificationBanner = document.getElementById("verification-banner");
         if (user) {
+            // Determine email verification status
+            const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
+            window.isUserEmailVerified = isGoogle || user.emailVerified;
+            
+            if (verificationBanner) {
+                if (!window.isUserEmailVerified) {
+                    verificationBanner.classList.remove("hidden");
+                } else {
+                    verificationBanner.classList.add("hidden");
+                }
+            }
+
             onValue(ref(db, `users/${user.uid}/username`), (snapshot) => {
                 const dbUsername = snapshot.val();
                 currentUsername = dbUsername || user.displayName || user.email.split("@")[0];
@@ -793,6 +1106,8 @@ function initFirebaseAuth() {
                 console.error("Failed to load user username ref: ", error);
             });
         } else {
+            window.isUserEmailVerified = true; // reset
+            if (verificationBanner) verificationBanner.classList.add("hidden");
             currentUsername = null;
             signinNavBtn.innerText = "SIGN IN";
             signinNavBtn.style.color = "var(--text-secondary)";
@@ -839,6 +1154,10 @@ function initGlobalChat() {
             const chatForm = document.getElementById("chat-form");
             chatForm.addEventListener("submit", (e) => {
                 e.preventDefault();
+                if (!window.isUserEmailVerified) {
+                    showToast("⚠️ Please verify your email address first!");
+                    return;
+                }
                 const chatInput = document.getElementById("chat-input");
                 const text = chatInput.value.trim();
                 if (!text) return;
@@ -925,6 +1244,10 @@ function loadServerComments(serverId) {
             const commentForm = document.getElementById("comment-form");
             commentForm.addEventListener("submit", (e) => {
                 e.preventDefault();
+                if (!window.isUserEmailVerified) {
+                    showToast("⚠️ Please verify your email address first!");
+                    return;
+                }
                 const textEl = document.getElementById("comment-textarea");
                 const text = textEl.value.trim();
                 if (!text) return;
@@ -1404,6 +1727,10 @@ function loadMobileComments(serverId) {
             const form = document.getElementById("mobile-comment-form");
             form.addEventListener("submit", (e) => {
                 e.preventDefault();
+                if (!window.isUserEmailVerified) {
+                    showToast("⚠️ Please verify your email address first!");
+                    return;
+                }
                 const textEl = document.getElementById("mobile-comment-textarea");
                 const text = textEl.value.trim();
                 if (!text) return;
@@ -1479,6 +1806,10 @@ function initMobileGlobalChat() {
             const form = document.getElementById("mobile-chat-form");
             form.addEventListener("submit", (e) => {
                 e.preventDefault();
+                if (!window.isUserEmailVerified) {
+                    showToast("⚠️ Please verify your email address first!");
+                    return;
+                }
                 const input = document.getElementById("mobile-chat-input");
                 const text = input.value.trim();
                 if (!text) return;

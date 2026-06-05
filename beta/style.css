@@ -2527,3 +2527,114 @@ body.is-embedded .bio-stats-bar {
     }
 }
 
+/* ==========================================================================
+   Google Sign-In Styles
+   ========================================================================== */
+.login-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 16px 0;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.login-divider:not(:empty)::before {
+    margin-right: .5em;
+}
+
+.login-divider:not(:empty)::after {
+    margin-left: .5em;
+}
+
+.google-login-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #ffffff;
+    color: #1f2937;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    font-family: inherit;
+}
+
+.google-login-btn:hover {
+    background: #f3f4f6;
+    transform: translateY(-1px);
+}
+
+.google-login-btn svg {
+    flex-shrink: 0;
+}
+
+/* Verification Alert Banner */
+.verification-banner {
+    background: rgba(239, 108, 0, 0.12);
+    border: 1px solid #d97706;
+    color: #fef3c7;
+    padding: 10px 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1300px;
+    margin: 15px auto 5px auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    animation: slideDown 0.3s ease-out;
+}
+
+.banner-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.banner-btn {
+    background: #d97706;
+    color: #ffffff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+    font-family: inherit;
+    letter-spacing: 0.5px;
+}
+
+.banner-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
