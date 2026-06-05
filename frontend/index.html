@@ -464,6 +464,13 @@
             </div>
         </div>
     </div>
+
+    <!-- Invisible Rumble Music Player -->
+    <div id="rumble_v1essrt" style="position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; overflow: hidden; pointer-events: none;"></div>
+    <script>!function(r,u,m,b,l,e){r._Rumble=b,r[b]||(r[b]=function(){(r[b]._=r[b]._||[]).push(arguments);if(r[b]._.length==1){l=u.createElement(m),e=u.getElementsByTagName(m)[0],l.async=1,l.src="https://rumble.com/embedJS/u4"+(arguments[1].video?'.'+arguments[1].video:'')+"/?url="+encodeURIComponent(location.href)+"&args="+encodeURIComponent(JSON.stringify([].slice.apply(arguments))),e.parentNode.insertBefore(l,e)}})}(window, document, "script", "Rumble");</script>
+    <script>
+        Rumble("play", {"video":"v1essrt","div":"rumble_v1essrt"});
+    </script>
 </body>
 
 </html>
