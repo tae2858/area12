@@ -97,18 +97,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Register back button for Guns.lol server profile routing
     document.getElementById("bio-back-btn").addEventListener("click", () => {
-        window.history.pushState({}, '', '/');
+        window.history.pushState({}, '', '/beta');
         checkRoute(allServers);
     });
 
     document.getElementById("credits-link").addEventListener("click", (e) => {
         e.preventDefault();
-        window.history.pushState({}, '', '/credits');
+        window.history.pushState({}, '', '/beta/credits');
         checkRoute(allServers);
     });
 
     document.getElementById("credits-back-btn").addEventListener("click", () => {
-        window.history.pushState({}, '', '/');
+        window.history.pushState({}, '', '/beta');
         checkRoute(allServers);
     });
 
@@ -359,7 +359,7 @@ function renderPinnedFavorites(servers) {
                 return;
             }
             const slug = getSlug(server.name, server.server_id);
-            window.history.pushState({}, '', '/' + slug);
+            window.history.pushState({}, '', '/beta/' + slug);
             checkRoute(allServers);
         });
 
@@ -430,7 +430,7 @@ function renderDirectoryGrid(servers) {
                 return;
             }
             const slug = getSlug(server.name, server.server_id);
-            window.history.pushState({}, '', '/' + slug);
+            window.history.pushState({}, '', '/beta/' + slug);
             checkRoute(allServers);
         });
 
@@ -490,8 +490,21 @@ function showToast(message) {
 
 // 8. Guns.lol Profile Routing System
 function checkRoute(servers) {
-    const rawPath = window.location.pathname.replace(/^\/|\/$/g, '').trim();
-    if (!rawPath || rawPath.toLowerCase() === "index.html" || rawPath.toLowerCase() === "index") {
+    let path = window.location.pathname.toLowerCase();
+    
+    // Strip trailing slash if present
+    if (path.endsWith('/') && path.length > 1) {
+        path = path.slice(0, -1);
+    }
+    
+    // Extract relative path after /beta
+    let relativePath = path;
+    if (path.startsWith('/beta')) {
+        relativePath = path.substring(5); // strip '/beta'
+    }
+    relativePath = relativePath.replace(/^\/|\/$/g, '').trim();
+
+    if (!relativePath || relativePath === "index.html" || relativePath === "index") {
         document.getElementById("bio-page-container").classList.add("hidden");
         document.getElementById("credits-page-container").classList.add("hidden");
         document.querySelector(".main-navbar").classList.remove("hidden");
@@ -499,9 +512,7 @@ function checkRoute(servers) {
         return;
     }
 
-    const path = rawPath.toLowerCase();
-
-    if (path === "credits") {
+    if (relativePath === "credits") {
         document.getElementById("credits-page-container").classList.remove("hidden");
         document.getElementById("bio-page-container").classList.add("hidden");
         document.querySelector(".main-navbar").classList.add("hidden");
@@ -516,18 +527,18 @@ function checkRoute(servers) {
         const sId = s.server_id.toLowerCase();
         const slug = getSlug(s.name, s.server_id);
         const sNameSanitized = s.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-        const pathSanitized = path.replace(/[^a-zA-Z0-9]/g, '');
-        return sId === path || slug === path || sNameSanitized === pathSanitized;
+        const pathSanitized = relativePath.replace(/[^a-zA-Z0-9]/g, '');
+        return sId === relativePath || slug === relativePath || sNameSanitized === pathSanitized;
     });
 
     // Fuzzy fallback 1: Prefix match on server ID (min 3 chars)
-    if (!matched && path.length >= 3) {
-        matched = servers.find(s => s.server_id.toLowerCase().startsWith(path));
+    if (!matched && relativePath.length >= 3) {
+        matched = servers.find(s => s.server_id.toLowerCase().startsWith(relativePath));
     }
 
-    // Fuzzy fallback 2: Check if path is contained inside the server name
-    if (!matched && path.length >= 3) {
-        matched = servers.find(s => s.name.toLowerCase().includes(path));
+    // Fuzzy fallback 2: Check if relativePath is contained inside the server name
+    if (!matched && relativePath.length >= 3) {
+        matched = servers.find(s => s.name.toLowerCase().includes(relativePath));
     }
 
     if (matched) {
@@ -604,7 +615,7 @@ function checkRoute(servers) {
         document.getElementById("bio-copy-btn").addEventListener("click", copyAction);
         document.getElementById("bio-invite-code").addEventListener("click", copyAction);
     } else {
-        window.history.replaceState({}, '', '/');
+        window.history.replaceState({}, '', '/beta');
         document.getElementById("bio-page-container").classList.add("hidden");
         document.getElementById("credits-page-container").classList.add("hidden");
         document.querySelector(".main-navbar").classList.remove("hidden");
