@@ -342,7 +342,7 @@ function initAPIPolling() {
             const isLive = latestLiveServersMap.has(sIdUpper);
             const liveData = isLive ? latestLiveServersMap.get(sIdUpper) : null;
             const pvpVal = sData.pvp !== false;
-            const isFav = sData.is_favorite === true || favoriteIds.includes(sIdUpper);
+            const isFav = favoriteIds.includes(sIdUpper);
 
             tempServers.push({
                 server_id: sIdUpper,
@@ -382,7 +382,7 @@ function initAPIPolling() {
                     pvp: sData.pvp !== false,
                     online: true,
                     description: desc || "No room description provided.",
-                    is_favorite: isFav || sData.premium === true,
+                    is_favorite: isFav,
                     premium: sData.premium === true || isFav,
                     creative_mode: sData.creative_mode === true,
                     game: sData.game || "default",
@@ -543,7 +543,7 @@ function initAPIPolling() {
                             max_players: parseInt(sData.max_players || 50, 10),
                             pvp: sData.pvp !== false,
                             description: desc || "No room description provided.",
-                            is_favorite: isFav || sData.premium === true,
+                            is_favorite: isFav,
                             premium: sData.premium === true || isFav,
                             creative_mode: sData.creative_mode === true,
                             game: sData.game || "default",
