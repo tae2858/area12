@@ -88,6 +88,7 @@ body {
     letter-spacing: 6px;
     margin-bottom: 10px;
     background: linear-gradient(to right, var(--text-primary), var(--accent-cyan));
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -358,6 +359,7 @@ body {
     letter-spacing: -0.5px;
     background: linear-gradient(45deg, #ffffff, #e2e8f0);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -1136,6 +1138,7 @@ body {
     letter-spacing: 1px;
     margin-bottom: 8px;
     background: linear-gradient(to right, #ffffff, var(--accent-cyan));
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -1535,6 +1538,7 @@ body {
     font-weight: 800;
     letter-spacing: 1px;
     background: linear-gradient(to right, #ffffff, var(--accent-cyan));
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -2056,6 +2060,7 @@ body.is-embedded .bio-stats-bar {
         font-size: 1.35rem;
         letter-spacing: 2px;
         background: linear-gradient(45deg, #ffffff, var(--accent-cyan));
+        background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-shadow: 0 0 10px rgba(186, 85, 211, 0.3);
@@ -2159,6 +2164,7 @@ body.is-embedded .bio-stats-bar {
         color: var(--text-primary);
         letter-spacing: 1.5px;
         background: linear-gradient(to right, #fff, var(--accent-cyan));
+        background-clip: text; /* standard property for compatibility */
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
