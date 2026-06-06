@@ -2,7 +2,14 @@
 /sitemap.xml        /sitemap.xml        200
 /beta/robots.txt    /beta/robots.txt    200
 /beta/sitemap.xml   /beta/sitemap.xml   200
+/beta/style.css     /beta/style.css     200
+/beta/app.js        /beta/app.js        200
+/beta/logo.png      /beta/logo.png      200
+/beta/Untitled229_20250606165317.png /beta/Untitled229_20250606165317.png 200
 /beta               /beta-index.html    200
 /beta/*             /beta-index.html    200
+/frontend/style.css /frontend/style.css 200
+/frontend/app.js    /frontend/app.js    200
 /frontend           /frontend-index.html 200
 /frontend/*         /frontend-index.html 200
+
