@@ -96,29 +96,20 @@ document.addEventListener("DOMContentLoaded", () => {
     let audioSource = null;
 
     function loadYouTubeStream() {
-        // Use Piped API to get direct audio stream from YouTube
+        // Use our secure HTTPS backend proxy for the Icecast stream
         if (bgAudio) {
             bgAudio.crossOrigin = "anonymous";
             bgAudio.volume = 1.0; // Max volume
             bgAudio.autoplay = false;
             
-            // Try Piped first - more reliable for livestreams
-            fetch(`https://piped-api.kavin.rocks/streams/${youtubeVideoId}`)
-                .then(r => r.json())
-                .then(data => {
-                    console.log("Piped API response:", data);
-                    if (data.audioStreams && data.audioStreams.length > 0) {
-                        const audioUrl = data.audioStreams[0].url;
-                        bgAudio.src = audioUrl;
-                        audioSource = audioUrl;
-                        console.log("Audio URL set from Piped:", audioUrl);
-                    }
-                })
-                .catch(err => {
-                    console.log("Piped API failed:", err);
-                    // Fallback to direct YouTube embed
-                    console.log("Using direct YouTube embed fallback");
-                });
+            const apiOrigin = API_BASE_URL.includes("localhost") || API_BASE_URL.includes("127.0.0.1")
+                ? "http://localhost:8080"
+                : "https://multicraft-production.up.railway.app";
+                
+            const streamUrl = `${apiOrigin}/api/stream`;
+            bgAudio.src = streamUrl;
+            audioSource = streamUrl;
+            console.log("Background audio secure proxy stream set:", streamUrl);
         }
         
         // Setup iframe as visual backup
