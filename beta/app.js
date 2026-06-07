@@ -101,17 +101,17 @@ document.addEventListener("DOMContentLoaded", () => {
             bgAudio.crossOrigin = "anonymous";
             bgAudio.volume = 1.0; // Max volume
             bgAudio.autoplay = false;
-            
+
             const apiOrigin = API_BASE_URL.includes("localhost") || API_BASE_URL.includes("127.0.0.1")
                 ? "http://localhost:8080"
                 : "https://multicraft-production.up.railway.app";
-                
+
             const streamUrl = `${apiOrigin}/api/stream`;
             bgAudio.src = streamUrl;
             audioSource = streamUrl;
             console.log("Background audio secure proxy stream set:", streamUrl);
         }
-        
+
         // Setup iframe as visual backup
         if (youtubePlayer) {
             youtubePlayer.src = `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&controls=0&modestbranding=1&rel=0&playsinline=1&loop=1&playlist=${youtubeVideoId}`;
@@ -126,9 +126,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("Audio src:", bgAudio.src);
                 console.log("Audio readyState:", bgAudio.readyState);
                 console.log("Audio networkState:", bgAudio.networkState);
-                
+
                 bgAudio.volume = 1.0; // Force max volume
-                
+
                 const playPromise = bgAudio.play();
                 if (playPromise !== undefined) {
                     playPromise
@@ -217,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         { src: window.location.origin + '/beta/logo.png', sizes: '512x512', type: 'image/png' }
                     ]
                 });
-                
+
                 // Clear controls handlers to block user pause/skip from OS controls
                 navigator.mediaSession.setActionHandler('play', null);
                 navigator.mediaSession.setActionHandler('pause', null);
@@ -734,12 +734,12 @@ function showToast(message) {
 // 8. Guns.lol Profile Routing System
 function checkRoute(servers) {
     let path = window.location.pathname.toLowerCase();
-    
+
     // Strip trailing slash if present
     if (path.endsWith('/') && path.length > 1) {
         path = path.slice(0, -1);
     }
-    
+
     // Extract relative path after /beta
     let relativePath = path;
     if (path.startsWith('/beta')) {
@@ -946,7 +946,7 @@ function initFirebaseAuth() {
     let isPasswordlessMode = false;
     let mfaPendingUser = null;
     let mfaPendingCode = null;
-    
+
     // Globally accessible verification status
     window.isUserEmailVerified = true;
 
@@ -963,7 +963,7 @@ function initFirebaseAuth() {
                     window.history.replaceState({}, document.title, window.location.pathname);
                     const user = result.user;
                     showToast("Signed in successfully via email link!");
-                    
+
                     // Setup database profile if new user
                     const userRef = ref(db, `users/${user.uid}/username`);
                     onValue(userRef, (snapshot) => {
@@ -1015,7 +1015,7 @@ function initFirebaseAuth() {
         if (!user) return;
 
         profileEmailDisplay.value = user.email;
-        
+
         onValue(ref(db, `users/${user.uid}/mfaEnabled`), (snapshot) => {
             const mfaEnabled = snapshot.val() || false;
             if (mfaEnabled) {
@@ -1075,7 +1075,7 @@ function initFirebaseAuth() {
         loginForm.reset();
         isSignUpMode = false;
         isPasswordlessMode = false;
-        
+
         // Reset passwordless layout state
         const passwordGroup = document.getElementById("password-group");
         passwordGroup.classList.remove("hidden");
@@ -1091,7 +1091,7 @@ function initFirebaseAuth() {
         loginSubmitBtn.innerText = "SIGN IN";
         loginToggleText.innerText = "Don't have an account?";
         loginToggleBtn.innerText = "Sign Up";
-        
+
         // Reset MFA panel state
         document.getElementById("login-form-container").classList.remove("hidden");
         document.getElementById("mfa-form-container").classList.add("hidden");
@@ -1251,16 +1251,16 @@ function initFirebaseAuth() {
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
-                    
+
                     onValue(ref(db, `users/${user.uid}/mfaEnabled`), (snapshot) => {
                         const mfaEnabled = snapshot.val() || false;
                         if (mfaEnabled) {
                             mfaPendingUser = user;
                             mfaPendingCode = String(Math.floor(100000 + Math.random() * 900000));
-                            
+
                             set(ref(db, `users/${user.uid}/mfaCode`), mfaPendingCode).then(() => {
                                 showToast(`🔑 [2-STEP SECURITY] Your code is: ${mfaPendingCode} (Check inbox/demo)`, 12000);
-                                
+
                                 document.getElementById("login-form-container").classList.add("hidden");
                                 document.getElementById("mfa-form-container").classList.remove("hidden");
                                 document.getElementById("mfa-code-input").value = "";
@@ -1298,7 +1298,7 @@ function initFirebaseAuth() {
                 signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
                 signinNavBtn.style.color = "var(--accent-cyan)";
                 showToast("Welcome back!");
-                
+
                 document.getElementById("login-form-container").classList.remove("hidden");
                 document.getElementById("mfa-form-container").classList.add("hidden");
                 mfaPendingUser = null;
@@ -1332,7 +1332,7 @@ function initFirebaseAuth() {
                 .then((result) => {
                     const user = result.user;
                     const userRef = ref(db, `users/${user.uid}/username`);
-                    
+
                     onValue(userRef, (snapshot) => {
                         if (!snapshot.exists()) {
                             const displayName = user.displayName || user.email.split("@")[0];
@@ -1366,7 +1366,7 @@ function initFirebaseAuth() {
             // Determine email verification status
             const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
             window.isUserEmailVerified = isGoogle || user.emailVerified;
-            
+
             if (verificationBanner) {
                 if (!window.isUserEmailVerified) {
                     verificationBanner.classList.remove("hidden");
@@ -1629,7 +1629,7 @@ let mobileActiveIndex = 0;
 let mobileCurrentFilter = "ALL";
 let mobileCurrentScale = 1.0;
 
-window.initMobileUI = function() {
+window.initMobileUI = function () {
     const menuToggle = document.getElementById("mobile-menu-toggle");
     const sidebar = document.getElementById("mobile-sidebar");
     const sidebarClose = document.getElementById("mobile-sidebar-close");
@@ -1721,7 +1721,7 @@ window.initMobileUI = function() {
     const updateFilterUI = (newFilter) => {
         mobileCurrentFilter = newFilter;
         mobileActiveIndex = 0;
-        
+
         // Highlight active filter button in drawer
         const filterBtns = document.querySelectorAll(".sidebar-filters .filter-btn");
         filterBtns.forEach(btn => {
@@ -1731,7 +1731,7 @@ window.initMobileUI = function() {
                 btn.classList.remove("active");
             }
         });
-        
+
         window.renderMobileUI();
     };
 
@@ -1764,7 +1764,7 @@ window.initMobileUI = function() {
         btn.addEventListener("click", () => {
             tabButtons.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
-            
+
             const target = btn.dataset.tab;
             tabPanels.forEach(panel => {
                 if (panel.id === `mobile-${target}-panel`) {
@@ -1843,7 +1843,7 @@ window.initMobileUI = function() {
     window.updateSidebarPortals();
 };
 
-window.renderMobileUI = function() {
+window.renderMobileUI = function () {
     const mobileActiveCard = document.getElementById("mobile-active-card");
     if (!mobileActiveCard) return;
 
@@ -1972,7 +1972,7 @@ window.renderMobileUI = function() {
     loadMobileComments(server.server_id);
 };
 
-window.updateSidebarPortals = function() {
+window.updateSidebarPortals = function () {
     const list = document.getElementById("mobile-sidebar-portals");
     if (!list) return;
     list.innerHTML = "";
@@ -1986,7 +1986,7 @@ window.updateSidebarPortals = function() {
             e.preventDefault();
             mobileActiveIndex = index;
             mobileCurrentFilter = "ALL";
-            
+
             // Activate ALL filter button in sidebar
             const allBtn = document.querySelector(".sidebar-filters [data-filter='ALL']");
             if (allBtn) {
@@ -1996,7 +1996,7 @@ window.updateSidebarPortals = function() {
             }
 
             window.renderMobileUI();
-            
+
             const sidebar = document.getElementById("mobile-sidebar");
             if (sidebar) sidebar.classList.remove("open");
         });
@@ -2004,7 +2004,7 @@ window.updateSidebarPortals = function() {
     });
 };
 
-window.syncMobileIndexWithRoute = function() {
+window.syncMobileIndexWithRoute = function () {
     let path = window.location.pathname.toLowerCase();
     if (path.startsWith('/beta')) {
         path = path.substring(5);
