@@ -78,7 +78,7 @@ function toggleVisualizer(play) {
 }
 
 // 1. Entry Overlay & Music Controller
-document.addEventListener("DOMContentLoaded", () => {
+function initBetaApp() {
     const isEmbed = window.self !== window.top || new URLSearchParams(window.location.search).has('embed');
     if (isEmbed) {
         document.body.classList.add("is-embedded");
@@ -284,7 +284,13 @@ document.addEventListener("DOMContentLoaded", () => {
             bar.style.animationPlayState = play ? "running" : "paused";
         });
     }
-});
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initBetaApp);
+} else {
+    initBetaApp();
+}
 
 // 2. Typewriter Effect
 function startTypewriter() {
