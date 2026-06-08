@@ -43,9 +43,7 @@ const SLUG_TO_ID = {
     "smp12": "94D92LVD",
     "ss6": "XX9IXQ6H",
     "stone": "XX9IXQ6H",
-    "bunker": "MULL97H1",
-    "bunker-pvp": "MULL97H1",
-    "bunkerpvp": "MULL97H1"
+
 };
 
 function getSlug(name, id) {
@@ -88,15 +86,15 @@ function initBetaApp() {
     const upvoteSound = new Audio('/beta/assets/a12.upvote.mp3');
     const downvoteSound = new Audio('/beta/assets/a12.downvote.mp3');
 
-    window.playClickSound = function() {
+    window.playClickSound = function () {
         clickSound.currentTime = 0;
         clickSound.play().catch(e => console.log("Sound play error: ", e));
     };
-    window.playUpvoteSound = function() {
+    window.playUpvoteSound = function () {
         upvoteSound.currentTime = 0;
         upvoteSound.play().catch(e => console.log("Sound play error: ", e));
     };
-    window.playDownvoteSound = function() {
+    window.playDownvoteSound = function () {
         downvoteSound.currentTime = 0;
         downvoteSound.play().catch(e => console.log("Sound play error: ", e));
     };
@@ -141,7 +139,7 @@ function initBetaApp() {
             bgAudio.crossOrigin = "anonymous";
             bgAudio.volume = 1.0; // Max volume
             bgAudio.autoplay = false;
-            
+
             // Try active Piped instances sequentially until one succeeds
             const PIPED_INSTANCES = [
                 "https://pipedapi.kavin.rocks",
@@ -156,7 +154,7 @@ function initBetaApp() {
                 "https://api.piped.private.coffee",
                 "https://pipedapi.darkness.services"
             ];
-            
+
             let success = false;
             for (const instance of PIPED_INSTANCES) {
                 try {
@@ -177,12 +175,12 @@ function initBetaApp() {
                     console.log(`Piped API failed for ${instance}:`, err.message);
                 }
             }
-            
+
             if (!success) {
                 console.log("All Piped API instances failed. Using direct YouTube embed fallback only.");
             }
         }
-        
+
         // Setup iframe as visual backup
         if (youtubePlayer) {
             youtubePlayer.src = `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&controls=0&modestbranding=1&rel=0&playsinline=1&loop=1&playlist=${youtubeVideoId}`;
@@ -1731,7 +1729,7 @@ function loadServerComments(serverId) {
             item.className = "comment-item";
 
             const date = new Date(comment.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            
+
             const userVote = localStorage.getItem(`comment_vote_${comment.id}`);
             const upActive = userVote === 'upvoted' ? 'active' : '';
             const downActive = userVote === 'downvoted' ? 'active' : '';
@@ -2367,7 +2365,7 @@ function loadMobileComments(serverId) {
             const item = document.createElement("div");
             item.className = "comment-item";
             const date = new Date(comment.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            
+
             const userVote = localStorage.getItem(`comment_vote_${comment.id}`);
             const upActive = userVote === 'upvoted' ? 'active' : '';
             const downActive = userVote === 'downvoted' ? 'active' : '';
