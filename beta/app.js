@@ -24,7 +24,7 @@ let isPlaying = false;
 // Environment-aware backend API URL binding
 const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:8080"
-    : "https://multicraft-production.up.railway.app/proxy/find-nearby-servers";
+    : atob("aHR0cHM6Ly9tdWx0aWNyYWZ0LXByb2R1Y3Rpb24udXAucmFpbHdheS5hcHAvcHJveHkvZmluZC1uZWFyYnktc2VydmVycw==");
 
 // Typewriter taglines for Guns.lol overlay effect
 const TAGLINES = [
@@ -543,7 +543,7 @@ function initAPIPolling() {
 
     const fetchServers = async () => {
         try {
-            const response = await fetch("https://multicraft-production.up.railway.app/proxy/find-nearby-servers", {
+            const response = await fetch(API_BASE_URL, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

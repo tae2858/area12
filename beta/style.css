@@ -1,3 +1,11 @@
+@font-face {
+    font-family: 'MultiCraft';
+    src: url('/beta/assets/MultiCraft.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* Core Theme Tokens & Reset */
 :root {
     --bg-primary: #0f0714;
@@ -25,7 +33,7 @@
 body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    font-family: 'Outfit', sans-serif;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
 }
@@ -1466,7 +1474,7 @@ body {
     bottom: 24px;
     right: 24px;
     z-index: 999;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
 }
 
 .chat-toggle-btn {
