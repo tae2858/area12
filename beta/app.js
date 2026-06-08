@@ -2006,6 +2006,16 @@ window.initMobileUI = function () {
         });
     }
 
+    const mobileMakersLink = document.querySelector(".sidebar-nav [data-target='makers']");
+    if (mobileMakersLink) {
+        mobileMakersLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.history.pushState({}, '', '/beta/credits');
+            checkRoute(allServers);
+            if (sidebar) sidebar.classList.remove("open");
+        });
+    }
+
     // Portals Menu Drawer Toggler
     const portalsLink = document.querySelector(".sidebar-nav [data-target='portals']");
     const portalsContent = document.getElementById("mobile-sidebar-portals");
