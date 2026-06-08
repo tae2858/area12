@@ -79,6 +79,10 @@ function toggleVisualizer(play) {
 
 // 1. Entry Overlay & Music Controller
 function initBetaApp() {
+    let currentActiveServerId = null;
+    let currentDesktopCommentsUnsubscribe = null;
+    let currentMobileCommentsUnsubscribe = null;
+
     const isEmbed = window.self !== window.top || new URLSearchParams(window.location.search).has('embed');
     if (isEmbed) {
         document.body.classList.add("is-embedded");
@@ -1548,6 +1552,17 @@ function initFirebaseAuth() {
             signinNavBtn.innerText = "SIGN IN";
             signinNavBtn.style.color = "var(--text-secondary)";
         }
+
+        // Refresh comments inputs when authentication state changes
+        if (currentActiveServerId) {
+            const sId = currentActiveServerId;
+            currentActiveServerId = null; // Reset to force re-render
+            const pathLower = window.location.pathname.toLowerCase();
+            if (!pathLower.includes("credits") && !pathLower.includes("about")) {
+                loadServerComments(sId);
+                loadMobileComments(sId);
+            }
+        }
     });
 }
 
@@ -1668,54 +1683,61 @@ function initGlobalChat() {
 function loadServerComments(serverId) {
     const commentsContainer = document.getElementById("comments-container");
     const commentInputArea = document.getElementById("comment-input-area");
+    if (!commentsContainer) return;
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            commentInputArea.innerHTML = `
-                <form id="comment-form" class="comment-form">
-                    <textarea id="comment-textarea" class="comment-textarea" placeholder="Share your feedback..." required maxlength="300"></textarea>
-                    <button type="submit" class="comment-submit-btn">POST COMMENT</button>
-                </form>
-            `;
-            const commentForm = document.getElementById("comment-form");
-            commentForm.addEventListener("submit", (e) => {
-                e.preventDefault();
-                if (!window.isUserEmailVerified) {
-                    showToast("⚠️ Please verify your email address first!");
-                    return;
-                }
-                const textEl = document.getElementById("comment-textarea");
-                const text = textEl.value.trim();
-                if (!text) return;
+    if (currentActiveServerId === serverId) return;
+    currentActiveServerId = serverId;
 
-                push(ref(db, `server_comments/${serverId}`), {
-                    uid: user.uid,
-                    username: currentUsername || user.displayName || user.email.split("@")[0],
-                    text: text,
-                    timestamp: Date.now(),
-                    likes: 0,
-                    dislikes: 0
-                }).then(() => {
-                    textEl.value = "";
-                    showToast("Comment posted!");
-                }).catch(err => {
-                    console.error("Comment error: ", err);
-                });
+    if (currentDesktopCommentsUnsubscribe) {
+        currentDesktopCommentsUnsubscribe();
+        currentDesktopCommentsUnsubscribe = null;
+    }
+
+    const user = auth.currentUser;
+    if (user) {
+        commentInputArea.innerHTML = `
+            <form id="comment-form" class="comment-form">
+                <textarea id="comment-textarea" class="comment-textarea" placeholder="Share your feedback..." required maxlength="300"></textarea>
+                <button type="submit" class="comment-submit-btn">POST COMMENT</button>
+            </form>
+        `;
+        const commentForm = document.getElementById("comment-form");
+        commentForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            if (!window.isUserEmailVerified) {
+                showToast("⚠️ Please verify your email address first!");
+                return;
+            }
+            const textEl = document.getElementById("comment-textarea");
+            const text = textEl.value.trim();
+            if (!text) return;
+
+            push(ref(db, `server_comments/${serverId}`), {
+                uid: user.uid,
+                username: currentUsername || user.displayName || user.email.split("@")[0],
+                text: text,
+                timestamp: Date.now(),
+                score: 0
+            }).then(() => {
+                textEl.value = "";
+                showToast("Comment posted!");
+            }).catch(err => {
+                console.error("Comment error: ", err);
             });
-        } else {
-            commentInputArea.innerHTML = `
-                <div class="comment-signin-cta">
-                    <p>You must be signed in to comment.</p>
-                    <button class="comment-signin-btn" id="comment-signin-btn-bio">SIGN IN</button>
-                </div>
-            `;
-            document.getElementById("comment-signin-btn-bio").addEventListener("click", () => {
-                document.getElementById("login-modal").classList.remove("hidden");
-            });
-        }
-    });
+        });
+    } else {
+        commentInputArea.innerHTML = `
+            <div class="comment-signin-cta">
+                <p>You must be signed in to comment.</p>
+                <button class="comment-signin-btn" id="comment-signin-btn-bio">SIGN IN</button>
+            </div>
+        `;
+        document.getElementById("comment-signin-btn-bio").addEventListener("click", () => {
+            document.getElementById("login-modal").classList.remove("hidden");
+        });
+    }
 
-    onValue(ref(db, `server_comments/${serverId}`), (snapshot) => {
+    currentDesktopCommentsUnsubscribe = onValue(ref(db, `server_comments/${serverId}`), (snapshot) => {
         commentsContainer.innerHTML = "";
         const data = snapshot.val();
         if (!data) {
@@ -2001,6 +2023,16 @@ window.initMobileUI = function () {
         mobileAboutLink.addEventListener("click", (e) => {
             e.preventDefault();
             window.history.pushState({}, '', '/beta/about');
+            checkRoute(allServers);
+            if (sidebar) sidebar.classList.remove("open");
+        });
+    }
+
+    const mobileMakersLink = document.querySelector(".sidebar-nav [data-target='makers']");
+    if (mobileMakersLink) {
+        mobileMakersLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.history.pushState({}, '', '/beta/credits');
             checkRoute(allServers);
             if (sidebar) sidebar.classList.remove("open");
         });
@@ -2298,51 +2330,60 @@ function loadMobileComments(serverId) {
     const inputArea = document.getElementById("mobile-comment-input-area");
     if (!list) return;
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            inputArea.innerHTML = `
-                <form id="mobile-comment-form" class="comment-form" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-                    <textarea id="mobile-comment-textarea" class="comment-textarea" placeholder="Share your feedback..." required maxlength="300" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; border-radius: 6px; height: 50px; font-family: inherit; font-size: 0.85rem; resize: none;"></textarea>
-                    <button type="submit" class="comment-submit-btn" style="align-self: flex-end; background: var(--accent-cyan); color: var(--bg-primary); border: none; padding: 6px 14px; border-radius: 4px; font-weight: 800; font-size: 0.75rem;">POST</button>
-                </form>
-            `;
-            const form = document.getElementById("mobile-comment-form");
-            form.addEventListener("submit", (e) => {
-                e.preventDefault();
-                if (!window.isUserEmailVerified) {
-                    showToast("⚠️ Please verify your email address first!");
-                    return;
-                }
-                const textEl = document.getElementById("mobile-comment-textarea");
-                const text = textEl.value.trim();
-                if (!text) return;
+    if (currentActiveServerId === serverId) return;
+    currentActiveServerId = serverId;
 
-                push(ref(db, `server_comments/${serverId}`), {
-                    uid: user.uid,
-                    username: currentUsername || user.displayName || user.email.split("@")[0],
-                    text: text,
-                    timestamp: Date.now(),
-                    likes: 0,
-                    dislikes: 0
-                }).then(() => {
-                    textEl.value = "";
-                    showToast("Comment posted!");
-                }).catch(err => console.error("Comment error: ", err));
-            });
-        } else {
-            inputArea.innerHTML = `
-                <div class="comment-signin-cta">
-                    <p style="font-size: 0.8rem;">You must be signed in to comment.</p>
-                    <button class="comment-signin-btn" id="mobile-comment-signin-btn">SIGN IN</button>
-                </div>
-            `;
-            document.getElementById("mobile-comment-signin-btn").addEventListener("click", () => {
+    if (currentMobileCommentsUnsubscribe) {
+        currentMobileCommentsUnsubscribe();
+        currentMobileCommentsUnsubscribe = null;
+    }
+
+    const user = auth.currentUser;
+    if (user) {
+        inputArea.innerHTML = `
+            <form id="mobile-comment-form" class="comment-form" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                <textarea id="mobile-comment-textarea" class="comment-textarea" placeholder="Share your feedback..." required maxlength="300" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; border-radius: 6px; height: 50px; font-family: inherit; font-size: 0.85rem; resize: none;"></textarea>
+                <button type="submit" class="comment-submit-btn" style="align-self: flex-end; background: var(--accent-cyan); color: var(--bg-primary); border: none; padding: 6px 14px; border-radius: 4px; font-weight: 800; font-size: 0.75rem;">POST</button>
+            </form>
+        `;
+        const form = document.getElementById("mobile-comment-form");
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            if (!window.isUserEmailVerified) {
+                showToast("⚠️ Please verify your email address first!");
+                return;
+            }
+            const textEl = document.getElementById("mobile-comment-textarea");
+            const text = textEl.value.trim();
+            if (!text) return;
+
+            push(ref(db, `server_comments/${serverId}`), {
+                uid: user.uid,
+                username: currentUsername || user.displayName || user.email.split("@")[0],
+                text: text,
+                timestamp: Date.now(),
+                score: 0
+            }).then(() => {
+                textEl.value = "";
+                showToast("Comment posted!");
+            }).catch(err => console.error("Comment error: ", err));
+        });
+    } else {
+        inputArea.innerHTML = `
+            <div class="comment-signin-cta">
+                <p style="font-size: 0.8rem;">You must be signed in to comment.</p>
+                <button class="comment-signin-btn" id="mobile-comment-signin-btn">SIGN IN</button>
+            </div>
+        `;
+        const mobileSigninBtn = document.getElementById("mobile-comment-signin-btn");
+        if (mobileSigninBtn) {
+            mobileSigninBtn.addEventListener("click", () => {
                 document.getElementById("login-modal").classList.remove("hidden");
             });
         }
-    });
+    }
 
-    onValue(ref(db, `server_comments/${serverId}`), (snapshot) => {
+    currentMobileCommentsUnsubscribe = onValue(ref(db, `server_comments/${serverId}`), (snapshot) => {
         list.innerHTML = "";
         const data = snapshot.val();
         if (!data) {
