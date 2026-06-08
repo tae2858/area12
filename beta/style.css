@@ -2755,5 +2755,58 @@ body.is-embedded .bio-stats-bar {
     }
 }
 
+/* Upvote and Downvote system styling */
+.vote-container {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2px 8px;
+}
+
+.vote-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 6px 10px;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.vote-btn:hover {
+    color: var(--text-primary);
+}
+
+.vote-btn.upvote.active {
+    color: #ff4500; /* Reddit Orangered */
+    text-shadow: 0 0 8px rgba(255, 69, 0, 0.5);
+}
+
+.vote-btn.downvote.active {
+    color: #5f99cf; /* Reddit Periwinkle */
+    text-shadow: 0 0 8px rgba(95, 153, 207, 0.5);
+}
+
+.score-count {
+    font-size: 0.85rem;
+    font-weight: 800;
+    min-width: 24px;
+    text-align: center;
+    color: var(--text-primary);
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.score-count.upvoted {
+    color: #ff4500;
+}
+
+.score-count.downvoted {
+    color: #5f99cf;
+}
+
+
 
 

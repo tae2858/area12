@@ -173,7 +173,11 @@
 
             <div class="bio-stats-bar">
                 <span class="bio-stat-item">👁️ <span id="bio-views-count">0</span> Views</span>
-                <button id="bio-like-btn" class="bio-like-btn">❤️ <span id="bio-likes-count">0</span> Likes</button>
+                <div class="vote-container">
+                    <button id="bio-upvote-btn" class="vote-btn upvote" title="Upvote">▲</button>
+                    <span id="bio-score-count" class="score-count">0</span>
+                    <button id="bio-downvote-btn" class="vote-btn downvote" title="Downvote">▼</button>
+                </div>
             </div>
 
             <div class="bio-code-label">CLICK CODE TO COPY</div>

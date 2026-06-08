@@ -84,6 +84,34 @@ function initBetaApp() {
         document.body.classList.add("is-embedded");
     }
 
+    const clickSound = new Audio('/beta/assets/a12.click.mp3');
+    const upvoteSound = new Audio('/beta/assets/a12.upvote.mp3');
+    const downvoteSound = new Audio('/beta/assets/a12.downvote.mp3');
+
+    window.playClickSound = function() {
+        clickSound.currentTime = 0;
+        clickSound.play().catch(e => console.log("Sound play error: ", e));
+    };
+    window.playUpvoteSound = function() {
+        upvoteSound.currentTime = 0;
+        upvoteSound.play().catch(e => console.log("Sound play error: ", e));
+    };
+    window.playDownvoteSound = function() {
+        downvoteSound.currentTime = 0;
+        downvoteSound.play().catch(e => console.log("Sound play error: ", e));
+    };
+
+    // Global click listener for UI elements
+    document.body.addEventListener('click', (e) => {
+        const target = e.target.closest('button, a, input[type="submit"], input[type="button"], .server-card, .sidebar-link, .tab-btn, .bio-invite-code, .enter-btn, .close-btn');
+        if (target) {
+            if (target.id === 'bio-upvote-btn' || target.id === 'bio-downvote-btn' || target.id === 'mobile-upvote-btn' || target.id === 'mobile-downvote-btn') {
+                return;
+            }
+            window.playClickSound();
+        }
+    });
+
     const enterBtn = document.getElementById("enter-btn");
     const enterOverlay = document.getElementById("enter-overlay");
     const playPauseBtn = document.getElementById("player-play-pause");
@@ -898,7 +926,7 @@ function checkRoute(servers) {
 
         const serverId = matched.server_id;
         const statsViewsRef = ref(db, `stats/${serverId}/views`);
-        const statsLikesRef = ref(db, `stats/${serverId}/likes`);
+        const statsScoreRef = ref(db, `stats/${serverId}/score`);
 
         if (window.currentRouteId !== serverId) {
             window.currentRouteId = serverId;
@@ -913,31 +941,112 @@ function checkRoute(servers) {
             console.error("Failed to load views: ", error);
         });
 
-        onValue(statsLikesRef, (snapshot) => {
-            document.getElementById("bio-likes-count").innerText = (snapshot.val() || 0).toLocaleString();
+        onValue(statsScoreRef, (snapshot) => {
+            const scoreVal = snapshot.val() || 0;
+            const scoreCountEl = document.getElementById("bio-score-count");
+            if (scoreCountEl) {
+                scoreCountEl.innerText = scoreVal.toLocaleString();
+            }
         }, (error) => {
-            console.error("Failed to load likes: ", error);
+            console.error("Failed to load score: ", error);
         });
 
-        const bioLikeBtn = document.getElementById("bio-like-btn");
-        bioLikeBtn.onclick = () => {
-            const likeKey = `area12_liked_${serverId}`;
-            if (localStorage.getItem(likeKey)) {
-                showToast("You've already liked this server!");
-                return;
-            }
+        const bioUpvoteBtn = document.getElementById("bio-upvote-btn");
+        const bioDownvoteBtn = document.getElementById("bio-downvote-btn");
+        const bioScoreCount = document.getElementById("bio-score-count");
 
-            runTransaction(statsLikesRef, (currentLikes) => {
-                return (currentLikes || 0) + 1;
-            }).then((result) => {
-                if (result.committed) {
-                    localStorage.setItem(likeKey, "true");
-                    showToast("Server liked successfully! 👍");
+        function updateDesktopVoteUI() {
+            if (!bioUpvoteBtn || !bioDownvoteBtn || !bioScoreCount) return;
+            const vote = localStorage.getItem(`area12_vote_${serverId}`);
+            bioUpvoteBtn.classList.remove("active");
+            bioDownvoteBtn.classList.remove("active");
+            bioScoreCount.classList.remove("upvoted", "downvoted");
+            if (vote === "upvoted") {
+                bioUpvoteBtn.classList.add("active");
+                bioScoreCount.classList.add("upvoted");
+            } else if (vote === "downvoted") {
+                bioDownvoteBtn.classList.add("active");
+                bioScoreCount.classList.add("downvoted");
+            }
+        }
+
+        updateDesktopVoteUI();
+
+        if (bioUpvoteBtn) {
+            bioUpvoteBtn.onclick = () => {
+                const currentVote = localStorage.getItem(`area12_vote_${serverId}`);
+                let scoreDiff = 0;
+                let newVote = null;
+
+                if (currentVote === "upvoted") {
+                    scoreDiff = -1;
+                    newVote = null;
+                    window.playDownvoteSound();
+                } else if (currentVote === "downvoted") {
+                    scoreDiff = 2;
+                    newVote = "upvoted";
+                    window.playUpvoteSound();
+                } else {
+                    scoreDiff = 1;
+                    newVote = "upvoted";
+                    window.playUpvoteSound();
                 }
-            }).catch(err => {
-                console.error("Like error: ", err);
-            });
-        };
+
+                runTransaction(statsScoreRef, (currentScore) => {
+                    return (currentScore || 0) + scoreDiff;
+                }).then((result) => {
+                    if (result.committed) {
+                        if (newVote) {
+                            localStorage.setItem(`area12_vote_${serverId}`, newVote);
+                        } else {
+                            localStorage.removeItem(`area12_vote_${serverId}`);
+                        }
+                        updateDesktopVoteUI();
+                        showToast(scoreDiff > 0 ? "Upvoted! ▲" : "Upvote retracted");
+                    }
+                }).catch(err => {
+                    console.error("Vote error: ", err);
+                });
+            };
+        }
+
+        if (bioDownvoteBtn) {
+            bioDownvoteBtn.onclick = () => {
+                const currentVote = localStorage.getItem(`area12_vote_${serverId}`);
+                let scoreDiff = 0;
+                let newVote = null;
+
+                if (currentVote === "downvoted") {
+                    scoreDiff = 1;
+                    newVote = null;
+                    window.playUpvoteSound();
+                } else if (currentVote === "upvoted") {
+                    scoreDiff = -2;
+                    newVote = "downvoted";
+                    window.playDownvoteSound();
+                } else {
+                    scoreDiff = -1;
+                    newVote = "downvoted";
+                    window.playDownvoteSound();
+                }
+
+                runTransaction(statsScoreRef, (currentScore) => {
+                    return (currentScore || 0) + scoreDiff;
+                }).then((result) => {
+                    if (result.committed) {
+                        if (newVote) {
+                            localStorage.setItem(`area12_vote_${serverId}`, newVote);
+                        } else {
+                            localStorage.removeItem(`area12_vote_${serverId}`);
+                        }
+                        updateDesktopVoteUI();
+                        showToast(scoreDiff < 0 ? "Downvoted! ▼" : "Downvote retracted");
+                    }
+                }).catch(err => {
+                    console.error("Vote error: ", err);
+                });
+            };
+        }
 
         // Load Comments
         loadServerComments(serverId);
@@ -1622,6 +1731,12 @@ function loadServerComments(serverId) {
             item.className = "comment-item";
 
             const date = new Date(comment.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            
+            const userVote = localStorage.getItem(`comment_vote_${comment.id}`);
+            const upActive = userVote === 'upvoted' ? 'active' : '';
+            const downActive = userVote === 'downvoted' ? 'active' : '';
+            const scoreClass = userVote === 'upvoted' ? 'upvoted' : (userVote === 'downvoted' ? 'downvoted' : '');
+
             item.innerHTML = `
                 <div class="comment-header">
                     <span class="comment-author">${comment.username.toUpperCase()}</span>
@@ -1629,20 +1744,19 @@ function loadServerComments(serverId) {
                 </div>
                 <div class="comment-text">${escapeHtml(comment.text)}</div>
                 <div class="comment-footer">
-                    <button class="comment-vote-btn like" data-id="${comment.id}">
-                        👍 <span>${comment.likes || 0}</span>
-                    </button>
-                    <button class="comment-vote-btn dislike" data-id="${comment.id}">
-                        👎 <span>${comment.dislikes || 0}</span>
-                    </button>
+                    <div class="vote-container" style="padding: 0px 4px; border-radius: 8px; gap: 2px;">
+                        <button class="vote-btn comment-upvote-btn upvote ${upActive}" data-id="${comment.id}" style="font-size: 0.9rem; padding: 4px 6px;">▲</button>
+                        <span class="score-count comment-score-count ${scoreClass}" data-id="${comment.id}" style="font-size: 0.75rem; min-width: 16px;">${comment.score || 0}</span>
+                        <button class="vote-btn comment-downvote-btn downvote ${downActive}" data-id="${comment.id}" style="font-size: 0.9rem; padding: 4px 6px;">▼</button>
+                    </div>
                 </div>
             `;
 
-            const likeBtn = item.querySelector(".comment-vote-btn.like");
-            const dislikeBtn = item.querySelector(".comment-vote-btn.dislike");
+            const likeBtn = item.querySelector(".comment-upvote-btn");
+            const dislikeBtn = item.querySelector(".comment-downvote-btn");
 
-            likeBtn.onclick = () => voteComment(serverId, comment.id, 'likes');
-            dislikeBtn.onclick = () => voteComment(serverId, comment.id, 'dislikes');
+            likeBtn.onclick = () => voteComment(serverId, comment.id, 'upvote');
+            dislikeBtn.onclick = () => voteComment(serverId, comment.id, 'downvote');
 
             commentsContainer.appendChild(item);
         });
@@ -1652,19 +1766,52 @@ function loadServerComments(serverId) {
     });
 }
 
-function voteComment(serverId, commentId, voteType) {
-    const voteKey = `voted_${commentId}`;
-    if (localStorage.getItem(voteKey)) {
-        showToast("You have already voted on this comment.");
-        return;
+function voteComment(serverId, commentId, action) {
+    const voteKey = `comment_vote_${commentId}`;
+    const currentVote = localStorage.getItem(voteKey);
+    let scoreDiff = 0;
+    let newVote = null;
+
+    if (action === 'upvote') {
+        if (currentVote === 'upvoted') {
+            scoreDiff = -1;
+            newVote = null;
+            window.playDownvoteSound();
+        } else if (currentVote === 'downvoted') {
+            scoreDiff = 2;
+            newVote = 'upvoted';
+            window.playUpvoteSound();
+        } else {
+            scoreDiff = 1;
+            newVote = 'upvoted';
+            window.playUpvoteSound();
+        }
+    } else if (action === 'downvote') {
+        if (currentVote === 'downvoted') {
+            scoreDiff = 1;
+            newVote = null;
+            window.playUpvoteSound();
+        } else if (currentVote === 'upvoted') {
+            scoreDiff = -2;
+            newVote = 'downvoted';
+            window.playDownvoteSound();
+        } else {
+            scoreDiff = -1;
+            newVote = 'downvoted';
+            window.playDownvoteSound();
+        }
     }
 
-    const voteRef = ref(db, `server_comments/${serverId}/${commentId}/${voteType}`);
-    runTransaction(voteRef, (curr) => {
-        return (curr || 0) + 1;
+    const scoreRef = ref(db, `server_comments/${serverId}/${commentId}/score`);
+    runTransaction(scoreRef, (curr) => {
+        return (curr || 0) + scoreDiff;
     }).then((result) => {
         if (result.committed) {
-            localStorage.setItem(voteKey, "true");
+            if (newVote) {
+                localStorage.setItem(voteKey, newVote);
+            } else {
+                localStorage.removeItem(voteKey);
+            }
         }
     }).catch(err => {
         console.error("Voting error: ", err);
@@ -1909,7 +2056,7 @@ window.renderMobileUI = function () {
     if (mobileCurrentFilter === "PREMIUM") {
         filtered = filtered.filter(s => s.is_favorite);
     } else if (mobileCurrentFilter === "LIKED") {
-        filtered = filtered.filter(s => localStorage.getItem(`area12_liked_${s.server_id}`));
+        filtered = filtered.filter(s => localStorage.getItem(`area12_vote_${s.server_id}`) === "upvoted");
     } else if (mobileCurrentFilter === "LIT") {
         filtered = filtered.filter(s => s.online && (parseInt(s.players.split("/")[0], 10) || 0) > 0);
     } else if (mobileCurrentFilter === "FOREIGN") {
@@ -1938,7 +2085,6 @@ window.renderMobileUI = function () {
     }
 
     const server = filtered[mobileActiveIndex];
-    const isLiked = localStorage.getItem(`area12_liked_${server.server_id}`);
 
     // Update active card HTML
     mobileActiveCard.innerHTML = `
@@ -1952,10 +2098,12 @@ window.renderMobileUI = function () {
         <div class="card-meta">
             <span class="card-invite-code" id="mobile-invite-code-btn">${server.server_id}</span>
             <div class="card-stats">
-                <button id="mobile-like-btn" style="color: ${isLiked ? 'var(--accent-yellow)' : 'var(--text-secondary)'}">
-                    👍 <span id="mobile-likes-count">0</span>
-                </button>
-                <button>
+                <div class="vote-container" style="padding: 0px 4px; border-radius: 8px; gap: 2px;">
+                    <button id="mobile-upvote-btn" class="vote-btn upvote" style="font-size: 0.9rem; padding: 4px 6px;">▲</button>
+                    <span id="mobile-score-count" class="score-count" style="font-size: 0.75rem; min-width: 16px;">0</span>
+                    <button id="mobile-downvote-btn" class="vote-btn downvote" style="font-size: 0.9rem; padding: 4px 6px;">▼</button>
+                </div>
+                <button style="background:transparent; border:none; color:var(--text-secondary); display:flex; align-items:center; gap:2px; font-size:0.8rem;">
                     👁️ <span id="mobile-views-count">0</span>
                 </button>
             </div>
@@ -1970,9 +2118,9 @@ window.renderMobileUI = function () {
         });
     }
 
-    // Set up Views & Likes stats listeners
+    // Set up Views & Score stats listeners
     const viewsRef = ref(db, `stats/${server.server_id}/views`);
-    const likesRef = ref(db, `stats/${server.server_id}/likes`);
+    const scoreRef = ref(db, `stats/${server.server_id}/score`);
 
     onValue(viewsRef, (snap) => {
         const val = snap.val() || 0;
@@ -1980,25 +2128,96 @@ window.renderMobileUI = function () {
         if (el) el.innerText = val.toLocaleString();
     }, (err) => console.error(err));
 
-    onValue(likesRef, (snap) => {
+    onValue(scoreRef, (snap) => {
         const val = snap.val() || 0;
-        const el = document.getElementById("mobile-likes-count");
+        const el = document.getElementById("mobile-score-count");
         if (el) el.innerText = val.toLocaleString();
     }, (err) => console.error(err));
 
-    const likeActionBtn = document.getElementById("mobile-like-btn");
-    if (likeActionBtn) {
-        likeActionBtn.addEventListener("click", () => {
-            const likeKey = `area12_liked_${server.server_id}`;
-            if (localStorage.getItem(likeKey)) {
-                showToast("You've already liked this server!");
-                return;
+    const mobileUpvoteBtn = document.getElementById("mobile-upvote-btn");
+    const mobileDownvoteBtn = document.getElementById("mobile-downvote-btn");
+    const mobileScoreCount = document.getElementById("mobile-score-count");
+
+    function updateMobileVoteUI() {
+        if (!mobileUpvoteBtn || !mobileDownvoteBtn || !mobileScoreCount) return;
+        const vote = localStorage.getItem(`area12_vote_${server.server_id}`);
+        mobileUpvoteBtn.classList.remove("active");
+        mobileDownvoteBtn.classList.remove("active");
+        mobileScoreCount.classList.remove("upvoted", "downvoted");
+        if (vote === "upvoted") {
+            mobileUpvoteBtn.classList.add("active");
+            mobileScoreCount.classList.add("upvoted");
+        } else if (vote === "downvoted") {
+            mobileDownvoteBtn.classList.add("active");
+            mobileScoreCount.classList.add("downvoted");
+        }
+    }
+
+    updateMobileVoteUI();
+
+    if (mobileUpvoteBtn) {
+        mobileUpvoteBtn.addEventListener("click", () => {
+            const currentVote = localStorage.getItem(`area12_vote_${server.server_id}`);
+            let scoreDiff = 0;
+            let newVote = null;
+
+            if (currentVote === "upvoted") {
+                scoreDiff = -1;
+                newVote = null;
+                window.playDownvoteSound();
+            } else if (currentVote === "downvoted") {
+                scoreDiff = 2;
+                newVote = "upvoted";
+                window.playUpvoteSound();
+            } else {
+                scoreDiff = 1;
+                newVote = "upvoted";
+                window.playUpvoteSound();
             }
-            runTransaction(likesRef, (curr) => (curr || 0) + 1).then((res) => {
+
+            runTransaction(scoreRef, (curr) => (curr || 0) + scoreDiff).then((res) => {
                 if (res.committed) {
-                    localStorage.setItem(likeKey, "true");
-                    showToast("Server liked! 👍");
-                    window.renderMobileUI();
+                    if (newVote) {
+                        localStorage.setItem(`area12_vote_${server.server_id}`, newVote);
+                    } else {
+                        localStorage.removeItem(`area12_vote_${server.server_id}`);
+                    }
+                    updateMobileVoteUI();
+                    showToast(scoreDiff > 0 ? "Upvoted! ▲" : "Upvote retracted");
+                }
+            }).catch(err => console.error(err));
+        });
+    }
+
+    if (mobileDownvoteBtn) {
+        mobileDownvoteBtn.addEventListener("click", () => {
+            const currentVote = localStorage.getItem(`area12_vote_${server.server_id}`);
+            let scoreDiff = 0;
+            let newVote = null;
+
+            if (currentVote === "downvoted") {
+                scoreDiff = 1;
+                newVote = null;
+                window.playUpvoteSound();
+            } else if (currentVote === "upvoted") {
+                scoreDiff = -2;
+                newVote = "downvoted";
+                window.playDownvoteSound();
+            } else {
+                scoreDiff = -1;
+                newVote = "downvoted";
+                window.playDownvoteSound();
+            }
+
+            runTransaction(scoreRef, (curr) => (curr || 0) + scoreDiff).then((res) => {
+                if (res.committed) {
+                    if (newVote) {
+                        localStorage.setItem(`area12_vote_${server.server_id}`, newVote);
+                    } else {
+                        localStorage.removeItem(`area12_vote_${server.server_id}`);
+                    }
+                    updateMobileVoteUI();
+                    showToast(scoreDiff < 0 ? "Downvoted! ▼" : "Downvote retracted");
                 }
             }).catch(err => console.error(err));
         });
@@ -2138,13 +2357,33 @@ function loadMobileComments(serverId) {
             const item = document.createElement("div");
             item.className = "comment-item";
             const date = new Date(comment.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            
+            const userVote = localStorage.getItem(`comment_vote_${comment.id}`);
+            const upActive = userVote === 'upvoted' ? 'active' : '';
+            const downActive = userVote === 'downvoted' ? 'active' : '';
+            const scoreClass = userVote === 'upvoted' ? 'upvoted' : (userVote === 'downvoted' ? 'downvoted' : '');
+
             item.innerHTML = `
                 <div class="comment-header" style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 6px;">
                     <span class="comment-author" style="font-weight: 800; color: var(--accent-cyan);">${comment.username.toUpperCase()}</span>
                     <span class="comment-date" style="color: var(--text-secondary); opacity: 0.7;">${date}</span>
                 </div>
-                <div class="comment-text" style="font-size: 0.85rem; line-height: 1.4; word-break: break-word;">${escapeHtml(comment.text)}</div>
+                <div class="comment-text" style="font-size: 0.85rem; line-height: 1.4; word-break: break-word; margin-bottom: 8px;">${escapeHtml(comment.text)}</div>
+                <div class="comment-footer" style="display: flex; justify-content: flex-start; gap: 8px;">
+                    <div class="vote-container" style="padding: 0px 4px; border-radius: 8px; gap: 2px;">
+                        <button class="vote-btn comment-upvote-btn upvote ${upActive}" data-id="${comment.id}" style="font-size: 0.9rem; padding: 4px 6px;">▲</button>
+                        <span class="score-count comment-score-count ${scoreClass}" data-id="${comment.id}" style="font-size: 0.75rem; min-width: 16px;">${comment.score || 0}</span>
+                        <button class="vote-btn comment-downvote-btn downvote ${downActive}" data-id="${comment.id}" style="font-size: 0.9rem; padding: 4px 6px;">▼</button>
+                    </div>
+                </div>
             `;
+
+            const likeBtn = item.querySelector(".comment-upvote-btn");
+            const dislikeBtn = item.querySelector(".comment-downvote-btn");
+
+            likeBtn.onclick = () => voteComment(serverId, comment.id, 'upvote');
+            dislikeBtn.onclick = () => voteComment(serverId, comment.id, 'downvote');
+
             list.appendChild(item);
         });
     }, (error) => {
