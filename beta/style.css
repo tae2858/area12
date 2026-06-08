@@ -2007,8 +2007,9 @@ body.is-embedded .bio-stats-bar {
 
     /* Force full height/width body with no scrolling of the background */
     body {
-        overflow: hidden;
-        height: 100vh;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: auto !important;
         width: 100vw;
     }
 
@@ -2016,11 +2017,11 @@ body.is-embedded .bio-stats-bar {
     .mobile-layout-container {
         display: flex !important;
         flex-direction: column;
-        height: 100vh;
+        min-height: 100vh;
         width: 100vw;
         position: relative;
         background-color: var(--bg-primary);
-        overflow: hidden;
+        overflow: visible !important;
     }
 
     /* Mobile Header (Panel 1 Top) */
@@ -2278,12 +2279,12 @@ body.is-embedded .bio-stats-bar {
     /* Main Mobile Content Area */
     .mobile-main-content {
         margin-top: 60px;
-        flex: 1;
+        flex: none;
         display: flex;
         flex-direction: column;
         padding: 16px;
         gap: 16px;
-        overflow-y: auto;
+        overflow: visible !important;
     }
 
     .mobile-search-bar {
@@ -2502,14 +2503,14 @@ body.is-embedded .bio-stats-bar {
 
     /* Scrollable Bottom Section */
     .mobile-bottom-section {
-        flex: 1;
+        flex: none;
         display: flex;
         flex-direction: column;
         background: rgba(24, 12, 33, 0.45);
         border: 1px solid var(--border-color);
         border-radius: 20px;
-        overflow: hidden;
-        min-height: 220px;
+        overflow: visible;
+        min-height: auto;
         box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
     }
 
@@ -2542,8 +2543,8 @@ body.is-embedded .bio-stats-bar {
     }
 
     .bottom-content-panel {
-        flex: 1;
-        overflow-y: auto;
+        flex: none;
+        overflow-y: visible;
         padding: 18px;
     }
 
