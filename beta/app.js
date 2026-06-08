@@ -95,23 +95,66 @@ function initBetaApp() {
     const youtubeVideoId = "X4VbdwhkE10";
     let audioSource = null;
 
-    function loadYouTubeStream() {
-        // Use our secure HTTPS backend proxy for the Icecast stream
+    async function fetchWithTimeout(url, options = {}, timeout = 2500) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        try {
+            const response = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(id);
+            return response;
+        } catch (e) {
+            clearTimeout(id);
+            throw e;
+        }
+    }
+
+    async function loadYouTubeStream() {
         if (bgAudio) {
             bgAudio.crossOrigin = "anonymous";
             bgAudio.volume = 1.0; // Max volume
             bgAudio.autoplay = false;
-
-            const apiOrigin = API_BASE_URL.includes("localhost") || API_BASE_URL.includes("127.0.0.1")
-                ? "http://localhost:8080"
-                : "https://multicraft-production.up.railway.app";
-
-            const streamUrl = `${apiOrigin}/api/stream`;
-            bgAudio.src = streamUrl;
-            audioSource = streamUrl;
-            console.log("Background audio secure proxy stream set:", streamUrl);
+            
+            // Try active Piped instances sequentially until one succeeds
+            const PIPED_INSTANCES = [
+                "https://pipedapi.kavin.rocks",
+                "https://pipedapi-libre.kavin.rocks",
+                "https://pipedapi.nosebs.ru",
+                "https://piped-api.privacy.com.de",
+                "https://api.piped.yt",
+                "https://pipedapi.drgns.space",
+                "https://pipedapi.ducks.party",
+                "https://piped-api.codespace.cz",
+                "https://pipedapi.reallyaweso.me",
+                "https://api.piped.private.coffee",
+                "https://pipedapi.darkness.services"
+            ];
+            
+            let success = false;
+            for (const instance of PIPED_INSTANCES) {
+                try {
+                    console.log("Trying Piped instance:", instance);
+                    const r = await fetchWithTimeout(`${instance}/streams/${youtubeVideoId}`, {}, 2500);
+                    if (r.ok) {
+                        const data = await r.json();
+                        if (data && data.audioStreams && data.audioStreams.length > 0) {
+                            const audioUrl = data.audioStreams[0].url;
+                            bgAudio.src = audioUrl;
+                            audioSource = audioUrl;
+                            console.log("Audio URL set successfully from Piped:", instance);
+                            success = true;
+                            break;
+                        }
+                    }
+                } catch (err) {
+                    console.log(`Piped API failed for ${instance}:`, err.message);
+                }
+            }
+            
+            if (!success) {
+                console.log("All Piped API instances failed. Using direct YouTube embed fallback only.");
+            }
         }
-
+        
         // Setup iframe as visual backup
         if (youtubePlayer) {
             youtubePlayer.src = `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&controls=0&modestbranding=1&rel=0&playsinline=1&loop=1&playlist=${youtubeVideoId}`;
@@ -156,7 +199,7 @@ function initBetaApp() {
 
     function setBackgroundVolume(value) {
         if (bgAudio) {
-            bgAudio.volume = Math.max(value, 0.5); // Minimum 50% volume
+            bgAudio.volume = value; // Direct binding to allow complete muting
             console.log("Volume set to:", bgAudio.volume);
         }
     }
