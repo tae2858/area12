@@ -2001,7 +2001,7 @@ body.is-embedded .bio-stats-bar {
     .content-container,
     .chat-widget,
     .music-player-widget,
-    #bio-page-container {
+    .bio-page-container {
         display: none !important;
     }
 
