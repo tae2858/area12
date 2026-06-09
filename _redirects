@@ -6,6 +6,7 @@
 /beta/app.js        /beta/app.js        200
 /beta/logo.png      /beta/logo.png      200
 /beta/Untitled229_20250606165317.png /beta/Untitled229_20250606165317.png 200
+/beta/assets/*     /beta/assets/:splat  200
 /beta               /beta-index.html    200
 /beta/*             /beta-index.html    200
 /frontend/style.css /frontend/style.css 200

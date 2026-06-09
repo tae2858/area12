@@ -21,6 +21,8 @@ let allServers = [];
 let currentUsername = null;
 let isPlaying = false;
 
+const BASE_PATH = window.location.pathname.startsWith('/beta') ? '/beta/' : '/';
+
 // Environment-aware backend API URL binding
 const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:8080"
@@ -148,9 +150,12 @@ function initBetaApp() {
         document.body.classList.add("is-embedded");
     }
 
-    const clickSound = new Audio('/beta/assets/a12.click.mp3');
-    const upvoteSound = new Audio('/beta/assets/a12.upvote.mp3');
-    const downvoteSound = new Audio('/beta/assets/a12.downvote.mp3');
+    const clickSound = new Audio(BASE_PATH + 'assets/a12.click.mp3');
+    const upvoteSound = new Audio(BASE_PATH + 'assets/a12.upvote.mp3');
+    const downvoteSound = new Audio(BASE_PATH + 'assets/a12.downvote.mp3');
+    clickSound.volume = 1.0;
+    upvoteSound.volume = 1.0;
+    downvoteSound.volume = 1.0;
 
     window.playClickSound = function () {
         clickSound.currentTime = 0;
@@ -203,7 +208,7 @@ function initBetaApp() {
     async function loadYouTubeStream() {
         if (bgAudio) {
             bgAudio.crossOrigin = "anonymous";
-            bgAudio.volume = 1.0; // Max volume
+            bgAudio.volume = volumeSlider ? parseFloat(volumeSlider.value) : 0.2;
             bgAudio.autoplay = false;
 
             // Try active Piped instances sequentially until one succeeds
@@ -408,6 +413,7 @@ function initBetaApp() {
 
     // Volume Slider handler
     if (volumeSlider) {
+        volumeSlider.value = 0.2;
         volumeSlider.addEventListener("input", (e) => {
             setBackgroundVolume(e.target.value);
         });
@@ -2573,7 +2579,7 @@ function renderMakersList() {
         }
         
         // Use relative path to assets folder
-        const bannerPath = `assets/${maker.image}`;
+        const bannerPath = BASE_PATH + `assets/${maker.image}`;
         
         card.innerHTML = `
             <div class="maker-card-banner" style="background-image: url('${bannerPath}')"></div>
@@ -2602,7 +2608,7 @@ function openMakerProfileModal(maker) {
     if (!modal) return;
 
     // Populate data
-    document.getElementById("maker-modal-banner").style.backgroundImage = `url('assets/${maker.image}')`;
+    document.getElementById("maker-modal-banner").style.backgroundImage = `url('${BASE_PATH}assets/${maker.image}')`;
     document.getElementById("maker-modal-avatar").innerText = maker.displayName[0].toUpperCase();
     document.getElementById("maker-modal-name").innerText = maker.displayName;
     document.getElementById("maker-modal-role").innerText = maker.role;

@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'MultiCraft';
-    src: url('/beta/assets/MultiCraft.ttf') format('truetype');
+    src: url('assets/MultiCraft.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -103,7 +103,7 @@ body {
 
 .overlay-tagline {
     color: var(--text-secondary);
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
     font-size: 1.1rem;
     margin-bottom: 30px;
     min-height: 24px;
@@ -113,7 +113,7 @@ body {
     background: transparent;
     border: 1px solid var(--accent-cyan);
     color: var(--accent-cyan);
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
     font-size: 1rem;
     padding: 12px 30px;
     border-radius: 30px;
@@ -190,7 +190,7 @@ body {
 }
 
 .song-status {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
     font-size: 0.75rem;
     color: var(--accent-cyan);
     letter-spacing: 1px;
@@ -403,7 +403,7 @@ body {
 }
 
 .meta-value.copyable-token {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
     color: var(--accent-cyan);
     cursor: pointer;
     background: rgba(0, 240, 255, 0.05);
@@ -650,7 +650,7 @@ body {
 }
 
 .slot-stat-value code {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
     color: var(--accent-cyan);
 }
 
@@ -812,7 +812,7 @@ body {
 }
 
 .detail-val.token {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
     color: var(--accent-cyan);
     background: rgba(0, 240, 255, 0.03);
     border: 1px solid rgba(0, 240, 255, 0.1);
@@ -1154,7 +1154,7 @@ body {
 .bio-tagline {
     font-size: 0.9rem;
     color: var(--text-secondary);
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
     min-height: 20px;
     margin-bottom: 30px;
 }
@@ -1198,7 +1198,7 @@ body {
     background: #050811;
     border: 2px dashed var(--accent-cyan);
     color: var(--accent-cyan);
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
     font-size: 2.2rem;
     padding: 15px;
     border-radius: 12px;
@@ -2632,7 +2632,7 @@ body.is-embedded .bio-stats-bar {
     }
 
     .card-invite-code {
-        font-family: 'Share Tech Mono', monospace;
+        font-family: 'MultiCraft', 'Outfit', sans-serif;
         color: var(--accent-cyan);
         font-size: 1.25rem;
         background: rgba(186, 85, 211, 0.1);
@@ -3037,7 +3037,7 @@ body.is-embedded .bio-stats-bar {
     min-width: 24px;
     text-align: center;
     color: var(--text-primary);
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
 }
 
 .score-count.upvoted {
