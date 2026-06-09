@@ -72,9 +72,18 @@
             </div>
 
             <nav class="nav-links">
-                <a href="#" class="active">HOME</a>
-                <a href="#directory">DIRECTORY</a>
-                <a href="#" id="about-nav-link">ABOUT</a>
+                <a href="#" class="active nav-img-link">
+                    <img src="assets/Untitled3_20260608103604.png" alt="home" class="nav-word-img nav-word-default">
+                    <img src="assets/Untitled3_20260608104118.png" alt="home" class="nav-word-img nav-word-active">
+                </a>
+                <a href="#directory" class="nav-img-link">
+                    <img src="assets/Untitled3_20260608111649.png" alt="portals" class="nav-word-img nav-word-default">
+                    <img src="assets/Untitled3_20260608112325.png" alt="portals" class="nav-word-img nav-word-active">
+                </a>
+                <a href="#" id="about-nav-link" class="nav-img-link">
+                    <img src="assets/Untitled3_20260608042222.png" alt="about" class="nav-word-img nav-word-default">
+                    <img src="assets/Untitled3_20260608042814.png" alt="about" class="nav-word-img nav-word-active">
+                </a>
                 <a href="#" id="signin-nav-btn">SIGN IN</a>
             </nav>
 
@@ -360,13 +369,13 @@
             <div class="login-modal-overlay" id="maker-modal-overlay"></div>
             <div class="login-card maker-profile-card">
                 <button class="login-close-btn" id="close-maker-modal">×</button>
-                <div class="maker-profile-banner" id="maker-modal-banner"></div>
-                <div class="maker-profile-avatar-wrap">
-                    <div class="maker-profile-avatar" id="maker-modal-avatar">Z</div>
+                <div id="maker-modal-banner" style="display:none;"></div>
+                <div class="maker-profile-avatar-wrap" style="position:static; margin: 30px auto 0; transform:none;">
+                    <div class="maker-profile-avatar" id="maker-modal-avatar">J</div>
                 </div>
                 <div class="maker-profile-details">
-                    <h2 class="maker-profile-name" id="maker-modal-name">ziadlive</h2>
-                    <p class="maker-profile-role" id="maker-modal-role">Lead Developer</p>
+                    <h2 class="maker-profile-name" id="maker-modal-name">Jared12</h2>
+                    <p class="maker-profile-role" id="maker-modal-role">Maker of Area 12</p>
                     <div class="maker-profile-discord-wrap">
                         <button class="maker-discord-btn" id="maker-modal-discord">
                             <svg class="discord-icon" viewBox="0 0 127.14 96.36" width="16" height="16" style="fill: currentColor; margin-right: 6px;">
@@ -375,7 +384,7 @@
                             <span id="maker-modal-discord-text">Discord Contact</span>
                         </button>
                     </div>
-                    <p class="maker-profile-bio" id="maker-modal-bio">Bio text...</p>
+                    <p id="maker-modal-bio" style="display:none;"></p>
                     
                     <div class="maker-servers-section">
                         <h3 class="maker-servers-title">PORTALS CREATED</h3>

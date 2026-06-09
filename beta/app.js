@@ -42,65 +42,26 @@ const MAKERS_DATA = [
     {
         username: "Jared12",
         displayName: "Jared12",
-        role: "Maker of Area 12 + UI/UX Director",
-        bio: "Founder and Lead UI/UX Director of Area 12. Passionate about designing immersive pixel-perfect interfaces and orchestrating multiplayer server portals.",
-        discord: "jared12",
-        image: "Untitled3_20260608042222.png",
-        pinned: true
-    },
-    {
-        username: "Nice",
-        displayName: "Nice",
         role: "Maker of Area 12",
-        bio: "Core designer and portal maker of Area 12. Specializes in custom server mechanics and multiplayer layout design.",
-        discord: "nice12",
-        image: "Untitled3_20260608042814.png",
-        pinned: true
+        discord: "z3r0j4rz",
+        pinned: true,
+        servers: ["SMP12", "PKCC", "SS6"]
     },
     {
         username: "Angels",
         displayName: "Angels",
         role: "Maker of Area 12",
-        bio: "Co-creator of Area 12. Manages community growth, staff orchestration, and official portal server events.",
-        discord: "angels12",
-        image: "Untitled3_20260608045541.png",
-        pinned: true
+        discord: "nnyxchlo",
+        pinned: true,
+        servers: ["SMP12", "PKCC", "SS6"]
     },
     {
-        username: "ziadlive",
-        displayName: "ziadlive",
-        role: "Maker of Vulkan + Lead Developer",
-        bio: "Lead Developer of Vulkan and co-creator of the Area 12 directory application. Focused on database efficiency and server performance.",
-        discord: "ziadlive",
-        image: "Untitled2_20260608024404.png",
-        pinned: false
-    },
-    {
-        username: "accusebroski_",
-        displayName: "accusebroski_",
-        role: "Vulkan Developer",
-        bio: "Fullstack developer for Vulkan portal integrations. Built the modular server details framework and global chat sync systems.",
-        discord: "accusebroski_",
-        image: "Untitled3_20260608050242.png",
-        pinned: false
-    },
-    {
-        username: "x9jm",
-        displayName: "x9jm",
-        role: "Vulkan Developer",
-        bio: "Gameplay engineer and server systems builder. Specializes in Vulkan netcode, performance monitoring, and server plugins.",
-        discord: "x9jm",
-        image: "Untitled3_20260608103604.png",
-        pinned: false
-    },
-    {
-        username: "Blade",
-        displayName: "Blade",
-        role: "Vulkan Developer",
-        bio: "DevOps specialist and backend systems engineer. Manages database deployments, cloud proxy clusters, and server redundancy.",
-        discord: "blade12",
-        image: "Untitled3_20260608104118.png",
-        pinned: false
+        username: "Nice",
+        displayName: "Nice",
+        role: "Maker of Area 12",
+        discord: "liananice",
+        pinned: true,
+        servers: []
     }
 ];
 
@@ -2627,12 +2588,8 @@ function renderMakersList() {
             card.classList.add("pinned-maker");
         }
         
-        // Use relative path to assets folder
-        const bannerPath = BASE_PATH + `assets/${maker.image}`;
-        
         card.innerHTML = `
-            <div class="maker-card-banner" style="background-image: url('${bannerPath}')"></div>
-            <div class="maker-card-avatar-wrap">
+            <div class="maker-card-avatar-wrap" style="position:static; margin: 20px auto 0; transform: none;">
                 <div class="maker-card-avatar">${maker.displayName[0].toUpperCase()}</div>
             </div>
             <div class="maker-card-info">
@@ -2680,32 +2637,22 @@ function openMakerProfileModal(maker) {
         discordBtn.style.display = "none";
     }
 
-    // Portals / Servers Created
+    // Portals / Servers Created (hardcoded per maker)
     const serversListContainer = document.getElementById("maker-modal-servers");
     serversListContainer.innerHTML = "";
 
-    // Find servers made by this user in allServers
-    // We match if the maker's username is in server.admin
-    const matchedServers = allServers.filter(s => {
-        if (!s.admin) return false;
-        // Split server admins by comma/spaces and match
-        const adminsList = s.admin.split(/[,&/]/).map(a => a.trim().toLowerCase());
-        return adminsList.includes(maker.username.toLowerCase()) || 
-               s.admin.toLowerCase().includes(maker.username.toLowerCase());
-    });
+    const serverNameToSlug = { "SMP12": "smp12", "PKCC": "pkcc", "SS6": "ss6" };
 
-    if (matchedServers.length > 0) {
-        matchedServers.forEach(server => {
+    if (maker.servers && maker.servers.length > 0) {
+        maker.servers.forEach(serverName => {
             const tag = document.createElement("a");
             tag.className = "maker-server-tag";
-            tag.innerText = server.name;
+            tag.innerText = serverName;
             tag.addEventListener("click", (e) => {
                 e.preventDefault();
-                // Close modal
                 modal.classList.add("hidden");
-                // Navigate to server profile/bio!
-                const serverSlug = getSlug(server.name, server.server_id);
-                window.history.pushState({}, '', `/beta/${serverSlug}`);
+                const slug = serverNameToSlug[serverName] || serverName.toLowerCase();
+                window.history.pushState({}, '', `/beta/${slug}`);
                 checkRoute(allServers);
             });
             serversListContainer.appendChild(tag);
@@ -2713,7 +2660,7 @@ function openMakerProfileModal(maker) {
     } else {
         const fallback = document.createElement("span");
         fallback.className = "maker-no-servers";
-        fallback.innerText = "No registered portals found for this maker.";
+        fallback.innerText = "No registered portals.";
         serversListContainer.appendChild(fallback);
     }
 

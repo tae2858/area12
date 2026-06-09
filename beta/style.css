@@ -2510,15 +2510,12 @@ body.is-embedded .bio-stats-bar {
         height: 30px;
         width: auto;
         object-fit: contain;
-        mix-blend-mode: multiply;
-        filter: saturate(1.2);
     }
 
     .nav-word-img {
         height: 38px;
         width: auto;
         object-fit: contain;
-        mix-blend-mode: multiply;
         transition: opacity 0.15s ease;
         display: block;
     }
@@ -2529,11 +2526,6 @@ body.is-embedded .bio-stats-bar {
     }
 
     /* Active = show white/silver; hide purple */
-    .sidebar-link.active .nav-word-default,
-    .sidebar-link.active .nav-word-active {
-        mix-blend-mode: normal;
-    }
-
     .sidebar-link.active .nav-word-default {
         display: none;
     }
@@ -2571,7 +2563,6 @@ body.is-embedded .bio-stats-bar {
         height: 34px;
         width: auto;
         object-fit: contain;
-        mix-blend-mode: multiply;
     }
 
     .sidebar-dropdown-content {
