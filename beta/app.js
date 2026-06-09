@@ -421,11 +421,7 @@ function initBetaApp() {
     }
 }
 
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initBetaApp);
-} else {
-    initBetaApp();
-}
+
 
 // 2. Typewriter Effect
 function startTypewriter() {
@@ -891,6 +887,7 @@ function checkRoute(servers) {
     if (!relativePath || relativePath === "index.html" || relativePath === "index") {
         document.getElementById("bio-page-container").classList.add("hidden");
         document.getElementById("credits-page-container").classList.add("hidden");
+        document.getElementById("about-page-container").classList.add("hidden");
         document.querySelector(".main-navbar").classList.remove("hidden");
         document.querySelector(".content-container").classList.remove("hidden");
         return;
@@ -941,6 +938,7 @@ function checkRoute(servers) {
     if (matched) {
         document.getElementById("bio-page-container").classList.remove("hidden");
         document.getElementById("credits-page-container").classList.add("hidden");
+        document.getElementById("about-page-container").classList.add("hidden");
         document.querySelector(".main-navbar").classList.add("hidden");
         document.querySelector(".content-container").classList.add("hidden");
         document.getElementById("enter-overlay").classList.add("hide");
@@ -2666,5 +2664,11 @@ function openMakerProfileModal(maker) {
 
     // Show modal
     modal.classList.remove("hidden");
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initBetaApp);
+} else {
+    initBetaApp();
 }
 
