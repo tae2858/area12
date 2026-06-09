@@ -20,6 +20,7 @@ const auth = getAuth(firebaseApp);
 let allServers = [];
 let currentUsername = null;
 let isPlaying = false;
+const activeVoteRequests = new Set();
 
 const BASE_PATH = window.location.pathname.startsWith('/beta') ? '/beta/' : '/';
 
@@ -416,6 +417,23 @@ function initBetaApp() {
         volumeSlider.value = 0.2;
         volumeSlider.addEventListener("input", (e) => {
             setBackgroundVolume(e.target.value);
+        });
+    }
+
+    // Minimize player handler
+    const minimizeBtn = document.getElementById("player-minimize-btn");
+    const playerWidget = document.getElementById("music-player-widget");
+    if (minimizeBtn && playerWidget) {
+        minimizeBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            playerWidget.classList.toggle("minimized");
+            minimizeBtn.innerText = playerWidget.classList.contains("minimized") ? "🎵" : "×";
+        });
+        playerWidget.addEventListener("click", () => {
+            if (playerWidget.classList.contains("minimized")) {
+                playerWidget.classList.remove("minimized");
+                minimizeBtn.innerText = "×";
+            }
         });
     }
 
@@ -1043,6 +1061,9 @@ function checkRoute(servers) {
 
         if (bioUpvoteBtn) {
             bioUpvoteBtn.onclick = () => {
+                if (activeVoteRequests.has(serverId)) return;
+                activeVoteRequests.add(serverId);
+
                 const currentVote = localStorage.getItem(`area12_vote_${serverId}`);
                 let scoreDiff = 0;
                 let newVote = null;
@@ -1075,12 +1096,17 @@ function checkRoute(servers) {
                     }
                 }).catch(err => {
                     console.error("Vote error: ", err);
+                }).finally(() => {
+                    activeVoteRequests.delete(serverId);
                 });
             };
         }
 
         if (bioDownvoteBtn) {
             bioDownvoteBtn.onclick = () => {
+                if (activeVoteRequests.has(serverId)) return;
+                activeVoteRequests.add(serverId);
+
                 const currentVote = localStorage.getItem(`area12_vote_${serverId}`);
                 let scoreDiff = 0;
                 let newVote = null;
@@ -1113,6 +1139,8 @@ function checkRoute(servers) {
                     }
                 }).catch(err => {
                     console.error("Vote error: ", err);
+                }).finally(() => {
+                    activeVoteRequests.delete(serverId);
                 });
             };
         }
@@ -1654,13 +1682,17 @@ function initGlobalChat() {
             unreadCount = 0;
             chatBadge.classList.add("hidden");
             chatBadge.innerText = "0";
+            document.body.classList.add("chat-active");
             setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 100);
+        } else {
+            document.body.classList.remove("chat-active");
         }
     });
 
     chatCloseBtn.addEventListener("click", () => {
         isChatOpen = false;
         chatBox.classList.add("hidden");
+        document.body.classList.remove("chat-active");
     });
 
     onAuthStateChanged(auth, (user) => {
@@ -1851,6 +1883,9 @@ function loadServerComments(serverId) {
 }
 
 function voteComment(serverId, commentId, action) {
+    if (activeVoteRequests.has(commentId)) return;
+    activeVoteRequests.add(commentId);
+
     const voteKey = `comment_vote_${commentId}`;
     const currentVote = localStorage.getItem(voteKey);
     let scoreDiff = 0;
@@ -1899,6 +1934,8 @@ function voteComment(serverId, commentId, action) {
         }
     }).catch(err => {
         console.error("Voting error: ", err);
+    }).finally(() => {
+        activeVoteRequests.delete(commentId);
     });
 }
 
@@ -2251,6 +2288,9 @@ window.renderMobileUI = function () {
 
     if (mobileUpvoteBtn) {
         mobileUpvoteBtn.addEventListener("click", () => {
+            if (activeVoteRequests.has(server.server_id)) return;
+            activeVoteRequests.add(server.server_id);
+
             const currentVote = localStorage.getItem(`area12_vote_${server.server_id}`);
             let scoreDiff = 0;
             let newVote = null;
@@ -2279,12 +2319,18 @@ window.renderMobileUI = function () {
                     updateMobileVoteUI();
                     showToast(scoreDiff > 0 ? "Upvoted! ▲" : "Upvote retracted");
                 }
-            }).catch(err => console.error(err));
+            }).catch(err => console.error(err))
+            .finally(() => {
+                activeVoteRequests.delete(server.server_id);
+            });
         });
     }
 
     if (mobileDownvoteBtn) {
         mobileDownvoteBtn.addEventListener("click", () => {
+            if (activeVoteRequests.has(server.server_id)) return;
+            activeVoteRequests.add(server.server_id);
+
             const currentVote = localStorage.getItem(`area12_vote_${server.server_id}`);
             let scoreDiff = 0;
             let newVote = null;
@@ -2313,7 +2359,10 @@ window.renderMobileUI = function () {
                     updateMobileVoteUI();
                     showToast(scoreDiff < 0 ? "Downvoted! ▼" : "Downvote retracted");
                 }
-            }).catch(err => console.error(err));
+            }).catch(err => console.error(err))
+            .finally(() => {
+                activeVoteRequests.delete(server.server_id);
+            });
         });
     }
 

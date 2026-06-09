@@ -226,6 +226,57 @@ body {
     cursor: pointer;
 }
 
+.player-minimize-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 4px;
+    margin-left: 4px;
+    transition: color 0.2s, transform 0.2s;
+    line-height: 1;
+}
+
+.player-minimize-btn:hover {
+    color: var(--accent-pink);
+    transform: scale(1.2);
+}
+
+/* Minimized Floating Audio Player */
+.music-player-widget.minimized {
+    padding: 10px;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    justify-content: center;
+    gap: 0;
+    overflow: hidden;
+}
+
+.music-player-widget.minimized .player-info,
+.music-player-widget.minimized .player-controls {
+    display: none !important;
+}
+
+.music-player-widget.minimized .visualizer {
+    margin: 0;
+}
+
+.music-player-widget.minimized .player-minimize-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    z-index: 2;
+}
+
 /* Men.com Navbar Layout */
 .main-navbar {
     width: 100%;
@@ -317,6 +368,13 @@ body {
     max-width: 1300px;
     margin: 0 auto;
     padding: 40px 24px;
+    transition: padding-right 0.3s ease;
+}
+
+@media (min-width: 1024px) {
+    body.chat-active .content-container {
+        padding-right: 390px;
+    }
 }
 
 /* Hero Showcase Banner (Men.com Premium style) */
@@ -696,6 +754,7 @@ body {
     border-top: 1px solid var(--border-color);
     padding-top: 40px;
     margin-bottom: 60px;
+    scroll-margin-top: 100px;
 }
 
 .directory-toolbar {
@@ -949,6 +1008,7 @@ body {
 /* About / Footer Section */
 .about-section {
     margin-top: 80px;
+    scroll-margin-top: 100px;
 }
 
 .about-card {
@@ -2257,11 +2317,11 @@ body.is-embedded .bio-stats-bar {
     .mobile-layout-container {
         display: flex !important;
         flex-direction: column;
-        min-height: 100vh;
+        height: 100vh;
         width: 100vw;
         position: relative;
         background-color: var(--bg-primary);
-        overflow: visible !important;
+        overflow: hidden !important;
     }
 
     /* Mobile Header (Panel 1 Top) */
@@ -2519,12 +2579,12 @@ body.is-embedded .bio-stats-bar {
     /* Main Mobile Content Area */
     .mobile-main-content {
         margin-top: 60px;
-        flex: none;
+        height: calc(100vh - 60px);
         display: flex;
         flex-direction: column;
         padding: 16px;
         gap: 16px;
-        overflow: visible !important;
+        overflow-y: auto !important;
     }
 
     .mobile-search-bar {
