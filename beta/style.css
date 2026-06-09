@@ -323,6 +323,7 @@ body {
 .nav-links {
     display: flex;
     gap: 32px;
+    align-items: center;
 }
 
 .nav-links a {
@@ -338,6 +339,47 @@ body {
     color: var(--text-primary);
     border-bottom: 2px solid var(--accent-cyan);
     padding-bottom: 4px;
+}
+
+/* 3D Word Image Nav Labels - PC/Mobile Global Styles */
+.nav-word-img {
+    height: 22px; /* Sleek desktop height */
+    width: auto;
+    object-fit: contain;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+/* Active / hover state borders shouldn't apply to image links */
+.nav-links a.nav-img-link:hover, .nav-links a.nav-img-link.active {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* Default = purple; hide white/silver active state by default */
+.nav-word-active {
+    display: none !important;
+}
+.nav-word-default {
+    display: block !important;
+}
+
+/* Active/Hover states: swap default to active */
+.nav-img-link.active .nav-word-default,
+.nav-img-link:hover .nav-word-default,
+.sidebar-link.active .nav-word-default,
+.sidebar-link:hover .nav-word-default,
+.sidebar-boost-cta:hover .nav-word-default {
+    display: none !important;
+}
+
+.nav-img-link.active .nav-word-active,
+.nav-img-link:hover .nav-word-active,
+.sidebar-link.active .nav-word-active,
+.sidebar-link:hover .nav-word-active,
+.sidebar-boost-cta:hover .nav-word-active {
+    display: block !important;
+    filter: drop-shadow(0 0 8px rgba(186, 85, 211, 0.6));
 }
 
 .nav-actions {
@@ -2513,26 +2555,7 @@ body.is-embedded .bio-stats-bar {
     }
 
     .nav-word-img {
-        height: 38px;
-        width: auto;
-        object-fit: contain;
-        transition: opacity 0.15s ease;
-        display: block;
-    }
-
-    /* Default = purple; hide white/silver */
-    .nav-word-active {
-        display: none;
-    }
-
-    /* Active = show white/silver; hide purple */
-    .sidebar-link.active .nav-word-default {
-        display: none;
-    }
-
-    .sidebar-link.active .nav-word-active {
-        display: block;
-        filter: drop-shadow(0 0 6px rgba(186, 85, 211, 0.5));
+        height: 28px; /* Slightly larger in mobile sidebar */
     }
 
     /* Boost CTA */
