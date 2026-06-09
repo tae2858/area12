@@ -229,7 +229,9 @@ function initBetaApp() {
                 console.log("Audio readyState:", bgAudio.readyState);
                 console.log("Audio networkState:", bgAudio.networkState);
 
-                bgAudio.volume = 1.0; // Force max volume
+                if (volumeSlider) {
+                    bgAudio.volume = parseFloat(volumeSlider.value);
+                }
 
                 const playPromise = bgAudio.play();
                 if (playPromise !== undefined) {
