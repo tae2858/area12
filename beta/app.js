@@ -28,7 +28,7 @@ const API_BASE_URL = window.location.hostname === "localhost" || window.location
 
 // Typewriter taglines for Guns.lol overlay effect
 const TAGLINES = [
-    "Scraping the MultiCraft network...",
+    "Scraping the MultiCraft portals...",
     "Live server indicators & caps.",
     "Click cards to open profile.",
     "Real-time multiplayer lobbies.",
@@ -49,7 +49,7 @@ const MAKERS_DATA = [
         username: "Nice",
         displayName: "Nice",
         role: "Maker of Area 12",
-        bio: "Core designer and portal maker of the Area 12 network. Specializes in custom server mechanics and multiplayer layout design.",
+        bio: "Core designer and portal maker of Area 12. Specializes in custom server mechanics and multiplayer layout design.",
         discord: "nice12",
         image: "Untitled3_20260608042814.png",
         pinned: true
@@ -67,7 +67,7 @@ const MAKERS_DATA = [
         username: "ziadlive",
         displayName: "ziadlive",
         role: "Maker of Vulkan + Lead Developer",
-        bio: "Lead Developer of the Vulkan network and co-creator of the Area 12 directory application. Focused on database efficiency and server performance.",
+        bio: "Lead Developer of Vulkan and co-creator of the Area 12 directory application. Focused on database efficiency and server performance.",
         discord: "ziadlive",
         image: "Untitled2_20260608024404.png",
         pinned: false
@@ -101,7 +101,7 @@ const MAKERS_DATA = [
     }
 ];
 
-// Slug maps for specific high-priority rooms
+// Slug maps for specific high-priority portals
 const SLUG_TO_ID = {
     "pkcc": "QVZACNG5",
     "parkour": "QVZACNG5",
@@ -499,7 +499,7 @@ function initAPIPolling() {
                 player_val: isLive ? parseInt(liveData.connected_players || 0, 10) : 0,
                 pvp: pvpVal,
                 online: isLive,
-                description: sData.description || "No room description provided.",
+                description: sData.description || "No portal description provided.",
                 is_favorite: isFav,
                 premium: sData.premium === true || isFav,
                 creative_mode: sData.creative_mode === true,
@@ -526,7 +526,7 @@ function initAPIPolling() {
                     player_val: parseInt(sData.connected_players || 0, 10),
                     pvp: sData.pvp !== false,
                     online: true,
-                    description: desc || "No room description provided.",
+                    description: desc || "No portal description provided.",
                     is_favorite: isFav,
                     premium: sData.premium === true || isFav,
                     creative_mode: sData.creative_mode === true,
@@ -590,7 +590,7 @@ function initAPIPolling() {
                 totalPlayers += count;
             }
         });
-        document.getElementById("lobby-counter").innerText = `${totalPlayers} PLAYERS ONLINE ACROSS ALL NETWORKS`;
+        document.getElementById("lobby-counter").innerText = `${totalPlayers} PLAYERS ONLINE ACROSS ALL PORTALS`;
 
         renderPinnedFavorites(allServers);
         renderDirectoryGrid(allServers);
@@ -687,7 +687,7 @@ function initAPIPolling() {
                             admin: sData.admin_name || "Unknown",
                             max_players: parseInt(sData.max_players || 50, 10),
                             pvp: sData.pvp !== false,
-                            description: desc || "No room description provided.",
+                            description: desc || "No portal description provided.",
                             is_favorite: isFav,
                             premium: sData.premium === true || isFav,
                             creative_mode: sData.creative_mode === true,
@@ -785,7 +785,7 @@ function renderDirectoryGrid(servers) {
         return s.name.toLowerCase().includes(searchVal) || s.server_id.toLowerCase().includes(searchVal);
     });
 
-    document.getElementById("lobby-counter").innerText = `Showing ${filtered.length} Live Network Rooms`;
+    document.getElementById("lobby-counter").innerText = `Showing ${filtered.length} Live Portals`;
 
     if (filtered.length === 0) {
         container.innerHTML = `<div class="no-results" style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-secondary)">No lobbies matching "${searchVal}" found</div>`;
@@ -2658,7 +2658,7 @@ function openMakerProfileModal(maker) {
     } else {
         const fallback = document.createElement("span");
         fallback.className = "maker-no-servers";
-        fallback.innerText = "No registered portals found on this network.";
+        fallback.innerText = "No registered portals found for this maker.";
         serversListContainer.appendChild(fallback);
     }
 
