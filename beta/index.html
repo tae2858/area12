@@ -58,6 +58,7 @@
             <div class="song-status">PLAYING</div>
         </div>
         <div class="player-controls">
+            <button id="player-play-pause" class="player-play-pause-btn" type="button" title="Play/Pause">▶</button>
             <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" class="volume-slider">
         </div>
         <button id="player-minimize-btn" class="player-minimize-btn" title="Minimize/Maximize Player">×</button>
@@ -138,20 +139,21 @@
         </section>
 
         <!-- Footer Description (Guns.lol styling) -->
-        <footer id="about" class="about-section">
-            <div class="about-card">
-                <h4>About Area 12</h4>
-                <p>Area 12 is a server franchise in MultiCraft, we are home to 3 servers and provide free information
-                    about all servers in MultiCraft!</p>
-                <div class="about-credits">
-                    <span>© 2026 Area 12. All Rights Reserved.</span>
-                    <span class="heart-pulse">Made with 🤍 by the Area 12 team.</span>
-                    <span><a href="/credits" id="credits-link" class="credits-footer-btn">Team Credits</a></span>
-                </div>
-            </div>
-        </footer>
-
     </main>
+
+    <div id="about-page-container" class="about-page-container about-section hidden">
+        <button id="about-back-btn" class="bio-back-btn">← Back</button>
+        <div class="about-card">
+            <h4>About Area 12</h4>
+            <p>Area 12 is a server franchise in MultiCraft, we are home to 3 servers and provide free information
+                about all servers in MultiCraft!</p>
+            <div class="about-credits">
+                <span>© 2026 Area 12. All Rights Reserved.</span>
+                <span class="heart-pulse">Made with 🤍 by the Area 12 team.</span>
+                <span><a href="/credits" id="credits-link" class="credits-footer-btn">Team Credits</a></span>
+            </div>
+        </div>
+    </div>
 
     <!-- Dedicated Guns.lol Server Bio Page Section (Hidden by default) -->
     <div id="bio-page-container" class="bio-page-container hidden">
