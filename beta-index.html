@@ -21,7 +21,7 @@
     <!-- Favicon Icon -->
     <link rel="icon" type="image/png" href="/beta/logo.png">
     <!-- Main Style Sheet Link -->
-    <link rel="stylesheet" href="/beta/style.css?v=20260608_2300">
+    <link rel="stylesheet" href="/beta/style.css?v=20260609_0330">
 </head>
 
 <body>
@@ -206,50 +206,9 @@
         <div class="bio-glow-back"></div>
         <div class="bio-card credits-card-layout">
             <button id="credits-back-btn" class="bio-back-btn">← Back to Index</button>
-            <h1 class="bio-title text-orchid-glow">AREA 12 TEAM</h1>
-            <div class="credits-list">
-                <div class="credit-member-card">
-                    <div class="member-avatar">Z</div>
-                    <div class="member-info">
-                        <h3 class="member-name">ziadlive</h3>
-                        <p class="member-role">Maker of Vulkan + Lead Developer</p>
-                    </div>
-                </div>
-                <div class="credit-member-card">
-                    <div class="member-avatar">J</div>
-                    <div class="member-info">
-                        <h3 class="member-name">Jared12</h3>
-                        <p class="member-role">Maker of Area 12 + UX Director</p>
-                    </div>
-                </div>
-                <div class="credit-member-card">
-                    <div class="member-avatar">N</div>
-                    <div class="member-info">
-                        <h3 class="member-name">Nice</h3>
-                        <p class="member-role">Maker of Area 12</p>
-                    </div>
-                </div>
-                <div class="credit-member-card">
-                    <div class="member-avatar">A</div>
-                    <div class="member-info">
-                        <h3 class="member-name">Angels</h3>
-                        <p class="member-role">Maker of Area 12</p>
-                    </div>
-                </div>
-                <div class="credit-member-card">
-                    <div class="member-avatar">L</div>
-                    <div class="member-info">
-                        <h3 class="member-name">accusebroski_</h3>
-                        <p class="member-role">Vulkan Developer</p>
-                    </div>
-                </div>
-                <div class="credit-member-card">
-                    <div class="member-avatar">X</div>
-                    <div class="member-info">
-                        <h3 class="member-name">x9jm</h3>
-                        <p class="member-role">Vulkan Developer</p>
-                    </div>
-                </div>
+            <h1 class="bio-title text-orchid-glow">PORTAL MAKERS</h1>
+            <div class="credits-list" id="makers-list-container">
+                <!-- Dynamic grid of maker cards -->
             </div>
         </div>
     </div>
@@ -281,7 +240,7 @@
         </div>
     </div>
 
-    <script type="module" src="/beta/app.js?v=20260608_2300"></script>
+    <script type="module" src="/beta/app.js?v=20260609_0330"></script>
 
     <!-- Glowing toast notification system -->
     <div id="toast" class="toast-notification">Copied invite code to clipboard!</div>
@@ -395,6 +354,38 @@
             </div>
 
             <button id="profile-logout-action-btn" class="login-submit-btn" style="background: var(--accent-pink); color: #ffffff; border: none; box-shadow: none;">LOG OUT</button>
+        </div>
+    </div>
+
+    <!-- Maker Profile Detail Modal -->
+    <div id="maker-profile-modal" class="login-modal hidden">
+        <div class="login-modal-overlay" id="maker-modal-overlay"></div>
+        <div class="login-card maker-profile-card">
+            <button class="login-close-btn" id="close-maker-modal">×</button>
+            <div class="maker-profile-banner" id="maker-modal-banner"></div>
+            <div class="maker-profile-avatar-wrap">
+                <div class="maker-profile-avatar" id="maker-modal-avatar">Z</div>
+            </div>
+            <div class="maker-profile-details">
+                <h2 class="maker-profile-name" id="maker-modal-name">ziadlive</h2>
+                <p class="maker-profile-role" id="maker-modal-role">Lead Developer</p>
+                <div class="maker-profile-discord-wrap">
+                    <button class="maker-discord-btn" id="maker-modal-discord">
+                        <svg class="discord-icon" viewBox="0 0 127.14 96.36" width="16" height="16" style="fill: currentColor; margin-right: 6px;">
+                            <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.88-.65,1.72-1.34,2.51-2.06a75.14,75.14,0,0,0,72.93,0c.79.72,1.63,1.41,2.51,2.06a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129,54.65,123.5,31.58,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.9,46,53.9,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.23,60,73.23,53S78.41,40.36,84.69,40.36,97.59,46,97.59,53,92.41,65.69,84.69,65.69Z"/>
+                        </svg>
+                        <span id="maker-modal-discord-text">Discord Contact</span>
+                    </button>
+                </div>
+                <p class="maker-profile-bio" id="maker-modal-bio">Bio text...</p>
+                
+                <div class="maker-servers-section">
+                    <h3 class="maker-servers-title">PORTALS CREATED</h3>
+                    <div class="maker-servers-list" id="maker-modal-servers">
+                        <!-- Dynamic servers list -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

@@ -35,6 +35,72 @@ const TAGLINES = [
     "Powered by Area 12."
 ];
 
+const MAKERS_DATA = [
+    {
+        username: "Jared12",
+        displayName: "Jared12",
+        role: "Maker of Area 12 + UI/UX Director",
+        bio: "Founder and Lead UI/UX Director of Area 12. Passionate about designing immersive pixel-perfect interfaces and orchestrating multiplayer server portals.",
+        discord: "jared12",
+        image: "Untitled3_20260608042222.png",
+        pinned: true
+    },
+    {
+        username: "Nice",
+        displayName: "Nice",
+        role: "Maker of Area 12",
+        bio: "Core designer and portal maker of the Area 12 network. Specializes in custom server mechanics and multiplayer layout design.",
+        discord: "nice12",
+        image: "Untitled3_20260608042814.png",
+        pinned: true
+    },
+    {
+        username: "Angels",
+        displayName: "Angels",
+        role: "Maker of Area 12",
+        bio: "Co-creator of Area 12. Manages community growth, staff orchestration, and official portal server events.",
+        discord: "angels12",
+        image: "Untitled3_20260608045541.png",
+        pinned: true
+    },
+    {
+        username: "ziadlive",
+        displayName: "ziadlive",
+        role: "Maker of Vulkan + Lead Developer",
+        bio: "Lead Developer of the Vulkan network and co-creator of the Area 12 directory application. Focused on database efficiency and server performance.",
+        discord: "ziadlive",
+        image: "Untitled2_20260608024404.png",
+        pinned: false
+    },
+    {
+        username: "accusebroski_",
+        displayName: "accusebroski_",
+        role: "Vulkan Developer",
+        bio: "Fullstack developer for Vulkan portal integrations. Built the modular server details framework and global chat sync systems.",
+        discord: "accusebroski_",
+        image: "Untitled3_20260608050242.png",
+        pinned: false
+    },
+    {
+        username: "x9jm",
+        displayName: "x9jm",
+        role: "Vulkan Developer",
+        bio: "Gameplay engineer and server systems builder. Specializes in Vulkan netcode, performance monitoring, and server plugins.",
+        discord: "x9jm",
+        image: "Untitled3_20260608103604.png",
+        pinned: false
+    },
+    {
+        username: "Blade",
+        displayName: "Blade",
+        role: "Vulkan Developer",
+        bio: "DevOps specialist and backend systems engineer. Manages database deployments, cloud proxy clusters, and server redundancy.",
+        discord: "blade12",
+        image: "Untitled3_20260608104118.png",
+        pinned: false
+    }
+];
+
 // Slug maps for specific high-priority rooms
 const SLUG_TO_ID = {
     "pkcc": "QVZACNG5",
@@ -838,6 +904,7 @@ function checkRoute(servers) {
         document.querySelector(".content-container").classList.add("hidden");
         document.getElementById("enter-overlay").classList.add("hide");
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
+        renderMakersList();
         return;
     }
 
@@ -1197,6 +1264,21 @@ function initFirebaseAuth() {
     if (profileCloseBtn) profileCloseBtn.addEventListener("click", hideProfileModal);
     if (profileModal) {
         profileModal.querySelector(".login-modal-overlay").addEventListener("click", hideProfileModal);
+    }
+
+    const makerModal = document.getElementById("maker-profile-modal");
+    const closeMakerBtn = document.getElementById("close-maker-modal");
+    const makerOverlay = document.getElementById("maker-modal-overlay");
+
+    if (closeMakerBtn && makerModal) {
+        closeMakerBtn.addEventListener("click", () => {
+            makerModal.classList.add("hidden");
+        });
+    }
+    if (makerOverlay && makerModal) {
+        makerOverlay.addEventListener("click", () => {
+            makerModal.classList.add("hidden");
+        });
     }
 
     if (profileMfaToggleBtn) {
@@ -2474,5 +2556,115 @@ function initMobileGlobalChat() {
         });
         chatMessages.scrollTop = chatMessages.scrollHeight;
     });
+}
+
+// 32. Dynamic Makers / Credits rendering
+function renderMakersList() {
+    const container = document.getElementById("makers-list-container");
+    if (!container) return;
+
+    // Clear previous
+    container.innerHTML = "";
+
+    // Render cards
+    MAKERS_DATA.forEach(maker => {
+        const card = document.createElement("div");
+        card.className = "maker-card";
+        if (maker.pinned) {
+            card.classList.add("pinned-maker");
+        }
+        
+        // Use relative path to assets folder
+        const bannerPath = `assets/${maker.image}`;
+        
+        card.innerHTML = `
+            <div class="maker-card-banner" style="background-image: url('${bannerPath}')"></div>
+            <div class="maker-card-avatar-wrap">
+                <div class="maker-card-avatar">${maker.displayName[0].toUpperCase()}</div>
+            </div>
+            <div class="maker-card-info">
+                <div>
+                    <h3 class="maker-card-name">${maker.displayName}</h3>
+                    <p class="maker-card-role">${maker.role}</p>
+                </div>
+                <button class="maker-card-action">View Profile</button>
+            </div>
+        `;
+
+        card.addEventListener("click", () => {
+            openMakerProfileModal(maker);
+        });
+
+        container.appendChild(card);
+    });
+}
+
+function openMakerProfileModal(maker) {
+    const modal = document.getElementById("maker-profile-modal");
+    if (!modal) return;
+
+    // Populate data
+    document.getElementById("maker-modal-banner").style.backgroundImage = `url('assets/${maker.image}')`;
+    document.getElementById("maker-modal-avatar").innerText = maker.displayName[0].toUpperCase();
+    document.getElementById("maker-modal-name").innerText = maker.displayName;
+    document.getElementById("maker-modal-role").innerText = maker.role;
+    document.getElementById("maker-modal-bio").innerText = maker.bio || "No biography provided.";
+    
+    // Discord Button
+    const discordBtn = document.getElementById("maker-modal-discord");
+    const discordText = document.getElementById("maker-modal-discord-text");
+    if (maker.discord) {
+        discordBtn.style.display = "inline-flex";
+        discordText.innerText = maker.discord;
+        
+        // Copy to clipboard or alert on click
+        discordBtn.onclick = (e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(maker.discord);
+            showToast(`Discord tag "${maker.discord}" copied to clipboard!`);
+        };
+    } else {
+        discordBtn.style.display = "none";
+    }
+
+    // Portals / Servers Created
+    const serversListContainer = document.getElementById("maker-modal-servers");
+    serversListContainer.innerHTML = "";
+
+    // Find servers made by this user in allServers
+    // We match if the maker's username is in server.admin
+    const matchedServers = allServers.filter(s => {
+        if (!s.admin) return false;
+        // Split server admins by comma/spaces and match
+        const adminsList = s.admin.split(/[,&/]/).map(a => a.trim().toLowerCase());
+        return adminsList.includes(maker.username.toLowerCase()) || 
+               s.admin.toLowerCase().includes(maker.username.toLowerCase());
+    });
+
+    if (matchedServers.length > 0) {
+        matchedServers.forEach(server => {
+            const tag = document.createElement("a");
+            tag.className = "maker-server-tag";
+            tag.innerText = server.name;
+            tag.addEventListener("click", (e) => {
+                e.preventDefault();
+                // Close modal
+                modal.classList.add("hidden");
+                // Navigate to server profile/bio!
+                const serverSlug = getSlug(server.name, server.server_id);
+                window.history.pushState({}, '', `/beta/${serverSlug}`);
+                checkRoute(allServers);
+            });
+            serversListContainer.appendChild(tag);
+        });
+    } else {
+        const fallback = document.createElement("span");
+        fallback.className = "maker-no-servers";
+        fallback.innerText = "No registered portals found on this network.";
+        serversListContainer.appendChild(fallback);
+    }
+
+    // Show modal
+    modal.classList.remove("hidden");
 }
 
