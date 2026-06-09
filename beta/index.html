@@ -216,46 +216,6 @@
         </div>
     </div>
 
-        <!-- Dedicated About Page Section (Hidden by default) -->
-        <div id="about-page-container" class="bio-page-container hidden">
-            <div class="bio-glow-back"></div>
-            <div class="bio-card" style="max-width: 650px; text-align: left; padding: 30px;">
-                <button id="about-back-btn" class="bio-back-btn"
-                    style="position: static; margin-bottom: 20px; display: inline-block;">← Back to Directory</button>
-                <h1 class="bio-title text-orchid-glow" style="text-align: center; margin-bottom: 8px;">AREA 12 FRANCHISE
-                </h1>
-                <p class="overlay-tagline"
-                    style="text-align: center; font-size: 0.9rem; margin-bottom: 24px; color: var(--accent-cyan);">
-                    OFFICIAL
-                    franchise OVERVIEW</p>
-
-                <div
-                    style="display: flex; flex-direction: column; gap: 20px; color: var(--text-primary); font-size: 0.95rem; line-height: 1.6;">
-                    <div>
-                        <h3
-                            style="color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase;">
-                            About the Game</h3>
-                        <p style="color: var(--text-secondary);">Area 12 is a premier, high-fidelity sandbox construction and multiplayer warfare gaming franchise. Blending deep, community-driven survival architectures, modular builder modes, and responsive player-versus-player (PvP) match configurations, the franchise represents the pinnacle of creative cooperative gameplay.</p>
-                    </div>
-
-                    <div>
-                        <h3
-                            style="color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase;">
-                            The Portal Eco-system</h3>
-                        <p style="color: var(--text-secondary);">This site serves as the unified portal bridge for the Area 12 gaming ecosystem. It connects users with dynamic servers (both official and community-run arrays), syncing live player directories, community join tokens, and verified creator profiles in real time.</p>
-                    </div>
-
-                    <div
-                        style="background: rgba(186, 85, 211, 0.05); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px;">
-                        <h4
-                            style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 4px; font-weight: 800;">
-                            🎮
-                            Join the Action</h4>
-                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">Copy any server invite code from the directory grid, launch your Area 12 game client, paste the token into the server connection tab, and connect instantly.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <script type="module" src="app.js?v=20260609_0330"></script>
 
@@ -452,19 +412,32 @@
             <!-- Sidebar Navigation Drawer (Panel 2) -->
             <div id="mobile-sidebar" class="mobile-sidebar">
                 <div class="sidebar-header">
-                    <span class="sidebar-title">Area 12</span>
+                    <img src="assets/Untitled2_20260608024404.png" alt="Area 12" class="sidebar-logo-img">
                     <button id="mobile-sidebar-close">×</button>
                 </div>
                 <nav class="sidebar-nav">
-                    <a href="#" class="sidebar-link active" data-target="home">home</a>
+                    <a href="#" class="sidebar-link active" data-target="home">
+                        <img src="assets/Untitled3_20260608103604.png" alt="home" class="nav-word-img nav-word-default">
+                        <img src="assets/Untitled3_20260608104118.png" alt="home" class="nav-word-img nav-word-active">
+                    </a>
                     <div class="sidebar-dropdown-group">
-                        <a href="#" class="sidebar-link" data-target="portals">portals <span class="arrow">▼</span></a>
+                        <a href="#" class="sidebar-link" data-target="portals">
+                            <img src="assets/Untitled3_20260608111649.png" alt="portals" class="nav-word-img nav-word-default">
+                            <img src="assets/Untitled3_20260608112325.png" alt="portals" class="nav-word-img nav-word-active">
+                            <span class="arrow">▼</span>
+                        </a>
                         <div id="mobile-sidebar-portals" class="sidebar-dropdown-content hidden">
                             <!-- Dynamic portals list -->
                         </div>
                     </div>
-                    <a href="#" class="sidebar-link" data-target="makers">makers</a>
-                    <a href="#" class="sidebar-link" data-target="about">about</a>
+                    <a href="#" class="sidebar-link" data-target="makers">
+                        <img src="assets/Untitled3_20260608104858.png" alt="makers" class="nav-word-img nav-word-default">
+                        <img src="assets/Untitled3_20260608105356.png" alt="makers" class="nav-word-img nav-word-active">
+                    </a>
+                    <a href="#" class="sidebar-link" data-target="about">
+                        <img src="assets/Untitled3_20260608042222.png" alt="about" class="nav-word-img nav-word-default">
+                        <img src="assets/Untitled3_20260608042814.png" alt="about" class="nav-word-img nav-word-active">
+                    </a>
                 </nav>
 
                 <div class="sidebar-filters">
@@ -476,6 +449,12 @@
                         <button class="filter-btn" data-filter="FOREIGN">FOREIGN</button>
                     </div>
                 </div>
+
+                <!-- Boost CTA -->
+                <a href="https://discord.gg/v9NUPx3p78" target="_blank" class="sidebar-boost-cta" title="Boost the Area 12 Discord">
+                    <img src="assets/Untitled3_20260608045541.png" alt="boost" class="sidebar-boost-img nav-word-default">
+                    <img src="assets/Untitled3_20260608050242.png" alt="boost" class="sidebar-boost-img nav-word-active" style="display:none;">
+                </a>
             </div>
 
             <!-- Active Server Slider Card (Panel 1) -->

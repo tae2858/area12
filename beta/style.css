@@ -2505,6 +2505,75 @@ body.is-embedded .bio-stats-bar {
         border-left: 4px solid var(--accent-cyan);
     }
 
+    /* 3D Word Image Nav Labels */
+    .sidebar-logo-img {
+        height: 30px;
+        width: auto;
+        object-fit: contain;
+        mix-blend-mode: multiply;
+        filter: saturate(1.2);
+    }
+
+    .nav-word-img {
+        height: 38px;
+        width: auto;
+        object-fit: contain;
+        mix-blend-mode: multiply;
+        transition: opacity 0.15s ease;
+        display: block;
+    }
+
+    /* Default = purple; hide white/silver */
+    .nav-word-active {
+        display: none;
+    }
+
+    /* Active = show white/silver; hide purple */
+    .sidebar-link.active .nav-word-default,
+    .sidebar-link.active .nav-word-active {
+        mix-blend-mode: normal;
+    }
+
+    .sidebar-link.active .nav-word-default {
+        display: none;
+    }
+
+    .sidebar-link.active .nav-word-active {
+        display: block;
+        filter: drop-shadow(0 0 6px rgba(186, 85, 211, 0.5));
+    }
+
+    /* Boost CTA */
+    .sidebar-boost-cta {
+        display: block;
+        padding: 10px 14px;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: background 0.2s, transform 0.15s;
+        border: 1px solid transparent;
+    }
+
+    .sidebar-boost-cta:hover {
+        background: rgba(186, 85, 211, 0.1);
+        border-color: var(--border-color);
+        transform: scale(1.02);
+    }
+
+    .sidebar-boost-cta:hover .nav-word-default {
+        display: none;
+    }
+
+    .sidebar-boost-cta:hover .nav-word-active {
+        display: block !important;
+    }
+
+    .sidebar-boost-img {
+        height: 34px;
+        width: auto;
+        object-fit: contain;
+        mix-blend-mode: multiply;
+    }
+
     .sidebar-dropdown-content {
         padding-left: 20px;
         display: flex;
