@@ -2537,6 +2537,26 @@ body.is-embedded .bio-stats-bar {
         transform: translateX(0);
     }
 
+    .mobile-sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1015;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.35s ease;
+    }
+
+    .mobile-sidebar.open + .mobile-sidebar-overlay {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
     .sidebar-header {
         display: flex;
         justify-content: space-between;

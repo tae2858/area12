@@ -2244,6 +2244,12 @@ window.initMobileUI = function () {
             sidebar.classList.remove("open");
         });
     }
+    const sidebarOverlay = document.getElementById("mobile-sidebar-overlay");
+    if (sidebarOverlay && sidebar) {
+        sidebarOverlay.addEventListener("click", () => {
+            sidebar.classList.remove("open");
+        });
+    }
 
     // Profile Dropdown Actions (Panel 3)
     if (profileBtn && profileDropdown) {
@@ -2495,7 +2501,7 @@ window.renderMobileUI = function () {
             </div>
         `;
         const codeBadge = document.getElementById("mobile-lit-badge");
-        if (codeBadge) codeBadge.innerText = "LIT +0";
+        if (codeBadge) codeBadge.innerText = "LIT 0";
         const descPanel = document.getElementById("mobile-details-desc");
         if (descPanel) descPanel.innerText = "No description available.";
         return;
@@ -2672,7 +2678,7 @@ window.renderMobileUI = function () {
     const activeCount = parseInt(server.players.split("/")[0], 10) || 0;
     const litBadge = document.getElementById("mobile-lit-badge");
     if (litBadge) {
-        litBadge.innerText = `LIT +${activeCount}`;
+        litBadge.innerText = `LIT ${activeCount}`;
     }
 
     // Update Details tab text
