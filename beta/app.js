@@ -1110,35 +1110,49 @@ function checkRoute(servers) {
     }
     relativePath = relativePath.replace(/^\/|\/$/g, '').trim();
 
+    const getEl = id => document.getElementById(id);
+    const getQuery = selector => document.querySelector(selector);
+
+    const bioPage = getEl("bio-page-container");
+    const creditsPage = getEl("credits-page-container");
+    const aboutPage = getEl("about-page-container");
+    const mainNavbar = getQuery(".main-navbar");
+    const contentContainer = getQuery(".content-container");
+    const enterOverlay = getEl("enter-overlay");
+    const musicPlayer = getEl("music-player-widget");
+
+    const hideEl = el => el && el.classList.add("hidden");
+    const showEl = el => el && el.classList.remove("hidden");
+
     if (!relativePath || relativePath === "index.html" || relativePath === "index") {
-        document.getElementById("bio-page-container").classList.add("hidden");
-        document.getElementById("credits-page-container").classList.add("hidden");
-        document.getElementById("about-page-container").classList.add("hidden");
-        document.querySelector(".main-navbar").classList.remove("hidden");
-        document.querySelector(".content-container").classList.remove("hidden");
+        hideEl(bioPage);
+        hideEl(creditsPage);
+        hideEl(aboutPage);
+        showEl(mainNavbar);
+        showEl(contentContainer);
         return;
     }
 
     if (relativePath === "credits") {
-        document.getElementById("credits-page-container").classList.remove("hidden");
-        document.getElementById("bio-page-container").classList.add("hidden");
-        document.getElementById("about-page-container").classList.add("hidden");
-        document.querySelector(".main-navbar").classList.add("hidden");
-        document.querySelector(".content-container").classList.add("hidden");
-        document.getElementById("enter-overlay").classList.add("hide");
-        document.getElementById("music-player-widget").style.transform = "translateX(0)";
+        showEl(creditsPage);
+        hideEl(bioPage);
+        hideEl(aboutPage);
+        hideEl(mainNavbar);
+        hideEl(contentContainer);
+        if (enterOverlay) enterOverlay.classList.add("hide");
+        if (musicPlayer) musicPlayer.style.transform = "translateX(0)";
         renderMakersList();
         return;
     }
 
     if (relativePath === "about") {
-        document.getElementById("about-page-container").classList.remove("hidden");
-        document.getElementById("bio-page-container").classList.add("hidden");
-        document.getElementById("credits-page-container").classList.add("hidden");
-        document.querySelector(".main-navbar").classList.add("hidden");
-        document.querySelector(".content-container").classList.add("hidden");
-        document.getElementById("enter-overlay").classList.add("hide");
-        document.getElementById("music-player-widget").style.transform = "translateX(0)";
+        showEl(aboutPage);
+        hideEl(bioPage);
+        hideEl(creditsPage);
+        hideEl(mainNavbar);
+        hideEl(contentContainer);
+        if (enterOverlay) enterOverlay.classList.add("hide");
+        if (musicPlayer) musicPlayer.style.transform = "translateX(0)";
         return;
     }
 
@@ -1162,18 +1176,24 @@ function checkRoute(servers) {
     }
 
     if (matched) {
-        document.getElementById("bio-page-container").classList.remove("hidden");
-        document.getElementById("credits-page-container").classList.add("hidden");
-        document.getElementById("about-page-container").classList.add("hidden");
-        document.querySelector(".main-navbar").classList.add("hidden");
-        document.querySelector(".content-container").classList.add("hidden");
-        document.getElementById("enter-overlay").classList.add("hide");
+        showEl(bioPage);
+        hideEl(creditsPage);
+        hideEl(aboutPage);
+        hideEl(mainNavbar);
+        hideEl(contentContainer);
+        if (enterOverlay) enterOverlay.classList.add("hide");
 
-        document.getElementById("bio-server-name").innerText = matched.name.toUpperCase();
-        document.getElementById("bio-maker").innerText = matched.admin;
-        document.getElementById("bio-players").innerText = matched.players;
-        document.getElementById("bio-pvp").innerText = matched.pvp ? "⚔️ PvP Enabled" : "🌾 Safe Zone";
-        document.getElementById("bio-invite-code").innerText = matched.server_id;
+        const sName = getEl("bio-server-name");
+        const sMaker = getEl("bio-maker");
+        const sPlayers = getEl("bio-players");
+        const sPvp = getEl("bio-pvp");
+        const sInvite = getEl("bio-invite-code");
+
+        if (sName) sName.innerText = matched.name.toUpperCase();
+        if (sMaker) sMaker.innerText = matched.admin;
+        if (sPlayers) sPlayers.innerText = matched.players;
+        if (sPvp) sPvp.innerText = matched.pvp ? "⚔️ PvP Enabled" : "🌾 Safe Zone";
+        if (sInvite) sInvite.innerText = matched.server_id;
 
         // Render Badges
         const badgesContainer = document.getElementById("bio-badges-container");
@@ -1387,22 +1407,35 @@ function checkRoute(servers) {
         loadServerComments(serverId);
 
         // Bind copy triggers
+        // Bind copy triggers
         const copyBtn = document.getElementById("bio-copy-btn");
         const codeBox = document.getElementById("bio-invite-code");
         const copyAction = () => {
             copyToClipboard(matched.server_id);
         };
-        copyBtn.replaceWith(copyBtn.cloneNode(true));
-        codeBox.replaceWith(codeBox.cloneNode(true));
-        document.getElementById("bio-copy-btn").addEventListener("click", copyAction);
-        document.getElementById("bio-invite-code").addEventListener("click", copyAction);
+        if (copyBtn) {
+            copyBtn.replaceWith(copyBtn.cloneNode(true));
+            const newCopyBtn = document.getElementById("bio-copy-btn");
+            if (newCopyBtn) newCopyBtn.addEventListener("click", copyAction);
+        }
+        if (codeBox) {
+            codeBox.replaceWith(codeBox.cloneNode(true));
+            const newCodeBox = document.getElementById("bio-invite-code");
+            if (newCodeBox) newCodeBox.addEventListener("click", copyAction);
+        }
     } else {
         window.history.replaceState({}, '', '/beta');
-        document.getElementById("bio-page-container").classList.add("hidden");
-        document.getElementById("credits-page-container").classList.add("hidden");
-        document.getElementById("about-page-container").classList.add("hidden");
-        document.querySelector(".main-navbar").classList.remove("hidden");
-        document.querySelector(".content-container").classList.remove("hidden");
+        const bioPage = document.getElementById("bio-page-container");
+        const creditsPage = document.getElementById("credits-page-container");
+        const aboutPage = document.getElementById("about-page-container");
+        const mainNavbar = document.querySelector(".main-navbar");
+        const contentContainer = document.querySelector(".content-container");
+
+        if (bioPage) bioPage.classList.add("hidden");
+        if (creditsPage) creditsPage.classList.add("hidden");
+        if (aboutPage) aboutPage.classList.add("hidden");
+        if (mainNavbar) mainNavbar.classList.remove("hidden");
+        if (contentContainer) contentContainer.classList.remove("hidden");
     }
 }
 
