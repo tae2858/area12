@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getDatabase, ref, onValue, runTransaction, push, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+import { getDatabase, ref, onValue, runTransaction, push, set, update, query, limitToLast } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, GoogleAuthProvider, signInWithPopup, sendEmailVerification, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -128,6 +128,7 @@ function getSlug(name, id) {
 
 function getServerSlug(server) {
     if (!server) return "";
+    if (server.slug) return server.slug;
     for (const [slug, mappedId] of Object.entries(SLUG_TO_ID)) {
         if (mappedId === server.server_id) return slug;
     }
@@ -641,6 +642,7 @@ function initAPIPolling() {
             const score = stats.score || 0;
             const views = stats.views || 0;
             const isSpecial = sData.special === true || sData.is_special === true || sData.rank === 'median' || sData.rank === 'special' || (sData.admin_rank && sData.admin_rank.toLowerCase().includes('median')) || sData.submitted_by_median === true || isFav;
+            const isRegistered = sData.is_registered === true || isFav;
 
             tempServers.push({
                 server_id: sIdUpper,
@@ -654,9 +656,9 @@ function initAPIPolling() {
                 online: isLive,
                 description: sData.description || "No portal description provided.",
                 is_favorite: isFav,
-                is_verified: isFav,
-                is_foreign: !isFav,
-                is_registered: true,
+                is_verified: isRegistered,
+                is_foreign: !isRegistered,
+                is_registered: isRegistered,
                 is_special: isSpecial,
                 score: score,
                 views: views,
@@ -667,7 +669,8 @@ function initAPIPolling() {
                 international: sData.international === true,
                 adult: sData.adult === true,
                 hardcore: sData.hardcore === true,
-                url: sData.url || ""
+                url: sData.url || "",
+                slug: sData.slug || ""
             });
         }
 
@@ -681,6 +684,7 @@ function initAPIPolling() {
                 const score = stats.score || 0;
                 const views = stats.views || 0;
                 const isSpecial = sData.special === true || sData.is_special === true || sData.rank === 'median' || sData.rank === 'special' || (sData.admin_rank && sData.admin_rank.toLowerCase().includes('median')) || sData.submitted_by_median === true || isFav;
+                const isRegistered = isFav;
 
                 tempServers.push({
                     server_id: sId,
@@ -692,9 +696,9 @@ function initAPIPolling() {
                     online: true,
                     description: desc || "No portal description provided.",
                     is_favorite: isFav,
-                    is_verified: isFav,
-                    is_foreign: !isFav,
-                    is_registered: false,
+                    is_verified: isRegistered,
+                    is_foreign: !isRegistered,
+                    is_registered: isRegistered,
                     is_special: isSpecial,
                     score: score,
                     views: views,
@@ -705,7 +709,8 @@ function initAPIPolling() {
                     international: sData.international === true,
                     adult: sData.adult === true,
                     hardcore: sData.hardcore === true,
-                    url: sData.url || ""
+                    url: sData.url || "",
+                    slug: ""
                 });
             }
         }
@@ -861,7 +866,7 @@ function initAPIPolling() {
                     for (const [sId, sData] of latestLiveServersMap.entries()) {
                         const desc = (sData.description || "").replace(/\n/g, " ").trim();
                         const isFav = favoriteIds.includes(sId);
-                        set(ref(db, `cached_servers/${sId}`), {
+                        update(ref(db, `cached_servers/${sId}`), {
                             server_id: sId,
                             name: sData.server_name || "MultiCraft Server",
                             admin: sData.admin_name || "Unknown",
@@ -2645,7 +2650,7 @@ window.renderMobileUI = function () {
             detailsHtml += `
                 <div class="bio-foreign-cta" style="margin-top: 16px;">
                     <div class="cta-title">Do you own this server?</div>
-                    <div class="cta-text">Get your own custom invite link and get verified on area12.lol, just join our Discord and open a ticket!</div>
+                    <div class="cta-text">Get your own custom invite link and get verified on area12.lol! Join our Discord and use our bot <strong>Bluetooth</strong> with the <code>/registerportal</code> command in the bot channel.</div>
                     <a href="https://discord.gg/v9NUPx3p78" target="_blank" class="cta-btn">Join Discord & Verify</a>
                 </div>
             `;
