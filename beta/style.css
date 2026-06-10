@@ -2524,6 +2524,13 @@ body.is-embedded .bio-stats-bar {
         transform: translateX(-100%);
         transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         box-shadow: 20px 0 40px rgba(0, 0, 0, 0.7);
+        overflow: hidden;
+    }
+
+    .sidebar-logo-img {
+        max-width: 140px;
+        height: auto;
+        object-fit: contain;
     }
 
     .mobile-sidebar.open {
