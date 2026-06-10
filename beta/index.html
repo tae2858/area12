@@ -25,7 +25,7 @@
     <!-- Favicon Icon -->
     <link rel="icon" type="image/png" href="logo.png">
     <!-- Main Style Sheet Link -->
-    <link rel="stylesheet" href="style.css?v=20260609_1730">
+    <link rel="stylesheet" href="style.css?v=20260610_1500">
 </head>
 
 <body>
@@ -46,22 +46,14 @@
     </iframe>
     <audio id="bg-audio" loop style="display:none;"></audio>
 
-    <div id="music-player-widget" class="music-player-widget">
-        <div class="visualizer">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-        </div>
-        <div class="player-info">
-            <div class="song-title">Area 12 Lo-Fi</div>
-            <div class="song-status">PLAYING</div>
-        </div>
-        <div class="player-controls">
-            <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" class="volume-slider">
-        </div>
-        <button id="player-minimize-btn" class="player-minimize-btn" title="Minimize/Maximize Player">×</button>
-    </div>
+    <button id="music-player-widget" class="music-player-widget" title="Toggle Music">
+        <svg class="music-waves-icon" viewBox="0 0 24 24" width="22" height="22">
+            <!-- Normal speaker base -->
+            <path class="speaker-base" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="currentColor"/>
+            <!-- Animated soundwaves (shown when playing) -->
+            <path class="speaker-wave-1" d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="currentColor"/>
+        </svg>
+    </button>
 
     <!-- Men.com Styled Header Navbar -->
     <header class="main-navbar">
@@ -129,6 +121,25 @@
                     <input type="text" id="search-input" placeholder="Search servers or invites..."
                         class="search-input">
                     <span class="search-icon">🔍</span>
+                </div>
+            </div>
+
+            <!-- Directory Sort and Filters Controls Bar -->
+            <div class="directory-controls-bar">
+                <!-- Left: Sort By -->
+                <div class="sort-controls">
+                    <span class="control-label">SORT BY:</span>
+                    <button class="control-btn sort-btn active" data-sort="LIT">LIT 🔥</button>
+                    <button class="control-btn sort-btn" data-sort="UPVOTED">UPVOTED 📈</button>
+                    <button class="control-btn sort-btn" data-sort="NEWEST">NEWEST 🆕</button>
+                </div>
+                <!-- Right: Filters -->
+                <div class="filter-controls">
+                    <span class="control-label">FILTERS:</span>
+                    <button class="control-btn filter-btn active" data-filter="ALL">ALL</button>
+                    <button class="control-btn filter-btn" data-filter="FOREIGN">FOREIGN 🌐</button>
+                    <button class="control-btn filter-btn" data-filter="PREMIUM">PREMIUM ⭐</button>
+                    <button class="control-btn filter-btn" data-filter="SPECIAL">SPECIAL 💎</button>
                 </div>
             </div>
 
@@ -201,6 +212,24 @@
                 style="display: block; text-align: center; text-decoration: none; margin-top: 10px; background: #5865F2; border: none; transition: filter 0.2s;">JOIN
                 SERVER DISCORD</a>
 
+            <!-- Foreign Server CTA Box -->
+            <div id="bio-foreign-cta" class="bio-foreign-cta hidden">
+                <div class="cta-title">Do you own this server?</div>
+                <div class="cta-text">Get your own custom invite link and get verified on area12.lol, just join our Discord and open a ticket!</div>
+                <a href="https://discord.gg/v9NUPx3p78" target="_blank" class="cta-btn">Join Discord & Verify</a>
+            </div>
+
+            <!-- Special Server Gallery -->
+            <div id="bio-gallery-section" class="bio-gallery-section hidden">
+                <h3 class="gallery-title">PORTAL GALLERY</h3>
+                <div class="gallery-grid">
+                    <img src="" class="gallery-img" alt="Gallery Image 1">
+                    <img src="" class="gallery-img" alt="Gallery Image 2">
+                    <img src="" class="gallery-img" alt="Gallery Image 3">
+                    <img src="" class="gallery-img" alt="Gallery Image 4">
+                </div>
+            </div>
+
             <!-- Comments Section -->
             <div class="bio-comments-section">
                 <h3>Comments</h3>
@@ -218,15 +247,20 @@
         <div class="bio-glow-back"></div>
         <div class="bio-card credits-card-layout">
             <button id="credits-back-btn" class="bio-back-btn">← Back to Index</button>
-            <h1 class="bio-title text-orchid-glow">PORTAL MAKERS</h1>
+            <h2 class="credits-section-title text-orchid-glow" style="margin-top: 10px; font-family: 'MultiCraft', 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 900; text-align: center; letter-spacing: 1px;">PORTAL MAKERS</h2>
             <div class="credits-list" id="makers-list-container">
                 <!-- Dynamic grid of maker cards -->
+            </div>
+
+            <h2 class="credits-section-title text-orchid-glow" style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 30px; font-family: 'MultiCraft', 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 900; text-align: center; letter-spacing: 1px;">DEVELOPERS</h2>
+            <div class="credits-list" id="developers-list-container">
+                <!-- Dynamic grid of developer cards -->
             </div>
         </div>
     </div>
 
 
-        <script type="module" src="app.js?v=20260609_1730"></script>
+        <script type="module" src="app.js?v=20260610_1500"></script>
 
         <!-- Glowing toast notification system -->
         <div id="toast" class="toast-notification">Copied invite code to clipboard!</div>
@@ -236,7 +270,6 @@
             <button id="chat-toggle-btn" class="chat-toggle-btn">
                 <span class="chat-icon">💬</span>
                 <span class="chat-badge hidden" id="chat-badge">0</span>
-                <span class="chat-label">GLOBAL CHAT</span>
             </button>
             <div id="chat-box" class="chat-box hidden">
                 <div class="chat-header">
@@ -450,12 +483,22 @@
                 </nav>
 
                 <div class="sidebar-filters">
-                    <div class="filter-box">
-                        <button class="filter-btn active" data-filter="ALL">ALL</button>
-                        <button class="filter-btn" data-filter="LIT">LIT</button>
-                        <button class="filter-btn" data-filter="LIKED">LIKED</button>
-                        <button class="filter-btn" data-filter="PREMIUM">PREMIUM</button>
-                        <button class="filter-btn" data-filter="FOREIGN">FOREIGN</button>
+                    <div style="margin-bottom: 12px;">
+                        <span class="control-label" style="display: block; margin-bottom: 6px;">SORT BY:</span>
+                        <div class="filter-box mobile-sort-box" style="gap: 4px;">
+                            <button class="filter-btn active" data-sort="LIT">LIT</button>
+                            <button class="filter-btn" data-sort="UPVOTED">UPVOTED</button>
+                            <button class="filter-btn" data-sort="NEWEST">NEWEST</button>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="control-label" style="display: block; margin-bottom: 6px;">FILTERS:</span>
+                        <div class="filter-box mobile-filter-box" style="gap: 4px;">
+                            <button class="filter-btn active" data-filter="ALL">ALL</button>
+                            <button class="filter-btn" data-filter="FOREIGN">FOREIGN</button>
+                            <button class="filter-btn" data-filter="PREMIUM">PREMIUM</button>
+                            <button class="filter-btn" data-filter="SPECIAL">SPECIAL</button>
+                        </div>
                     </div>
                 </div>
 

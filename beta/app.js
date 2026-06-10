@@ -21,6 +21,8 @@ let allServers = [];
 let currentUsername = null;
 let isPlaying = false;
 const activeVoteRequests = new Set();
+let currentSort = "LIT";
+let currentFilter = "ALL";
 
 const BASE_PATH = window.location.pathname.startsWith('/beta') ? '/beta/' : '/';
 
@@ -42,26 +44,65 @@ const MAKERS_DATA = [
     {
         username: "Jared12",
         displayName: "Jared12",
-        role: "Maker of Area 12",
-        discord: "z3r0j4rz",
-        pinned: true,
-        servers: ["SMP12", "PKCC", "SS6"]
-    },
-    {
-        username: "Angels",
-        displayName: "Angels",
-        role: "Maker of Area 12",
-        discord: "nnyxchlo",
-        pinned: true,
-        servers: ["SMP12", "PKCC", "SS6"]
+        role: "Maker of Area 12 + UI/UX Director",
+        bio: "Founder and Lead UI/UX Director of Area 12. Passionate about designing immersive pixel-perfect interfaces and orchestrating multiplayer server portals.",
+        discord: "jared12",
+        image: "Untitled3_20260608042222.png",
+        pinned: true
     },
     {
         username: "Nice",
         displayName: "Nice",
         role: "Maker of Area 12",
-        discord: "liananice",
-        pinned: true,
-        servers: []
+        bio: "Core designer and portal maker of Area 12. Specializes in custom server mechanics and multiplayer layout design.",
+        discord: "nice12",
+        image: "Untitled3_20260608042814.png",
+        pinned: true
+    },
+    {
+        username: "Angels",
+        displayName: "Angels",
+        role: "Maker of Area 12",
+        bio: "Co-creator of Area 12. Manages community growth, staff orchestration, and official portal server events.",
+        discord: "angels12",
+        image: "Untitled3_20260608045541.png",
+        pinned: true
+    },
+    {
+        username: "ziadlive",
+        displayName: "ziadlive",
+        role: "Maker of Vulkan + Lead Developer",
+        bio: "Lead Developer of Vulkan and co-creator of the Area 12 directory application. Focused on database efficiency and server performance.",
+        discord: "ziadlive",
+        image: "Untitled2_20260608024404.png",
+        pinned: false
+    },
+    {
+        username: "accusebroski_",
+        displayName: "accusebroski_",
+        role: "Vulkan Developer",
+        bio: "Fullstack developer for Vulkan portal integrations. Built the modular server details framework and global chat sync systems.",
+        discord: "accusebroski_",
+        image: "Untitled3_20260608050242.png",
+        pinned: false
+    },
+    {
+        username: "x9jm",
+        displayName: "x9jm",
+        role: "Vulkan Developer",
+        bio: "Gameplay engineer and server systems builder. Specializes in Vulkan netcode, performance monitoring, and server plugins.",
+        discord: "x9jm",
+        image: "Untitled3_20260608103604.png",
+        pinned: false
+    },
+    {
+        username: "Blade",
+        displayName: "Blade",
+        role: "Vulkan Developer",
+        bio: "DevOps specialist and backend systems engineer. Manages database deployments, cloud proxy clusters, and server redundancy.",
+        discord: "blade12",
+        image: "Untitled3_20260608104118.png",
+        pinned: false
     }
 ];
 
@@ -85,6 +126,19 @@ function getSlug(name, id) {
         .replace(/(^-|-$)/g, "");
 }
 
+function getServerSlug(server) {
+    if (!server) return "";
+    for (const [slug, mappedId] of Object.entries(SLUG_TO_ID)) {
+        if (mappedId === server.server_id) return slug;
+    }
+    if (server.is_registered === false) {
+        return "r-" + server.server_id.toLowerCase();
+    }
+    return server.name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+}
+
 function escapeHtml(text) {
     const map = {
         '&': '&amp;',
@@ -102,6 +156,100 @@ function toggleVisualizer(play) {
     const bars = visualizer.querySelectorAll(".bar");
     bars.forEach(bar => {
         bar.style.animationPlayState = play ? "running" : "paused";
+    });
+}
+
+// Init dual controls (Sort and Filters) for both desktop and mobile
+function initControls() {
+    // Desktop Sort Buttons
+    document.querySelectorAll(".sort-controls .sort-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".sort-controls .sort-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            
+            const sortVal = btn.getAttribute("data-sort");
+            currentSort = sortVal;
+
+            // Sync mobile sort active state
+            const mobileBtn = document.querySelector(`.mobile-sort-box .filter-btn[data-sort="${sortVal}"]`);
+            if (mobileBtn) {
+                document.querySelectorAll(".mobile-sort-box .filter-btn").forEach(b => b.classList.remove("active"));
+                mobileBtn.classList.add("active");
+            }
+
+            renderDirectoryGrid(allServers);
+        });
+    });
+
+    // Desktop Filter Buttons
+    document.querySelectorAll(".filter-controls .filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".filter-controls .filter-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const filterVal = btn.getAttribute("data-filter");
+            currentFilter = filterVal;
+
+            // Sync mobile filter active state
+            const mobileBtn = document.querySelector(`.mobile-filter-box .filter-btn[data-filter="${filterVal}"]`);
+            if (mobileBtn) {
+                document.querySelectorAll(".mobile-filter-box .filter-btn").forEach(b => b.classList.remove("active"));
+                mobileBtn.classList.add("active");
+            }
+
+            renderDirectoryGrid(allServers);
+        });
+    });
+
+    // Mobile Sort Buttons
+    document.querySelectorAll(".mobile-sort-box .filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".mobile-sort-box .filter-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const sortVal = btn.getAttribute("data-sort");
+            currentSort = sortVal;
+            
+            // Sync desktop sort active state
+            const desktopBtn = document.querySelector(`.sort-controls .sort-btn[data-sort="${sortVal}"]`);
+            if (desktopBtn) {
+                document.querySelectorAll(".sort-controls .sort-btn").forEach(b => b.classList.remove("active"));
+                desktopBtn.classList.add("active");
+            }
+
+            if (typeof mobileActiveIndex !== "undefined") {
+                mobileActiveIndex = 0;
+            }
+            if (window.renderMobileUI) window.renderMobileUI();
+            renderDirectoryGrid(allServers);
+        });
+    });
+
+    // Mobile Filter Buttons
+    document.querySelectorAll(".mobile-filter-box .filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".mobile-filter-box .filter-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const filterVal = btn.getAttribute("data-filter");
+            currentFilter = filterVal;
+            if (typeof mobileCurrentFilter !== "undefined") {
+                mobileCurrentFilter = filterVal;
+            }
+
+            // Sync desktop filter active state
+            const desktopBtn = document.querySelector(`.filter-controls .filter-btn[data-filter="${filterVal}"]`);
+            if (desktopBtn) {
+                document.querySelectorAll(".filter-controls .filter-btn").forEach(b => b.classList.remove("active"));
+                desktopBtn.classList.add("active");
+            }
+
+            if (typeof mobileActiveIndex !== "undefined") {
+                mobileActiveIndex = 0;
+            }
+            if (window.renderMobileUI) window.renderMobileUI();
+            renderDirectoryGrid(allServers);
+        });
     });
 }
 
@@ -340,6 +488,7 @@ function initBetaApp() {
 
     // Initialize Components
     initAPIPolling();
+    initControls();
     initFirebaseAuth();
     initGlobalChat();
     if (window.initMobileUI) {
@@ -447,6 +596,8 @@ function initAPIPolling() {
     let firebaseCachedServers = {};
     let latestLiveServersMap = new Map();
 
+    let serverStatsMap = {};
+
     // 3.1 Listen to Firebase Cached Servers path
     onValue(ref(db, "cached_servers"), (snapshot) => {
         const data = snapshot.val();
@@ -454,6 +605,17 @@ function initAPIPolling() {
             firebaseCachedServers = data;
         } else {
             firebaseCachedServers = {};
+        }
+        mergeAndRenderServers();
+    });
+
+    // Listen to Firebase stats path for real-time scores/votes
+    onValue(ref(db, "stats"), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            serverStatsMap = data;
+        } else {
+            serverStatsMap = {};
         }
         mergeAndRenderServers();
     });
@@ -473,6 +635,10 @@ function initAPIPolling() {
             const liveData = isLive ? latestLiveServersMap.get(sIdUpper) : null;
             const pvpVal = sData.pvp !== false;
             const isFav = favoriteIds.includes(sIdUpper);
+            const stats = serverStatsMap[sIdUpper] || {};
+            const score = stats.score || 0;
+            const views = stats.views || 0;
+            const isSpecial = sData.special === true || sData.is_special === true || sData.rank === 'median' || sData.rank === 'special' || (sData.admin_rank && sData.admin_rank.toLowerCase().includes('median')) || sData.submitted_by_median === true || isFav;
 
             tempServers.push({
                 server_id: sIdUpper,
@@ -486,6 +652,12 @@ function initAPIPolling() {
                 online: isLive,
                 description: sData.description || "No portal description provided.",
                 is_favorite: isFav,
+                is_verified: isFav,
+                is_foreign: !isFav,
+                is_registered: true,
+                is_special: isSpecial,
+                score: score,
+                views: views,
                 premium: sData.premium === true || isFav,
                 creative_mode: sData.creative_mode === true,
                 game: sData.game || "default",
@@ -503,6 +675,11 @@ function initAPIPolling() {
                 mergedIds.add(sId);
                 const desc = (sData.description || "").replace(/\n/g, " ").trim();
                 const isFav = favoriteIds.includes(sId);
+                const stats = serverStatsMap[sId] || {};
+                const score = stats.score || 0;
+                const views = stats.views || 0;
+                const isSpecial = sData.special === true || sData.is_special === true || sData.rank === 'median' || sData.rank === 'special' || (sData.admin_rank && sData.admin_rank.toLowerCase().includes('median')) || sData.submitted_by_median === true || isFav;
+
                 tempServers.push({
                     server_id: sId,
                     name: sData.server_name || "MultiCraft Server",
@@ -513,6 +690,12 @@ function initAPIPolling() {
                     online: true,
                     description: desc || "No portal description provided.",
                     is_favorite: isFav,
+                    is_verified: isFav,
+                    is_foreign: !isFav,
+                    is_registered: false,
+                    is_special: isSpecial,
+                    score: score,
+                    views: views,
                     premium: sData.premium === true || isFav,
                     creative_mode: sData.creative_mode === true,
                     game: sData.game || "default",
@@ -534,6 +717,10 @@ function initAPIPolling() {
                 else if (fId === "94D92LVD") defaultName = "[12+] ※SMP12※";
                 else if (fId === "XX9IXQ6H") defaultName = "[12+] ※Stone Simulator!※";
 
+                const stats = serverStatsMap[fId] || {};
+                const score = stats.score || 0;
+                const views = stats.views || 0;
+
                 tempServers.push({
                     server_id: fId,
                     name: defaultName,
@@ -544,6 +731,12 @@ function initAPIPolling() {
                     online: false,
                     description: "Server is currently sleeping or offline.",
                     is_favorite: true,
+                    is_verified: true,
+                    is_foreign: false,
+                    is_registered: true,
+                    is_special: true,
+                    score: score,
+                    views: views,
                     premium: true,
                     creative_mode: false,
                     game: "default",
@@ -723,7 +916,7 @@ function renderPinnedFavorites(servers) {
             if (e.target.tagName === "BUTTON" || e.target.closest("button")) {
                 return;
             }
-            const slug = getSlug(server.name, server.server_id);
+            const slug = getServerSlug(server);
             window.history.pushState({}, '', '/beta/' + slug);
             checkRoute(allServers);
         });
@@ -764,16 +957,50 @@ function renderPinnedFavorites(servers) {
 function renderDirectoryGrid(servers) {
     const searchVal = document.getElementById("search-input").value.toLowerCase();
     const container = document.getElementById("server-grid");
+    if (!container) return;
     container.innerHTML = "";
 
-    const filtered = servers.filter(s => {
+    // 1. Filter by search
+    let filtered = servers.filter(s => {
         return s.name.toLowerCase().includes(searchVal) || s.server_id.toLowerCase().includes(searchVal);
     });
+
+    // 2. Filter by currentFilter
+    if (currentFilter === "FOREIGN") {
+        filtered = filtered.filter(s => s.is_registered === false);
+    } else if (currentFilter === "PREMIUM") {
+        filtered = filtered.filter(s => s.premium === true);
+    } else if (currentFilter === "SPECIAL") {
+        filtered = filtered.filter(s => s.is_special === true);
+    }
+
+    // 3. Sort by currentSort
+    if (currentSort === "LIT") {
+        // Favorites first, then online descending by player count, then offline
+        filtered.sort((a, b) => {
+            if (a.is_favorite && !b.is_favorite) return -1;
+            if (!a.is_favorite && b.is_favorite) return 1;
+            if (a.online && !b.online) return -1;
+            if (!a.online && b.online) return 1;
+            return b.player_val - a.player_val;
+        });
+    } else if (currentSort === "UPVOTED") {
+        filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
+    } else if (currentSort === "NEWEST") {
+        // prioritize registered, sort by registered date (newest registered servers first)
+        filtered.sort((a, b) => {
+            if (a.is_registered && !b.is_registered) return -1;
+            if (!a.is_registered && b.is_registered) return 1;
+            const timeA = a.created_at || a.server_id || "";
+            const timeB = b.created_at || b.server_id || "";
+            return timeB.localeCompare(timeA);
+        });
+    }
 
     document.getElementById("lobby-counter").innerText = `Showing ${filtered.length} Live Portals`;
 
     if (filtered.length === 0) {
-        container.innerHTML = `<div class="no-results" style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-secondary)">No lobbies matching "${searchVal}" found</div>`;
+        container.innerHTML = `<div class="no-results" style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-secondary)">No lobbies matching active filters found</div>`;
         return;
     }
 
@@ -794,15 +1021,22 @@ function renderDirectoryGrid(servers) {
             if (e.target.tagName === "BUTTON" || e.target.closest("button")) {
                 return;
             }
-            const slug = getSlug(server.name, server.server_id);
+            const slug = getServerSlug(server);
             window.history.pushState({}, '', '/beta/' + slug);
             checkRoute(allServers);
         });
 
+        const badgeHtml = server.is_verified
+            ? `<span class="verified-badge" style="background: rgba(0, 240, 255, 0.15); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Verified</span>`
+            : `<span class="foreign-badge" style="background: rgba(255, 20, 147, 0.15); border: 1px solid var(--accent-pink); color: var(--accent-pink); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Foreign</span>`;
+
         card.innerHTML = `
             <div>
                 <div class="server-header">
-                    <h4 class="server-name">${server.name}</h4>
+                    <h4 class="server-name" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span>${server.name}</span>
+                        ${badgeHtml}
+                    </h4>
                     <span class="status-badge ${server.online ? 'online' : 'offline'}">${server.online ? 'online' : 'offline'}</span>
                 </div>
                 <div class="server-details">
@@ -904,7 +1138,7 @@ function checkRoute(servers) {
     // Locate server matching ID or slug or sanitized title (alphanumeric only)
     let matched = servers.find(s => {
         const sId = s.server_id.toLowerCase();
-        const slug = getSlug(s.name, s.server_id);
+        const slug = getServerSlug(s);
         const sNameSanitized = s.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
         const pathSanitized = relativePath.replace(/[^a-zA-Z0-9]/g, '');
         return sId === relativePath || slug === relativePath || sNameSanitized === pathSanitized;
@@ -969,6 +1203,42 @@ function checkRoute(servers) {
         }
 
         document.getElementById("music-player-widget").style.transform = "translateX(0)";
+
+        // Render CTA for Foreign Server
+        const foreignCtaEl = document.getElementById("bio-foreign-cta");
+        if (foreignCtaEl) {
+            if (matched.is_foreign) {
+                foreignCtaEl.classList.remove("hidden");
+            } else {
+                foreignCtaEl.classList.add("hidden");
+            }
+        }
+
+        // Render SPECIAL server gallery
+        const gallerySection = document.getElementById("bio-gallery-section");
+        if (gallerySection) {
+            if (matched.is_special && matched.is_registered) {
+                gallerySection.classList.remove("hidden");
+                const imgs = gallerySection.querySelectorAll(".gallery-img");
+                const galleryUrls = matched.gallery || [
+                    "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&q=80",
+                    "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&q=80",
+                    "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&q=80",
+                    "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80"
+                ];
+                imgs.forEach((img, idx) => {
+                    img.src = galleryUrls[idx] || galleryUrls[0];
+                });
+            } else {
+                gallerySection.classList.add("hidden");
+            }
+        }
+
+        // Hide desktop voting container if server is not registered
+        const desktopVoteContainer = document.querySelector(".bio-stats-bar .vote-container");
+        if (desktopVoteContainer) {
+            desktopVoteContainer.style.display = matched.is_registered !== false ? "flex" : "none";
+        }
 
         startBioTypewriter(matched.description);
 
@@ -1994,14 +2264,15 @@ window.initMobileUI = function () {
     }
 
     // Controls Bar Zoom (+ / -) mapped to Cycle Filters
-    const MOBILE_FILTERS = ["ALL", "LIT", "LIKED", "PREMIUM", "FOREIGN"];
+    const MOBILE_FILTERS = ["ALL", "FOREIGN", "PREMIUM", "SPECIAL"];
 
     const updateFilterUI = (newFilter) => {
         mobileCurrentFilter = newFilter;
+        currentFilter = newFilter; // Sync with desktop
         mobileActiveIndex = 0;
 
         // Highlight active filter button in drawer
-        const filterBtns = document.querySelectorAll(".sidebar-filters .filter-btn");
+        const filterBtns = document.querySelectorAll(".mobile-filter-box .filter-btn");
         filterBtns.forEach(btn => {
             if (btn.dataset.filter === mobileCurrentFilter) {
                 btn.classList.add("active");
@@ -2010,7 +2281,15 @@ window.initMobileUI = function () {
             }
         });
 
+        // Also sync desktop filter active state
+        const desktopBtn = document.querySelector(`.filter-controls .filter-btn[data-filter="${newFilter}"]`);
+        if (desktopBtn) {
+            document.querySelectorAll(".filter-controls .filter-btn").forEach(b => b.classList.remove("active"));
+            desktopBtn.classList.add("active");
+        }
+
         window.renderMobileUI();
+        renderDirectoryGrid(allServers);
     };
 
     if (zoomInBtn) {
@@ -2054,15 +2333,9 @@ window.initMobileUI = function () {
         });
     });
 
-    // Category Filter Buttons inside Drawer
-    const filterButtons = document.querySelectorAll(".sidebar-filters .filter-btn");
-    filterButtons.forEach(btn => {
+    // Close sidebar drawer when filters or sorts are selected
+    document.querySelectorAll(".sidebar-filters .filter-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-            filterButtons.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            mobileCurrentFilter = btn.dataset.filter;
-            mobileActiveIndex = 0;
-            window.renderMobileUI();
             if (sidebar) sidebar.classList.remove("open");
         });
     });
@@ -2145,14 +2418,33 @@ window.renderMobileUI = function () {
     }
 
     // Apply Category Filters
-    if (mobileCurrentFilter === "PREMIUM") {
-        filtered = filtered.filter(s => s.is_favorite);
-    } else if (mobileCurrentFilter === "LIKED") {
-        filtered = filtered.filter(s => localStorage.getItem(`area12_vote_${s.server_id}`) === "upvoted");
-    } else if (mobileCurrentFilter === "LIT") {
-        filtered = filtered.filter(s => s.online && (parseInt(s.players.split("/")[0], 10) || 0) > 0);
-    } else if (mobileCurrentFilter === "FOREIGN") {
-        filtered = filtered.filter(s => !s.is_favorite);
+    if (mobileCurrentFilter === "FOREIGN") {
+        filtered = filtered.filter(s => s.is_registered === false);
+    } else if (mobileCurrentFilter === "PREMIUM") {
+        filtered = filtered.filter(s => s.premium === true);
+    } else if (mobileCurrentFilter === "SPECIAL") {
+        filtered = filtered.filter(s => s.is_special === true);
+    }
+
+    // Apply Sorting
+    if (currentSort === "LIT") {
+        filtered.sort((a, b) => {
+            if (a.is_favorite && !b.is_favorite) return -1;
+            if (!a.is_favorite && b.is_favorite) return 1;
+            if (a.online && !b.online) return -1;
+            if (!a.online && b.online) return 1;
+            return b.player_val - a.player_val;
+        });
+    } else if (currentSort === "UPVOTED") {
+        filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
+    } else if (currentSort === "NEWEST") {
+        filtered.sort((a, b) => {
+            if (a.is_registered && !b.is_registered) return -1;
+            if (!a.is_registered && b.is_registered) return 1;
+            const timeA = a.created_at || a.server_id || "";
+            const timeB = b.created_at || b.server_id || "";
+            return timeB.localeCompare(timeA);
+        });
     }
 
     if (filtered.length === 0) {
@@ -2178,23 +2470,32 @@ window.renderMobileUI = function () {
 
     const server = filtered[mobileActiveIndex];
 
+    const mobileBadgeHtml = server.is_verified
+        ? `<span style="background: rgba(0, 240, 255, 0.15); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 6px; text-transform: uppercase;">Verified</span>`
+        : `<span style="background: rgba(255, 20, 147, 0.15); border: 1px solid var(--accent-pink); color: var(--accent-pink); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 6px; text-transform: uppercase;">Foreign</span>`;
+
+    const voteContainerHtml = server.is_registered !== false ? `
+        <div class="vote-container" style="padding: 0px 4px; border-radius: 8px; gap: 2px;">
+            <button id="mobile-upvote-btn" class="vote-btn upvote" style="font-size: 0.9rem; padding: 4px 6px;">▲</button>
+            <span id="mobile-score-count" class="score-count" style="font-size: 0.75rem; min-width: 16px;">0</span>
+            <button id="mobile-downvote-btn" class="vote-btn downvote" style="font-size: 0.9rem; padding: 4px 6px;">▼</button>
+        </div>
+    ` : '';
+
     // Update active card HTML
     mobileActiveCard.innerHTML = `
         <div class="card-top">
-            <h2 class="card-server-name">
+            <h2 class="card-server-name" style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
                 <span>${server.name}</span>
                 ${server.is_favorite ? '<span class="star">★</span>' : ''}
+                ${mobileBadgeHtml}
             </h2>
             <p class="card-server-maker">${server.admin}</p>
         </div>
         <div class="card-meta">
             <span class="card-invite-code" id="mobile-invite-code-btn">${server.server_id}</span>
             <div class="card-stats">
-                <div class="vote-container" style="padding: 0px 4px; border-radius: 8px; gap: 2px;">
-                    <button id="mobile-upvote-btn" class="vote-btn upvote" style="font-size: 0.9rem; padding: 4px 6px;">▲</button>
-                    <span id="mobile-score-count" class="score-count" style="font-size: 0.75rem; min-width: 16px;">0</span>
-                    <button id="mobile-downvote-btn" class="vote-btn downvote" style="font-size: 0.9rem; padding: 4px 6px;">▼</button>
-                </div>
+                ${voteContainerHtml}
                 <button style="background:transparent; border:none; color:var(--text-secondary); display:flex; align-items:center; gap:2px; font-size:0.8rem;">
                     👁️ <span id="mobile-views-count">0</span>
                 </button>
@@ -2281,9 +2582,9 @@ window.renderMobileUI = function () {
                     showToast(scoreDiff > 0 ? "Upvoted! ▲" : "Upvote retracted");
                 }
             }).catch(err => console.error(err))
-            .finally(() => {
-                activeVoteRequests.delete(server.server_id);
-            });
+                .finally(() => {
+                    activeVoteRequests.delete(server.server_id);
+                });
         });
     }
 
@@ -2321,9 +2622,9 @@ window.renderMobileUI = function () {
                     showToast(scoreDiff < 0 ? "Downvoted! ▼" : "Downvote retracted");
                 }
             }).catch(err => console.error(err))
-            .finally(() => {
-                activeVoteRequests.delete(server.server_id);
-            });
+                .finally(() => {
+                    activeVoteRequests.delete(server.server_id);
+                });
         });
     }
 
@@ -2337,7 +2638,36 @@ window.renderMobileUI = function () {
     // Update Details tab text
     const descPanel = document.getElementById("mobile-details-desc");
     if (descPanel) {
-        descPanel.innerText = server.description || "No description provided for this server.";
+        let detailsHtml = `<p style="margin-bottom: 12px;">${server.description || "No description provided for this server."}</p>`;
+        if (server.is_foreign) {
+            detailsHtml += `
+                <div class="bio-foreign-cta" style="margin-top: 16px;">
+                    <div class="cta-title">Do you own this server?</div>
+                    <div class="cta-text">Get your own custom invite link and get verified on area12.lol, just join our Discord and open a ticket!</div>
+                    <a href="https://discord.gg/v9NUPx3p78" target="_blank" class="cta-btn">Join Discord & Verify</a>
+                </div>
+            `;
+        }
+        if (server.is_special && server.is_registered) {
+            const galleryUrls = server.gallery || [
+                "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&q=80",
+                "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&q=80",
+                "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&q=80",
+                "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80"
+            ];
+            detailsHtml += `
+                <div class="bio-gallery-section" style="border:none; padding:0; margin-top:20px;">
+                    <div class="gallery-title" style="font-size:0.85rem; margin-bottom:8px;">PORTAL GALLERY</div>
+                    <div class="gallery-grid" style="grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                        <img src="${galleryUrls[0]}" class="gallery-img" style="border-radius:6px;" alt="Pic 1">
+                        <img src="${galleryUrls[1]}" class="gallery-img" style="border-radius:6px;" alt="Pic 2">
+                        <img src="${galleryUrls[2]}" class="gallery-img" style="border-radius:6px;" alt="Pic 3">
+                        <img src="${galleryUrls[3]}" class="gallery-img" style="border-radius:6px;" alt="Pic 4">
+                    </div>
+                </div>
+            `;
+        }
+        descPanel.innerHTML = detailsHtml;
     }
 
     // Load dynamic server comments in tabs
@@ -2386,7 +2716,7 @@ window.syncMobileIndexWithRoute = function () {
 
     const matchedIdx = allServers.findIndex(s => {
         const sId = s.server_id.toLowerCase();
-        const slug = getSlug(s.name, s.server_id);
+        const slug = getServerSlug(s);
         return sId === path || slug === path;
     });
 
@@ -2587,9 +2917,13 @@ function renderMakersList() {
         if (maker.pinned) {
             card.classList.add("pinned-maker");
         }
-        
+
+        // Use relative path to assets folder
+        const bannerPath = BASE_PATH + `assets/${maker.image}`;
+
         card.innerHTML = `
-            <div class="maker-card-avatar-wrap" style="position:static; margin: 20px auto 0; transform: none;">
+            <div class="maker-card-banner" style="background-image: url('${bannerPath}')"></div>
+            <div class="maker-card-avatar-wrap">
                 <div class="maker-card-avatar">${maker.displayName[0].toUpperCase()}</div>
             </div>
             <div class="maker-card-info">
@@ -2619,14 +2953,14 @@ function openMakerProfileModal(maker) {
     document.getElementById("maker-modal-name").innerText = maker.displayName;
     document.getElementById("maker-modal-role").innerText = maker.role;
     document.getElementById("maker-modal-bio").innerText = maker.bio || "No biography provided.";
-    
+
     // Discord Button
     const discordBtn = document.getElementById("maker-modal-discord");
     const discordText = document.getElementById("maker-modal-discord-text");
     if (maker.discord) {
         discordBtn.style.display = "inline-flex";
         discordText.innerText = maker.discord;
-        
+
         // Copy to clipboard or alert on click
         discordBtn.onclick = (e) => {
             e.stopPropagation();
@@ -2637,22 +2971,32 @@ function openMakerProfileModal(maker) {
         discordBtn.style.display = "none";
     }
 
-    // Portals / Servers Created (hardcoded per maker)
+    // Portals / Servers Created
     const serversListContainer = document.getElementById("maker-modal-servers");
     serversListContainer.innerHTML = "";
 
-    const serverNameToSlug = { "SMP12": "smp12", "PKCC": "pkcc", "SS6": "ss6" };
+    // Find servers made by this user in allServers
+    // We match if the maker's username is in server.admin
+    const matchedServers = allServers.filter(s => {
+        if (!s.admin) return false;
+        // Split server admins by comma/spaces and match
+        const adminsList = s.admin.split(/[,&/]/).map(a => a.trim().toLowerCase());
+        return adminsList.includes(maker.username.toLowerCase()) ||
+            s.admin.toLowerCase().includes(maker.username.toLowerCase());
+    });
 
-    if (maker.servers && maker.servers.length > 0) {
-        maker.servers.forEach(serverName => {
+    if (matchedServers.length > 0) {
+        matchedServers.forEach(server => {
             const tag = document.createElement("a");
             tag.className = "maker-server-tag";
-            tag.innerText = serverName;
+            tag.innerText = server.name;
             tag.addEventListener("click", (e) => {
                 e.preventDefault();
+                // Close modal
                 modal.classList.add("hidden");
-                const slug = serverNameToSlug[serverName] || serverName.toLowerCase();
-                window.history.pushState({}, '', `/beta/${slug}`);
+                // Navigate to server profile/bio!
+                const serverSlug = getServerSlug(server);
+                window.history.pushState({}, '', `/beta/${serverSlug}`);
                 checkRoute(allServers);
             });
             serversListContainer.appendChild(tag);
@@ -2660,7 +3004,7 @@ function openMakerProfileModal(maker) {
     } else {
         const fallback = document.createElement("span");
         fallback.className = "maker-no-servers";
-        fallback.innerText = "No registered portals.";
+        fallback.innerText = "No registered portals found for this maker.";
         serversListContainer.appendChild(fallback);
     }
 
