@@ -447,21 +447,30 @@ function initBetaApp() {
     startTypewriter();
 
     // Register back button for Guns.lol server profile routing
-    document.getElementById("bio-back-btn").addEventListener("click", () => {
-        window.history.pushState({}, '', '/beta');
-        checkRoute(allServers);
-    });
+    const bioBackBtn = document.getElementById("bio-back-btn");
+    if (bioBackBtn) {
+        bioBackBtn.addEventListener("click", () => {
+            window.history.pushState({}, '', '/beta');
+            checkRoute(allServers);
+        });
+    }
 
-    document.getElementById("credits-link").addEventListener("click", (e) => {
-        e.preventDefault();
-        window.history.pushState({}, '', '/beta/credits');
-        checkRoute(allServers);
-    });
+    const creditsLink = document.getElementById("credits-link");
+    if (creditsLink) {
+        creditsLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.history.pushState({}, '', '/beta/credits');
+            checkRoute(allServers);
+        });
+    }
 
-    document.getElementById("credits-back-btn").addEventListener("click", () => {
-        window.history.pushState({}, '', '/beta');
-        checkRoute(allServers);
-    });
+    const creditsBackBtn = document.getElementById("credits-back-btn");
+    if (creditsBackBtn) {
+        creditsBackBtn.addEventListener("click", () => {
+            window.history.pushState({}, '', '/beta');
+            checkRoute(allServers);
+        });
+    }
 
     const homeNavLink = document.getElementById("home-nav-link");
     if (homeNavLink) {
@@ -498,41 +507,44 @@ function initBetaApp() {
         });
     }
 
-    enterBtn.addEventListener("click", () => {
-        enterOverlay.classList.add("hide");
-        isPlaying = true;
+    if (enterBtn) {
+        enterBtn.addEventListener("click", () => {
+            if (enterOverlay) enterOverlay.classList.add("hide");
+            isPlaying = true;
 
-        playBackgroundMusic();
+            playBackgroundMusic();
 
-        // Overwrite system MediaSession details to display "Area 12 Lo-Fi" instead of third-party iframe properties
-        if ('mediaSession' in navigator) {
-            const updateMediaSession = () => {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: 'Area 12 Lo-Fi',
-                    artist: 'Area 12',
-                    album: 'Soundtrack',
-                    artwork: [
-                        { src: window.location.origin + '/beta/logo.png', sizes: '512x512', type: 'image/png' }
-                    ]
-                });
+            // Overwrite system MediaSession details to display "Area 12 Lo-Fi" instead of third-party iframe properties
+            if ('mediaSession' in navigator) {
+                const updateMediaSession = () => {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: 'Area 12 Lo-Fi',
+                        artist: 'Area 12',
+                        album: 'Soundtrack',
+                        artwork: [
+                            { src: window.location.origin + '/beta/logo.png', sizes: '512x512', type: 'image/png' }
+                        ]
+                    });
 
-                // Clear controls handlers to block user pause/skip from OS controls
-                navigator.mediaSession.setActionHandler('play', null);
-                navigator.mediaSession.setActionHandler('pause', null);
-                navigator.mediaSession.setActionHandler('seekbackward', null);
-                navigator.mediaSession.setActionHandler('seekforward', null);
-                navigator.mediaSession.setActionHandler('previoustrack', null);
-                navigator.mediaSession.setActionHandler('nexttrack', null);
-            };
+                    // Clear controls handlers to block user pause/skip from OS controls
+                    navigator.mediaSession.setActionHandler('play', null);
+                    navigator.mediaSession.setActionHandler('pause', null);
+                    navigator.mediaSession.setActionHandler('seekbackward', null);
+                    navigator.mediaSession.setActionHandler('seekforward', null);
+                    navigator.mediaSession.setActionHandler('previoustrack', null);
+                    navigator.mediaSession.setActionHandler('nexttrack', null);
+                };
 
-            updateMediaSession();
-            // Continuously enforce every 3 seconds to override rumble.com updates
-            setInterval(updateMediaSession, 3000);
-        }
+                updateMediaSession();
+                // Continuously enforce every 3 seconds to override rumble.com updates
+                setInterval(updateMediaSession, 3000);
+            }
 
-        document.getElementById("music-player-widget").style.transform = "translateX(0)";
-        toggleVisualizer(true);
-    });
+            const musicPlayerWidget = document.getElementById("music-player-widget");
+            if (musicPlayerWidget) musicPlayerWidget.style.transform = "translateX(0)";
+            toggleVisualizer(true);
+        });
+    }
 
     // Initialize Components
     initAPIPolling();
