@@ -2380,7 +2380,7 @@ window.initMobileUI = function () {
     });
 
     // Close sidebar drawer when filters or sorts are selected
-    document.querySelectorAll(".sidebar-filters .filter-btn").forEach(btn => {
+    document.querySelectorAll(".mobile-dropdown-filters-grid .filter-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             if (sidebar) sidebar.classList.remove("open");
         });
@@ -2419,7 +2419,7 @@ window.initMobileUI = function () {
 
     // Portals Menu Drawer Toggler
     const portalsLink = document.querySelector(".sidebar-nav [data-target='portals']");
-    const portalsContent = document.getElementById("mobile-sidebar-portals");
+    const portalsContent = document.getElementById("mobile-portals-dropdown");
     if (portalsLink && portalsContent) {
         portalsLink.addEventListener("click", (e) => {
             e.preventDefault();
@@ -2721,35 +2721,7 @@ window.renderMobileUI = function () {
 };
 
 window.updateSidebarPortals = function () {
-    const list = document.getElementById("mobile-sidebar-portals");
-    if (!list) return;
-    list.innerHTML = "";
-
-    allServers.forEach((server, index) => {
-        const link = document.createElement("a");
-        link.href = "#";
-        link.className = "sidebar-dropdown-link";
-        link.innerText = server.name;
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            mobileActiveIndex = index;
-            mobileCurrentFilter = "ALL";
-
-            // Activate ALL filter button in sidebar
-            const allBtn = document.querySelector(".sidebar-filters [data-filter='ALL']");
-            if (allBtn) {
-                const filters = document.querySelectorAll(".sidebar-filters .filter-btn");
-                filters.forEach(f => f.classList.remove("active"));
-                allBtn.classList.add("active");
-            }
-
-            window.renderMobileUI();
-
-            const sidebar = document.getElementById("mobile-sidebar");
-            if (sidebar) sidebar.classList.remove("open");
-        });
-        list.appendChild(link);
-    });
+    // Portals list is replaced with static filters grid in HTML
 };
 
 window.syncMobileIndexWithRoute = function () {

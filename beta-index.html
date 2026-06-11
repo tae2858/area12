@@ -25,7 +25,7 @@
     <!-- Favicon Icon -->
     <link rel="icon" type="image/png" href="/beta/logo.png">
     <!-- Main Style Sheet Link -->
-    <link rel="stylesheet" href="/beta/style.css?v=20260610_1500">
+    <link rel="stylesheet" href="/beta/style.css?v=20260611_1445">
 </head>
 
 <body>
@@ -269,7 +269,7 @@
     </div>
 
 
-    <script type="module" src="/beta/app.js?v=20260610_1500"></script>
+    <script type="module" src="/beta/app.js?v=20260611_1445"></script>
 
     <!-- Glowing toast notification system -->
     <div id="toast" class="toast-notification">Copied invite code to clipboard!</div>
@@ -470,66 +470,43 @@
                 <button id="mobile-sidebar-close">×</button>
             </div>
             <nav class="sidebar-nav">
-                <a href="#" class="sidebar-link active" data-target="home">
-                    <img src="/beta/assets/Untitled3_20260608103604.png" alt="home"
-                        class="nav-word-img nav-word-default">
-                    <img src="/beta/assets/Untitled3_20260608104118.png" alt="home"
-                        class="nav-word-img nav-word-active">
-                </a>
+                <!-- about -->
+                <a href="#" class="sidebar-link" data-target="about">about</a>
+
+                <!-- donate -->
+                <a href="https://discord.gg/v9NUPx3p78" target="_blank" class="sidebar-link" data-target="donate">donate</a>
+
+                <!-- home -->
+                <a href="#" class="sidebar-link active" data-target="home">home</a>
+
+                <!-- makers -->
+                <a href="#" class="sidebar-link" data-target="makers">makers</a>
+
+                <!-- portals dropdown -->
                 <div class="sidebar-dropdown-group">
-                    <a href="#" class="sidebar-link" data-target="portals">
-                        <img src="/beta/assets/Untitled3_20260608111649.png" alt="portals"
-                            class="nav-word-img nav-word-default">
-                        <img src="/beta/assets/Untitled3_20260608112325.png" alt="portals"
-                            class="nav-word-img nav-word-active">
+                    <a href="#" class="sidebar-link" id="mobile-portals-toggle" data-target="portals">
+                        <span>portals</span>
                         <span class="arrow">▼</span>
                     </a>
-                    <div id="mobile-sidebar-portals" class="sidebar-dropdown-content hidden">
-                        <!-- Dynamic portals list -->
+                    <div id="mobile-portals-dropdown" class="sidebar-dropdown-content hidden">
+                        <div class="mobile-dropdown-filters-grid">
+                            <!-- Left: Sorts -->
+                            <div class="mobile-dropdown-col mobile-sort-box">
+                                <button class="mobile-dropdown-btn filter-btn active" data-sort="LIT">LIT</button>
+                                <button class="mobile-dropdown-btn filter-btn" data-sort="NEWEST">NEWEST</button>
+                                <button class="mobile-dropdown-btn filter-btn" data-sort="UPVOTED">UPVOTED</button>
+                            </div>
+                            <!-- Right: Filters -->
+                            <div class="mobile-dropdown-col mobile-filter-box">
+                                <button class="mobile-dropdown-btn filter-btn active" data-filter="ALL">ALL</button>
+                                <button class="mobile-dropdown-btn filter-btn" data-filter="FOREIGN">FOREIGN</button>
+                                <button class="mobile-dropdown-btn filter-btn" data-filter="PREMIUM">PREMIUM</button>
+                                <button class="mobile-dropdown-btn filter-btn" data-filter="SPECIAL">SPECIAL</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <a href="#" class="sidebar-link" data-target="makers">
-                    <img src="/beta/assets/Untitled3_20260608104858.png" alt="makers"
-                        class="nav-word-img nav-word-default">
-                    <img src="/beta/assets/Untitled3_20260608105356.png" alt="makers"
-                        class="nav-word-img nav-word-active">
-                </a>
-                <a href="#" class="sidebar-link" data-target="about">
-                    <img src="/beta/assets/Untitled3_20260608042222.png" alt="about"
-                        class="nav-word-img nav-word-default">
-                    <img src="/beta/assets/Untitled3_20260608042814.png" alt="about"
-                        class="nav-word-img nav-word-active">
-                </a>
             </nav>
-
-            <div class="sidebar-filters">
-                <div style="margin-bottom: 12px;">
-                    <span class="control-label" style="display: block; margin-bottom: 6px;">SORT BY:</span>
-                    <div class="filter-box mobile-sort-box" style="gap: 4px;">
-                        <button class="filter-btn active" data-sort="LIT">LIT</button>
-                        <button class="filter-btn" data-sort="UPVOTED">UPVOTED</button>
-                        <button class="filter-btn" data-sort="NEWEST">NEWEST</button>
-                    </div>
-                </div>
-                <div>
-                    <span class="control-label" style="display: block; margin-bottom: 6px;">FILTERS:</span>
-                    <div class="filter-box mobile-filter-box" style="gap: 4px;">
-                        <button class="filter-btn active" data-filter="ALL">ALL</button>
-                        <button class="filter-btn" data-filter="FOREIGN">FOREIGN</button>
-                        <button class="filter-btn" data-filter="PREMIUM">PREMIUM</button>
-                        <button class="filter-btn" data-filter="SPECIAL">SPECIAL</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Boost CTA -->
-            <a href="https://discord.gg/v9NUPx3p78" target="_blank" class="sidebar-boost-cta"
-                title="Boost the Area 12 Discord">
-                <img src="/beta/assets/Untitled3_20260608045541.png" alt="boost"
-                    class="sidebar-boost-img nav-word-default">
-                <img src="/beta/assets/Untitled3_20260608050242.png" alt="boost"
-                    class="sidebar-boost-img nav-word-active" style="display:none;">
-            </a>
         </div>
 
         <!-- Active Server Slider Card (Panel 1) -->
