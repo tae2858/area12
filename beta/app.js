@@ -2928,26 +2928,79 @@ function renderMakersList() {
     // Clear previous
     container.innerHTML = "";
 
+    // 1. Hardcode the three verified/pinned makers at the top
+    const makers = [
+        {
+            username: "Jared12",
+            displayName: "Jared12",
+            status: "verified",
+            pinned: true,
+            role: "Verified Portal Maker",
+            bio: "Official creator and designer of Area 12's network of servers."
+        },
+        {
+            username: "Nice",
+            displayName: "Nice",
+            status: "verified",
+            pinned: true,
+            role: "Verified Portal Maker",
+            bio: "Official creator and designer of Area 12's network of servers."
+        },
+        {
+            username: "Angels",
+            displayName: "Angels",
+            status: "verified",
+            pinned: true,
+            role: "Verified Portal Maker",
+            bio: "Official creator and designer of Area 12's network of servers."
+        }
+    ];
+
+    const seen = new Set(["jared12", "nice", "angels"]);
+
+    // 2. Scan allServers to extract all other portal makers
+    allServers.forEach(server => {
+        if (!server.admin) return;
+        
+        // Split admins list (split by comma, slash, ampersand, or semicolon)
+        const adminsList = server.admin.split(/[,&/;]/).map(a => a.trim());
+        
+        adminsList.forEach(adminName => {
+            if (!adminName) return;
+            const lowerAdmin = adminName.toLowerCase();
+            
+            if (!seen.has(lowerAdmin)) {
+                seen.add(lowerAdmin);
+                
+                makers.push({
+                    username: adminName,
+                    displayName: adminName,
+                    status: "foreign",
+                    pinned: false,
+                    role: "Foreign Portal Maker",
+                    bio: "Maker of a foreign server registered on Area 12."
+                });
+            }
+        });
+    });
+
     // Render cards
-    MAKERS_DATA.forEach(maker => {
+    makers.forEach(maker => {
         const card = document.createElement("div");
         card.className = "maker-card";
         if (maker.pinned) {
             card.classList.add("pinned-maker");
         }
 
-        // Use relative path to assets folder
-        const bannerPath = BASE_PATH + `assets/${maker.image}`;
-
+        // Render card content without banner image, and with Verified/Foreign badge!
         card.innerHTML = `
-            <div class="maker-card-banner" style="background-image: url('${bannerPath}')"></div>
             <div class="maker-card-avatar-wrap">
                 <div class="maker-card-avatar">${maker.displayName[0].toUpperCase()}</div>
             </div>
             <div class="maker-card-info">
                 <div>
                     <h3 class="maker-card-name">${maker.displayName}</h3>
-                    <p class="maker-card-role">${maker.role}</p>
+                    <span class="maker-card-badge ${maker.status}">${maker.status.toUpperCase()}</span>
                 </div>
                 <button class="maker-card-action">View Profile</button>
             </div>
@@ -2966,42 +3019,32 @@ function openMakerProfileModal(maker) {
     if (!modal) return;
 
     // Populate data
-    document.getElementById("maker-modal-banner").style.backgroundImage = `url('${BASE_PATH}assets/${maker.image}')`;
     document.getElementById("maker-modal-avatar").innerText = maker.displayName[0].toUpperCase();
     document.getElementById("maker-modal-name").innerText = maker.displayName;
     document.getElementById("maker-modal-role").innerText = maker.role;
-    document.getElementById("maker-modal-bio").innerText = maker.bio || "No biography provided.";
-
-    // Discord Button
-    const discordBtn = document.getElementById("maker-modal-discord");
-    const discordText = document.getElementById("maker-modal-discord-text");
-    if (maker.discord) {
-        discordBtn.style.display = "inline-flex";
-        discordText.innerText = maker.discord;
-
-        // Copy to clipboard or alert on click
-        discordBtn.onclick = (e) => {
-            e.stopPropagation();
-            navigator.clipboard.writeText(maker.discord);
-            showToast(`Discord tag "${maker.discord}" copied to clipboard!`);
-        };
-    } else {
-        discordBtn.style.display = "none";
-    }
 
     // Portals / Servers Created
     const serversListContainer = document.getElementById("maker-modal-servers");
     serversListContainer.innerHTML = "";
 
     // Find servers made by this user in allServers
-    // We match if the maker's username is in server.admin
-    const matchedServers = allServers.filter(s => {
-        if (!s.admin) return false;
-        // Split server admins by comma/spaces and match
-        const adminsList = s.admin.split(/[,&/]/).map(a => a.trim().toLowerCase());
-        return adminsList.includes(maker.username.toLowerCase()) ||
-            s.admin.toLowerCase().includes(maker.username.toLowerCase());
-    });
+    let matchedServers = [];
+    const lowerUser = maker.username.toLowerCase();
+    
+    if (lowerUser === "jared12" || lowerUser === "nice" || lowerUser === "angels") {
+        // Hardcode these 3 servers exactly!
+        matchedServers = allServers.filter(s => {
+            const sid = s.server_id.toLowerCase();
+            return sid === "qvzacng5" || sid === "94d92lvd" || sid === "xx9ixq6h";
+        });
+    } else {
+        // Match servers normally
+        matchedServers = allServers.filter(s => {
+            if (!s.admin) return false;
+            const adminsList = s.admin.split(/[,&/;]/).map(a => a.trim().toLowerCase());
+            return adminsList.includes(lowerUser) || s.admin.toLowerCase().includes(lowerUser);
+        });
+    }
 
     if (matchedServers.length > 0) {
         matchedServers.forEach(server => {
