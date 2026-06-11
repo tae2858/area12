@@ -25,7 +25,7 @@
     <!-- Favicon Icon -->
     <link rel="icon" type="image/png" href="logo.png">
     <!-- Main Style Sheet Link -->
-    <link rel="stylesheet" href="style.css?v=20260611_1502">
+    <link rel="stylesheet" href="style.css?v=20260611_1615">
 </head>
 
 <body>
@@ -84,15 +84,15 @@
             </div>
 
             <nav class="nav-links">
-                <a href="#" class="active nav-img-link">
+                <a href="#" id="home-nav-link" class="active nav-img-link" data-target="home">
                     <img src="assets/Untitled3_20260608103604.png" alt="home" class="nav-word-img nav-word-default">
                     <img src="assets/Untitled3_20260608104118.png" alt="home" class="nav-word-img nav-word-active">
                 </a>
-                <a href="#directory" class="nav-img-link">
+                <a href="#" id="portals-nav-link" class="nav-img-link" data-target="portals">
                     <img src="assets/Untitled3_20260608111649.png" alt="portals" class="nav-word-img nav-word-default">
                     <img src="assets/Untitled3_20260608112325.png" alt="portals" class="nav-word-img nav-word-active">
                 </a>
-                <a href="#" id="about-nav-link" class="nav-img-link">
+                <a href="#" id="about-nav-link" class="nav-img-link" data-target="about">
                     <img src="assets/Untitled3_20260608042222.png" alt="about" class="nav-word-img nav-word-default">
                     <img src="assets/Untitled3_20260608042814.png" alt="about" class="nav-word-img nav-word-active">
                 </a>
@@ -114,74 +114,86 @@
 
     <!-- Main Container -->
     <main class="content-container">
+        <!-- Desktop Home Container -->
+        <div id="desktop-home-container" class="home-page-container">
+            <!-- Rendered dynamically -->
+        </div>
 
-        <!-- Subscription/Pricing Card Layout (MultiCraft Favorite Slots) -->
-        <section class="slots-section">
-            <div class="section-header">
-                <h3 class="section-title">PINNED PORTALS</h3>
-                <p class="section-subtitle">Verified high-performance favorites</p>
-            </div>
-
-            <div class="slots-grid" id="favorites-grid">
-                <!-- Loading placeholder cards -->
-                <div class="slot-card-skeleton"></div>
-                <div class="slot-card-skeleton"></div>
-            </div>
-        </section>
-
-        <!-- Master Directory Section -->
-        <section id="directory" class="directory-section">
-            <div class="directory-toolbar">
-                <div class="toolbar-title-section">
-                    <h3 class="section-title">ALL ACTIVE SERVERS</h3>
-                    <p class="section-subtitle" id="lobby-counter">Polling server arrays...</p>
+        <!-- Portals Container (Directory) -->
+        <div id="portals-page-container" class="portals-page-container hidden">
+            <!-- Subscription/Pricing Card Layout (MultiCraft Favorite Slots) -->
+            <section class="slots-section">
+                <div class="section-header">
+                    <h3 class="section-title">PINNED PORTALS</h3>
+                    <p class="section-subtitle">Verified high-performance favorites</p>
                 </div>
-                <!-- Search bar styling with HSL tailors -->
-                <div class="search-wrapper">
-                    <input type="text" id="search-input" placeholder="Search servers or invites..."
-                        class="search-input">
-                    <span class="search-icon">🔍</span>
-                </div>
-            </div>
 
-            <!-- Directory Sort and Filters Controls Bar -->
-            <div class="directory-controls-bar">
-                <!-- Left: Sort By -->
-                <div class="sort-controls">
-                    <span class="control-label">SORT BY:</span>
-                    <button class="control-btn sort-btn active" data-sort="LIT">LIT 🔥</button>
-                    <button class="control-btn sort-btn" data-sort="UPVOTED">UPVOTED 📈</button>
-                    <button class="control-btn sort-btn" data-sort="NEWEST">NEWEST 🆕</button>
+                <div class="slots-grid" id="favorites-grid">
+                    <!-- Loading placeholder cards -->
+                    <div class="slot-card-skeleton"></div>
+                    <div class="slot-card-skeleton"></div>
                 </div>
-                <!-- Right: Filters -->
-                <div class="filter-controls">
-                    <span class="control-label">FILTERS:</span>
-                    <button class="control-btn filter-btn active" data-filter="ALL">ALL</button>
-                    <button class="control-btn filter-btn" data-filter="FOREIGN">FOREIGN 🌐</button>
-                    <button class="control-btn filter-btn" data-filter="PREMIUM">PREMIUM ⭐</button>
-                    <button class="control-btn filter-btn" data-filter="SPECIAL">SPECIAL 💎</button>
+            </section>
+
+            <!-- Master Directory Section -->
+            <section id="directory" class="directory-section">
+                <div class="directory-toolbar">
+                    <div class="toolbar-title-section">
+                        <h3 class="section-title">ALL ACTIVE SERVERS</h3>
+                        <p class="section-subtitle" id="lobby-counter">Polling server arrays...</p>
+                    </div>
+                    <!-- Search bar styling with HSL tailors -->
+                    <div class="search-wrapper">
+                        <input type="text" id="search-input" placeholder="Search servers or invites..."
+                            class="search-input">
+                        <span class="search-icon">🔍</span>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Directory Grid List -->
-            <div class="server-grid" id="server-grid">
-                <!-- Loaded servers will append here -->
-            </div>
-        </section>
+                <!-- Directory Sort and Filters Controls Bar -->
+                <div class="directory-controls-bar">
+                    <!-- Left: Sort By -->
+                    <div class="sort-controls">
+                        <span class="control-label">SORT BY:</span>
+                        <button class="control-btn sort-btn active" data-sort="LIT">LIT 🔥</button>
+                        <button class="control-btn sort-btn" data-sort="UPVOTED">UPVOTED 📈</button>
+                        <button class="control-btn sort-btn" data-sort="NEWEST">NEWEST 🆕</button>
+                    </div>
+                    <!-- Right: Filters -->
+                    <div class="filter-controls">
+                        <span class="control-label">FILTERS:</span>
+                        <button class="control-btn filter-btn active" data-filter="ALL">ALL</button>
+                        <button class="control-btn filter-btn" data-filter="FOREIGN">FOREIGN 🌐</button>
+                        <button class="control-btn filter-btn" data-filter="PREMIUM">PREMIUM ⭐</button>
+                        <button class="control-btn filter-btn" data-filter="SPECIAL">SPECIAL 💎</button>
+                    </div>
+                </div>
 
-        <!-- Footer Description (Guns.lol styling) -->
+                <!-- Directory Grid List -->
+                <div class="server-grid" id="server-grid">
+                    <!-- Loaded servers will append here -->
+                </div>
+            </section>
+        </div>
     </main>
 
     <div id="about-page-container" class="about-page-container about-section hidden">
         <button id="about-back-btn" class="bio-back-btn">← Back</button>
-        <div class="about-card">
+        <div class="about-card" style="max-width: 600px; width: 95%; margin: 0 auto;">
             <h4>About Area 12</h4>
             <p>Area 12 is a server franchise in MultiCraft, we are home to 3 servers and provide free information
                 about all servers in MultiCraft!</p>
-            <div class="about-credits">
+            
+            <h2 class="credits-section-title text-orchid-glow"
+                style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px; font-family: 'MultiCraft', 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 900; text-align: center; letter-spacing: 1px;">
+                TEAM CREDITS</h2>
+            <div class="credits-list" id="developers-list-container" style="margin-top: 20px;">
+                <!-- Dynamic grid of developer cards -->
+            </div>
+
+            <div class="about-credits" style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 20px;">
                 <span>© 2026 Area 12. All Rights Reserved.</span>
                 <span class="heart-pulse">Made with 🤍 by the Area 12 team.</span>
-                <span><a href="/credits" id="credits-link" class="credits-footer-btn">Team Credits</a></span>
             </div>
         </div>
     </div>
@@ -276,18 +288,11 @@
             <div class="credits-list" id="makers-list-container">
                 <!-- Dynamic grid of maker cards -->
             </div>
-
-            <h2 class="credits-section-title text-orchid-glow"
-                style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 30px; font-family: 'MultiCraft', 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 900; text-align: center; letter-spacing: 1px;">
-                DEVELOPERS</h2>
-            <div class="credits-list" id="developers-list-container">
-                <!-- Dynamic grid of developer cards -->
-            </div>
         </div>
     </div>
 
 
-    <script type="module" src="app.js?v=20260611_1502"></script>
+    <script type="module" src="app.js?v=20260611_1615"></script>
 
     <!-- Glowing toast notification system -->
     <div id="toast" class="toast-notification">Copied invite code to clipboard!</div>
@@ -539,6 +544,11 @@
             </nav>
         </div>
         <div id="mobile-sidebar-overlay" class="mobile-sidebar-overlay"></div>
+
+        <!-- Mobile Home Container -->
+        <div id="mobile-home-container" class="home-page-container mobile-home-container hidden">
+            <!-- Rendered dynamically -->
+        </div>
 
         <!-- Active Server Slider Card (Panel 1) -->
         <div class="mobile-main-content">

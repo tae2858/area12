@@ -3486,3 +3486,202 @@ body.is-embedded .bio-stats-bar {
     object-fit: contain;
     vertical-align: middle;
 }
+
+/* ==========================================================================
+   Home View Dashboard & Horizontal Scroll Styles
+   ========================================================================== */
+.home-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.home-page-container.hidden {
+    display: none !important;
+}
+
+.home-row-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.home-row-section .section-header {
+    margin-bottom: 15px;
+}
+
+.horizontal-scroll-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 4px 20px 4px;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-pink) rgba(255, 255, 255, 0.05);
+}
+
+.horizontal-scroll-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple));
+    border-radius: 4px;
+}
+
+/* Ensure child elements do not shrink and maintain layout in scrolling container */
+.horizontal-scroll-container .server-card {
+    flex-shrink: 0;
+    width: 300px !important;
+    margin: 0 !important;
+}
+
+.horizontal-scroll-container .maker-card {
+    flex-shrink: 0;
+    width: 220px !important;
+    height: 180px !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+}
+
+/* Donate Section Styling */
+.home-donate-section {
+    margin: 10px 0;
+}
+
+.donate-banner-card {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.12), rgba(186, 85, 211, 0.12));
+    border: 2px solid rgba(236, 72, 153, 0.4);
+    box-shadow: 0 0 25px rgba(236, 72, 153, 0.15);
+    border-radius: 20px;
+    padding: 35px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.donate-banner-card:hover {
+    border-color: rgba(236, 72, 153, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 0 35px rgba(236, 72, 153, 0.25);
+}
+
+.donate-banner-content h3 {
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
+    font-size: 1.8rem;
+    color: #ffffff;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 12px rgba(236, 72, 153, 0.5);
+}
+
+.donate-banner-content p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    max-width: 650px;
+    margin: 0 auto 24px auto;
+    line-height: 1.6;
+}
+
+.donate-cta-btn {
+    display: inline-block;
+    background: var(--accent-pink);
+    color: #ffffff;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 900;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+    border: none;
+    cursor: pointer;
+}
+
+.donate-cta-btn:hover {
+    background: #db2777;
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(236, 72, 153, 0.7);
+}
+
+/* Inline About Section Styling */
+.home-about-section {
+    border-top: 1px solid var(--border-color);
+    padding-top: 40px;
+    margin-bottom: 20px;
+}
+
+.home-about-section .about-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.home-about-section .about-card h4 {
+    font-family: 'MultiCraft', 'Outfit', sans-serif;
+    font-size: 1.4rem;
+    color: #ffffff;
+    margin-bottom: 12px;
+}
+
+.home-about-section .about-card p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.home-about-section .about-credits {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Mobile specific overrides for Home Dashboard layout */
+@media (max-width: 768px) {
+    .mobile-home-container {
+        padding: 20px 16px;
+        overflow-y: auto;
+        flex: 1;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .home-page-container {
+        gap: 30px;
+    }
+
+    .horizontal-scroll-container {
+        gap: 12px;
+        padding-bottom: 15px;
+    }
+
+    .horizontal-scroll-container .server-card {
+        width: 260px !important;
+    }
+
+    .horizontal-scroll-container .maker-card {
+        width: 190px !important;
+        height: 170px !important;
+    }
+
+    .donate-banner-content h3 {
+        font-size: 1.4rem;
+    }
+
+    .donate-banner-content p {
+        font-size: 0.85rem;
+    }
+}

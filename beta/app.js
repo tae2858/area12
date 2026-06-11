@@ -24,6 +24,33 @@ const activeVoteRequests = new Set();
 let currentSort = "LIT";
 let currentFilter = "ALL";
 
+const DEVELOPERS_DATA = [
+    {
+        username: "ziadlive",
+        displayName: "ziadlive",
+        role: "Website Creator & Lead Developer",
+        bio: "Created the Area 12 platform, lead developer of frontend, design, and architecture."
+    },
+    {
+        username: "myth",
+        displayName: "myth",
+        role: "Backend Developer",
+        bio: "Developed and manages backend databases and game integration APIs."
+    },
+    {
+        username: "Luca1",
+        displayName: "Luca1",
+        role: "Vulkan Developer (Frontend)",
+        bio: "Vulkan graphics engine integration and high-end frontend layout modules."
+    },
+    {
+        username: "Jared12",
+        displayName: "Jared12",
+        role: "Maker of Area 12 & UI/UX Designer",
+        bio: "Creative lead designer for the UI/UX, layouts, and official server mechanics."
+    }
+];
+
 const BASE_PATH = window.location.pathname.startsWith('/beta') ? '/beta/' : '/';
 
 // Environment-aware backend API URL binding
@@ -436,6 +463,24 @@ function initBetaApp() {
         checkRoute(allServers);
     });
 
+    const homeNavLink = document.getElementById("home-nav-link");
+    if (homeNavLink) {
+        homeNavLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.history.pushState({}, '', '/beta');
+            checkRoute(allServers);
+        });
+    }
+
+    const portalsNavLink = document.getElementById("portals-nav-link");
+    if (portalsNavLink) {
+        portalsNavLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.history.pushState({}, '', '/beta/portals');
+            checkRoute(allServers);
+        });
+    }
+
     const aboutNavLink = document.getElementById("about-nav-link");
     if (aboutNavLink) {
         aboutNavLink.addEventListener("click", (e) => {
@@ -779,6 +824,7 @@ function initAPIPolling() {
 
         renderPinnedFavorites(allServers);
         renderDirectoryGrid(allServers);
+        renderHomeView(allServers);
         checkRoute(allServers);
         if (window.renderMobileUI) {
             window.renderMobileUI();
@@ -1012,61 +1058,261 @@ function renderDirectoryGrid(servers) {
     }
 
     filtered.forEach(server => {
-        let pct = 0;
-        try {
-            const parts = server.players.split("/");
-            if (parts.length === 2 && parseInt(parts[1]) > 0) {
-                pct = (parseInt(parts[0]) / parseInt(parts[1])) * 100;
-            }
-        } catch (e) { }
+        container.appendChild(createServerCardElement(server));
+    });
+}
 
-        const card = document.createElement("div");
-        card.className = "server-card";
-        card.style.cursor = "pointer";
+function createServerCardElement(server) {
+    let pct = 0;
+    try {
+        const parts = server.players.split("/");
+        if (parts.length === 2 && parseInt(parts[1]) > 0) {
+            pct = (parseInt(parts[0]) / parseInt(parts[1])) * 100;
+        }
+    } catch (e) { }
 
-        card.addEventListener("click", (e) => {
-            if (e.target.tagName === "BUTTON" || e.target.closest("button")) {
-                return;
-            }
-            const slug = getServerSlug(server);
-            window.history.pushState({}, '', '/beta/' + slug);
-            checkRoute(allServers);
-        });
+    const card = document.createElement("div");
+    card.className = "server-card";
+    card.style.cursor = "pointer";
 
-        const badgeHtml = server.is_verified
-            ? `<span class="verified-badge" style="background: rgba(0, 240, 255, 0.15); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Verified</span>`
-            : `<span class="foreign-badge" style="background: rgba(255, 20, 147, 0.15); border: 1px solid var(--accent-pink); color: var(--accent-pink); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Foreign</span>`;
+    card.addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON" || e.target.closest("button")) {
+            return;
+        }
+        const slug = getServerSlug(server);
+        window.history.pushState({}, '', '/beta/' + slug);
+        checkRoute(allServers);
+    });
 
-        card.innerHTML = `
-            <div>
-                <div class="server-header">
-                    <h4 class="server-name" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <span>${server.name}</span>
-                        ${badgeHtml}
-                    </h4>
-                    <span class="status-badge ${server.online ? 'online' : 'offline'}">${server.online ? 'online' : 'offline'}</span>
-                </div>
-                <div class="server-details">
-                    <div class="detail-line">
-                        <span class="detail-lbl">Invite code</span>
-                        <span class="detail-val token">${server.server_id}</span>
-                    </div>
-                    <div class="detail-line">
-                        <span class="detail-lbl">Maker</span>
-                        <span class="detail-val">${server.admin}</span>
-                    </div>
-                    <div class="detail-line">
-                        <span class="detail-lbl">Players (${server.players})</span>
-                        <span class="detail-val">${server.pvp ? '⚔️ PvP' : '🌾 PvE'}</span>
-                    </div>
-                    <div class="player-progress-container">
-                        <div class="player-progress-bar" style="width: ${pct}%"></div>
-                    </div>
-                </div>
-                <p class="server-description-box">${server.description}</p>
+    const badgeHtml = server.is_verified
+        ? `<span class="verified-badge" style="background: rgba(0, 240, 255, 0.15); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Verified</span>`
+        : `<span class="foreign-badge" style="background: rgba(255, 20, 147, 0.15); border: 1px solid var(--accent-pink); color: var(--accent-pink); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Foreign</span>`;
+
+    card.innerHTML = `
+        <div>
+            <div class="server-header">
+                <h4 class="server-name" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span>${server.name}</span>
+                    ${badgeHtml}
+                </h4>
+                <span class="status-badge ${server.online ? 'online' : 'offline'}">${server.online ? 'online' : 'offline'}</span>
             </div>
-            <button class="copy-card-btn" onclick="copyToClipboard('${server.server_id}')">COPY CODE</button>
+            <div class="server-details">
+                <div class="detail-line">
+                    <span class="detail-lbl">Invite code</span>
+                    <span class="detail-val token">${server.server_id}</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-lbl">Maker</span>
+                    <span class="detail-val">${server.admin || 'Unknown'}</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-lbl">Players (${server.players})</span>
+                    <span class="detail-val">${server.pvp ? '⚔️ PvP' : '🌾 PvE'}</span>
+                </div>
+                <div class="player-progress-container">
+                    <div class="player-progress-bar" style="width: ${pct}%"></div>
+                </div>
+            </div>
+            <p class="server-description-box">${server.description}</p>
+        </div>
+        <button class="copy-card-btn" onclick="copyToClipboard('${server.server_id}')">COPY CODE</button>
+    `;
+    return card;
+}
+
+function renderHomeView(servers) {
+    const desktopHome = document.getElementById("desktop-home-container");
+    const mobileHome = document.getElementById("mobile-home-container");
+
+    const populateHome = (container) => {
+        if (!container) return;
+        container.innerHTML = "";
+
+        // 1. TOP LIT PORTALS 🔥
+        const litServers = [...servers].sort((a, b) => {
+            if (a.is_favorite && !b.is_favorite) return -1;
+            if (!a.is_favorite && b.is_favorite) return 1;
+            if (a.online && !b.online) return -1;
+            if (!a.online && b.online) return 1;
+            return b.player_val - a.player_val;
+        }).slice(0, 6);
+
+        // 2. NEWEST PORTALS 🆕
+        const newestServers = [...servers].sort((a, b) => {
+            if (a.is_registered && !b.is_registered) return -1;
+            if (!a.is_registered && b.is_registered) return 1;
+            const timeA = a.created_at || a.server_id || "";
+            const timeB = b.created_at || b.server_id || "";
+            return timeB.localeCompare(timeA);
+        }).slice(0, 6);
+
+        // 3. TOP UPVOTED PORTALS 📈
+        const upvotedServers = [...servers].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 6);
+
+        // 4. Portal Makers (extract top 6 makers)
+        const makers = [
+            { username: "Jared12", displayName: "Jared12", status: "verified", role: "Verified Portal Maker", pinned: true },
+            { username: "Nice", displayName: "Nice", status: "verified", role: "Verified Portal Maker", pinned: true },
+            { username: "Angels", displayName: "Angels", status: "verified", role: "Verified Portal Maker", pinned: true }
+        ];
+        const seen = new Set(["jared12", "nice", "angels"]);
+
+        servers.forEach(server => {
+            if (!server.admin) return;
+            const admins = server.admin.split(/[,&/;]/).map(a => a.trim());
+            admins.forEach(adminName => {
+                if (!adminName) return;
+                const lower = adminName.toLowerCase();
+                if (!seen.has(lower)) {
+                    seen.add(lower);
+                    makers.push({
+                        username: adminName,
+                        displayName: adminName,
+                        status: "foreign",
+                        role: "Foreign Portal Maker",
+                        pinned: false
+                    });
+                }
+            });
+        });
+        const topMakers = makers.slice(0, 6);
+
+        // Build HTML Layout
+        container.innerHTML = `
+            <!-- TOP LIT SECTION -->
+            <section class="home-row-section">
+                <div class="section-header">
+                    <h3 class="section-title">TOP LIT PORTALS 🔥</h3>
+                    <p class="section-subtitle">Most active servers online right now</p>
+                </div>
+                <div class="horizontal-scroll-container" id="${container.id}-lit-list"></div>
+            </section>
+
+            <!-- PORTAL MAKERS SECTION -->
+            <section class="home-row-section">
+                <div class="section-header">
+                    <h3 class="section-title">PORTAL MAKERS 👥</h3>
+                    <p class="section-subtitle">The creators behind the server portals</p>
+                </div>
+                <div class="horizontal-scroll-container" id="${container.id}-makers-list"></div>
+            </section>
+
+            <!-- NEWEST PORTALS SECTION -->
+            <section class="home-row-section">
+                <div class="section-header">
+                    <h3 class="section-title">NEWEST PORTALS 🆕</h3>
+                    <p class="section-subtitle">Freshly added portals in our ecosystem</p>
+                </div>
+                <div class="horizontal-scroll-container" id="${container.id}-newest-list"></div>
+            </section>
+
+            <!-- DONATE BANNER -->
+            <section class="home-row-section home-donate-section">
+                <div class="donate-banner-card">
+                    <div class="donate-banner-content">
+                        <h3>SUPPORT AREA 12 💖</h3>
+                        <p>Help us keep Area 12 running 24/7, list custom domains, and support developers! Join our Discord or donate directly to unlock premium ranks.</p>
+                        <a href="https://discord.gg/v9NUPx3p78" target="_blank" class="donate-cta-btn">DONATE NOW</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TOP UPVOTED SECTION -->
+            <section class="home-row-section">
+                <div class="section-header">
+                    <h3 class="section-title">MOST UPVOTED PORTALS 📈</h3>
+                    <p class="section-subtitle">Popular communities voted by you</p>
+                </div>
+                <div class="horizontal-scroll-container" id="${container.id}-upvoted-list"></div>
+            </section>
+
+            <!-- INLINE ABOUT SECTION -->
+            <section class="home-row-section home-about-section">
+                <div class="about-card">
+                    <h4>About Area 12</h4>
+                    <p>Area 12 is a server franchise in MultiCraft, we are home to 3 servers and provide free information about all servers in MultiCraft!</p>
+                    <div class="about-credits">
+                        <span>© 2026 Area 12. All Rights Reserved.</span>
+                        <span class="heart-pulse">Made with 🤍 by the Area 12 team.</span>
+                    </div>
+                </div>
+            </section>
         `;
+
+        // Populate lists
+        const litListEl = document.getElementById(`${container.id}-lit-list`);
+        const makersListEl = document.getElementById(`${container.id}-makers-list`);
+        const newestListEl = document.getElementById(`${container.id}-newest-list`);
+        const upvotedListEl = document.getElementById(`${container.id}-upvoted-list`);
+
+        if (litListEl) {
+            litServers.forEach(s => litListEl.appendChild(createServerCardElement(s)));
+        }
+        if (newestListEl) {
+            newestServers.forEach(s => newestListEl.appendChild(createServerCardElement(s)));
+        }
+        if (upvotedListEl) {
+            upvotedServers.forEach(s => upvotedListEl.appendChild(createServerCardElement(s)));
+        }
+        if (makersListEl) {
+            topMakers.forEach(maker => {
+                const mCard = document.createElement("div");
+                mCard.className = "maker-card";
+                if (maker.pinned) mCard.classList.add("pinned-maker");
+                mCard.innerHTML = `
+                    <div class="maker-card-avatar-wrap">
+                        <div class="maker-card-avatar">${maker.displayName[0].toUpperCase()}</div>
+                    </div>
+                    <div class="maker-card-info">
+                        <div>
+                            <h3 class="maker-card-name">${maker.displayName}</h3>
+                            <span class="maker-card-badge ${maker.status}">${maker.status.toUpperCase()}</span>
+                        </div>
+                        <button class="maker-card-action">View Profile</button>
+                    </div>
+                `;
+                mCard.addEventListener("click", () => {
+                    openMakerProfileModal(maker);
+                });
+                makersListEl.appendChild(mCard);
+            });
+        }
+    };
+
+    populateHome(desktopHome);
+    populateHome(mobileHome);
+}
+
+function renderDevelopersList() {
+    const container = document.getElementById("developers-list-container");
+    if (!container) return;
+    container.innerHTML = "";
+
+    DEVELOPERS_DATA.forEach(dev => {
+        const card = document.createElement("div");
+        card.className = "maker-card";
+        card.innerHTML = `
+            <div class="maker-card-avatar-wrap">
+                <div class="maker-card-avatar" style="background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));">${dev.displayName[0].toUpperCase()}</div>
+            </div>
+            <div class="maker-card-info">
+                <div>
+                    <h3 class="maker-card-name">${dev.displayName}</h3>
+                    <p class="maker-card-role" style="color: var(--accent-pink); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-top: 6px;">${dev.role}</p>
+                </div>
+                <button class="maker-card-action">View Profile</button>
+            </div>
+        `;
+        card.addEventListener("click", () => {
+            openMakerProfileModal({
+                username: dev.username,
+                displayName: dev.displayName,
+                role: dev.role,
+                bio: dev.bio,
+                pinned: true
+            });
+        });
         container.appendChild(card);
     });
 }
@@ -1118,11 +1364,24 @@ function checkRoute(servers) {
     const aboutPage = getEl("about-page-container");
     const mainNavbar = getQuery(".main-navbar");
     const contentContainer = getQuery(".content-container");
+    const mobileLayout = getQuery(".mobile-layout-container");
     const enterOverlay = getEl("enter-overlay");
     const musicPlayer = getEl("music-player-widget");
 
     const hideEl = el => el && el.classList.add("hidden");
     const showEl = el => el && el.classList.remove("hidden");
+
+    // Helper to sync active nav classes across desktop & mobile
+    const updateActiveNav = (target) => {
+        document.querySelectorAll(".nav-links a, .sidebar-nav a").forEach(a => {
+            const tgt = a.getAttribute("data-target") || (a.id === "about-nav-link" ? "about" : (a.id === "home-nav-link" ? "home" : (a.id === "portals-nav-link" ? "portals" : "")));
+            if (tgt === target) {
+                a.classList.add("active");
+            } else {
+                a.classList.remove("active");
+            }
+        });
+    };
 
     if (!relativePath || relativePath === "index.html" || relativePath === "index") {
         hideEl(bioPage);
@@ -1130,6 +1389,43 @@ function checkRoute(servers) {
         hideEl(aboutPage);
         showEl(mainNavbar);
         showEl(contentContainer);
+        showEl(mobileLayout);
+
+        // Show home container, hide portals container
+        const desktopHome = getEl("desktop-home-container");
+        const mobileHome = getEl("mobile-home-container");
+        const portalsContainer = getEl("portals-page-container");
+        const mobileMainContent = getQuery(".mobile-main-content");
+
+        showEl(desktopHome);
+        showEl(mobileHome);
+        hideEl(portalsContainer);
+        hideEl(mobileMainContent);
+
+        updateActiveNav("home");
+        return;
+    }
+
+    if (relativePath === "portals") {
+        hideEl(bioPage);
+        hideEl(creditsPage);
+        hideEl(aboutPage);
+        showEl(mainNavbar);
+        showEl(contentContainer);
+        showEl(mobileLayout);
+
+        // Hide home container, show portals container
+        const desktopHome = getEl("desktop-home-container");
+        const mobileHome = getEl("mobile-home-container");
+        const portalsContainer = getEl("portals-page-container");
+        const mobileMainContent = getQuery(".mobile-main-content");
+
+        hideEl(desktopHome);
+        hideEl(mobileHome);
+        showEl(portalsContainer);
+        showEl(mobileMainContent);
+
+        updateActiveNav("portals");
         return;
     }
 
@@ -1139,9 +1435,11 @@ function checkRoute(servers) {
         hideEl(aboutPage);
         hideEl(mainNavbar);
         hideEl(contentContainer);
+        hideEl(mobileLayout);
         if (enterOverlay) enterOverlay.classList.add("hide");
         if (musicPlayer) musicPlayer.style.transform = "translateX(0)";
         renderMakersList();
+        updateActiveNav("makers");
         return;
     }
 
@@ -1151,8 +1449,11 @@ function checkRoute(servers) {
         hideEl(creditsPage);
         hideEl(mainNavbar);
         hideEl(contentContainer);
+        hideEl(mobileLayout);
         if (enterOverlay) enterOverlay.classList.add("hide");
         if (musicPlayer) musicPlayer.style.transform = "translateX(0)";
+        renderDevelopersList();
+        updateActiveNav("about");
         return;
     }
 
@@ -1181,6 +1482,7 @@ function checkRoute(servers) {
         hideEl(aboutPage);
         hideEl(mainNavbar);
         hideEl(contentContainer);
+        hideEl(mobileLayout);
         if (enterOverlay) enterOverlay.classList.add("hide");
 
         const sName = getEl("bio-server-name");
@@ -2383,6 +2685,10 @@ window.initMobileUI = function () {
     document.querySelectorAll(".mobile-dropdown-filters-grid .filter-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             if (sidebar) sidebar.classList.remove("open");
+            if (window.location.pathname.toLowerCase() !== "/beta/portals") {
+                window.history.pushState({}, '', '/beta/portals');
+                checkRoute(allServers);
+            }
         });
     });
 
@@ -2423,6 +2729,10 @@ window.initMobileUI = function () {
     if (portalsLink && portalsContent) {
         portalsLink.addEventListener("click", (e) => {
             e.preventDefault();
+            if (window.location.pathname.toLowerCase() !== "/beta/portals") {
+                window.history.pushState({}, '', '/beta/portals');
+                checkRoute(allServers);
+            }
             portalsContent.classList.toggle("hidden");
             const arrow = portalsLink.querySelector(".arrow");
             if (arrow) {
