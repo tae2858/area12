@@ -25,7 +25,7 @@
     <!-- Favicon Icon -->
     <link rel="icon" type="image/png" href="logo.png">
     <!-- Main Style Sheet Link -->
-    <link rel="stylesheet" href="style.css?v=20260611_1615">
+    <link rel="stylesheet" href="style.css?v=20260611_1636">
 </head>
 
 <body>
@@ -88,7 +88,7 @@
                     <img src="assets/Untitled3_20260608103604.png" alt="home" class="nav-word-img nav-word-default">
                     <img src="assets/Untitled3_20260608104118.png" alt="home" class="nav-word-img nav-word-active">
                 </a>
-                <a href="#" id="portals-nav-link" class="nav-img-link" data-target="portals">
+                <a href="#" id="portals-nav-link" class="nav-img-link" data-target="makers">
                     <img src="assets/Untitled3_20260608111649.png" alt="portals" class="nav-word-img nav-word-default">
                     <img src="assets/Untitled3_20260608112325.png" alt="portals" class="nav-word-img nav-word-active">
                 </a>
@@ -114,67 +114,59 @@
 
     <!-- Main Container -->
     <main class="content-container">
-        <!-- Desktop Home Container -->
-        <div id="desktop-home-container" class="home-page-container">
-            <!-- Rendered dynamically -->
-        </div>
+        <!-- Subscription/Pricing Card Layout (MultiCraft Favorite Slots) -->
+        <section class="slots-section">
+            <div class="section-header">
+                <h3 class="section-title">PINNED PORTALS</h3>
+                <p class="section-subtitle">Verified high-performance favorites</p>
+            </div>
 
-        <!-- Portals Container (Directory) -->
-        <div id="portals-page-container" class="portals-page-container hidden">
-            <!-- Subscription/Pricing Card Layout (MultiCraft Favorite Slots) -->
-            <section class="slots-section">
-                <div class="section-header">
-                    <h3 class="section-title">PINNED PORTALS</h3>
-                    <p class="section-subtitle">Verified high-performance favorites</p>
-                </div>
+            <div class="slots-grid" id="favorites-grid">
+                <!-- Loading placeholder cards -->
+                <div class="slot-card-skeleton"></div>
+                <div class="slot-card-skeleton"></div>
+            </div>
+        </section>
 
-                <div class="slots-grid" id="favorites-grid">
-                    <!-- Loading placeholder cards -->
-                    <div class="slot-card-skeleton"></div>
-                    <div class="slot-card-skeleton"></div>
+        <!-- Master Directory Section -->
+        <section id="directory" class="directory-section">
+            <div class="directory-toolbar">
+                <div class="toolbar-title-section">
+                    <h3 class="section-title">ALL ACTIVE SERVERS</h3>
+                    <p class="section-subtitle" id="lobby-counter">Polling server arrays...</p>
                 </div>
-            </section>
+                <!-- Search bar styling with HSL tailors -->
+                <div class="search-wrapper">
+                    <input type="text" id="search-input" placeholder="Search servers or invites..."
+                        class="search-input">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
 
-            <!-- Master Directory Section -->
-            <section id="directory" class="directory-section">
-                <div class="directory-toolbar">
-                    <div class="toolbar-title-section">
-                        <h3 class="section-title">ALL ACTIVE SERVERS</h3>
-                        <p class="section-subtitle" id="lobby-counter">Polling server arrays...</p>
-                    </div>
-                    <!-- Search bar styling with HSL tailors -->
-                    <div class="search-wrapper">
-                        <input type="text" id="search-input" placeholder="Search servers or invites..."
-                            class="search-input">
-                        <span class="search-icon">🔍</span>
-                    </div>
+            <!-- Directory Sort and Filters Controls Bar -->
+            <div class="directory-controls-bar">
+                <!-- Left: Sort By -->
+                <div class="sort-controls">
+                    <span class="control-label">SORT BY:</span>
+                    <button class="control-btn sort-btn active" data-sort="LIT">LIT 🔥</button>
+                    <button class="control-btn sort-btn" data-sort="UPVOTED">UPVOTED 📈</button>
+                    <button class="control-btn sort-btn" data-sort="NEWEST">NEWEST 🆕</button>
                 </div>
+                <!-- Right: Filters -->
+                <div class="filter-controls">
+                    <span class="control-label">FILTERS:</span>
+                    <button class="control-btn filter-btn active" data-filter="ALL">ALL</button>
+                    <button class="control-btn filter-btn" data-filter="FOREIGN">FOREIGN 🌐</button>
+                    <button class="control-btn filter-btn" data-filter="PREMIUM">PREMIUM ⭐</button>
+                    <button class="control-btn filter-btn" data-filter="SPECIAL">SPECIAL 💎</button>
+                </div>
+            </div>
 
-                <!-- Directory Sort and Filters Controls Bar -->
-                <div class="directory-controls-bar">
-                    <!-- Left: Sort By -->
-                    <div class="sort-controls">
-                        <span class="control-label">SORT BY:</span>
-                        <button class="control-btn sort-btn active" data-sort="LIT">LIT 🔥</button>
-                        <button class="control-btn sort-btn" data-sort="UPVOTED">UPVOTED 📈</button>
-                        <button class="control-btn sort-btn" data-sort="NEWEST">NEWEST 🆕</button>
-                    </div>
-                    <!-- Right: Filters -->
-                    <div class="filter-controls">
-                        <span class="control-label">FILTERS:</span>
-                        <button class="control-btn filter-btn active" data-filter="ALL">ALL</button>
-                        <button class="control-btn filter-btn" data-filter="FOREIGN">FOREIGN 🌐</button>
-                        <button class="control-btn filter-btn" data-filter="PREMIUM">PREMIUM ⭐</button>
-                        <button class="control-btn filter-btn" data-filter="SPECIAL">SPECIAL 💎</button>
-                    </div>
-                </div>
-
-                <!-- Directory Grid List -->
-                <div class="server-grid" id="server-grid">
-                    <!-- Loaded servers will append here -->
-                </div>
-            </section>
-        </div>
+            <!-- Directory Grid List -->
+            <div class="server-grid" id="server-grid">
+                <!-- Loaded servers will append here -->
+            </div>
+        </section>
     </main>
 
     <div id="about-page-container" class="about-page-container about-section hidden">
@@ -292,7 +284,7 @@
     </div>
 
 
-    <script type="module" src="app.js?v=20260611_1615"></script>
+    <script type="module" src="app.js?v=20260611_1636"></script>
 
     <!-- Glowing toast notification system -->
     <div id="toast" class="toast-notification">Copied invite code to clipboard!</div>

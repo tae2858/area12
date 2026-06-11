@@ -485,7 +485,7 @@ function initBetaApp() {
     if (portalsNavLink) {
         portalsNavLink.addEventListener("click", (e) => {
             e.preventDefault();
-            window.history.pushState({}, '', '/beta/portals');
+            window.history.pushState({}, '', '/beta/credits');
             checkRoute(allServers);
         });
     }
@@ -1136,6 +1136,7 @@ function createServerCardElement(server) {
 function renderHomeView(servers) {
     const desktopHome = document.getElementById("desktop-home-container");
     const mobileHome = document.getElementById("mobile-home-container");
+    if (!desktopHome && !mobileHome) return;
 
     const populateHome = (container) => {
         if (!container) return;
@@ -1395,7 +1396,7 @@ function checkRoute(servers) {
         });
     };
 
-    if (!relativePath || relativePath === "index.html" || relativePath === "index") {
+    if (!relativePath || relativePath === "index.html" || relativePath === "index" || relativePath === "portals") {
         hideEl(bioPage);
         hideEl(creditsPage);
         hideEl(aboutPage);
@@ -1403,41 +1404,10 @@ function checkRoute(servers) {
         showEl(contentContainer);
         showEl(mobileLayout);
 
-        // Show home container, hide portals container
-        const desktopHome = getEl("desktop-home-container");
-        const mobileHome = getEl("mobile-home-container");
-        const portalsContainer = getEl("portals-page-container");
         const mobileMainContent = getQuery(".mobile-main-content");
-
-        showEl(desktopHome);
-        showEl(mobileHome);
-        hideEl(portalsContainer);
-        hideEl(mobileMainContent);
-
-        updateActiveNav("home");
-        return;
-    }
-
-    if (relativePath === "portals") {
-        hideEl(bioPage);
-        hideEl(creditsPage);
-        hideEl(aboutPage);
-        showEl(mainNavbar);
-        showEl(contentContainer);
-        showEl(mobileLayout);
-
-        // Hide home container, show portals container
-        const desktopHome = getEl("desktop-home-container");
-        const mobileHome = getEl("mobile-home-container");
-        const portalsContainer = getEl("portals-page-container");
-        const mobileMainContent = getQuery(".mobile-main-content");
-
-        hideEl(desktopHome);
-        hideEl(mobileHome);
-        showEl(portalsContainer);
         showEl(mobileMainContent);
 
-        updateActiveNav("portals");
+        updateActiveNav("home");
         return;
     }
 
@@ -2697,8 +2667,8 @@ window.initMobileUI = function () {
     document.querySelectorAll(".mobile-dropdown-filters-grid .filter-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             if (sidebar) sidebar.classList.remove("open");
-            if (window.location.pathname.toLowerCase() !== "/beta/portals") {
-                window.history.pushState({}, '', '/beta/portals');
+            if (window.location.pathname.toLowerCase() !== "/beta") {
+                window.history.pushState({}, '', '/beta');
                 checkRoute(allServers);
             }
         });
@@ -2741,8 +2711,8 @@ window.initMobileUI = function () {
     if (portalsLink && portalsContent) {
         portalsLink.addEventListener("click", (e) => {
             e.preventDefault();
-            if (window.location.pathname.toLowerCase() !== "/beta/portals") {
-                window.history.pushState({}, '', '/beta/portals');
+            if (window.location.pathname.toLowerCase() !== "/beta") {
+                window.history.pushState({}, '', '/beta');
                 checkRoute(allServers);
             }
             portalsContent.classList.toggle("hidden");
