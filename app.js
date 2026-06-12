@@ -51,7 +51,7 @@ const DEVELOPERS_DATA = [
     }
 ];
 
-const BASE_PATH = window.location.pathname.startsWith('/beta') ? '/beta/' : '/';
+const BASE_PATH = window.location.pathname.startsWith('/beta') ? '/beta' : '';
 
 // Environment-aware backend API URL binding
 const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
@@ -288,9 +288,9 @@ function initBetaApp() {
         document.body.classList.add("is-embedded");
     }
 
-    const clickSound = new Audio(BASE_PATH + 'assets/a12.click.mp3');
-    const upvoteSound = new Audio(BASE_PATH + 'assets/a12.upvote.mp3');
-    const downvoteSound = new Audio(BASE_PATH + 'assets/a12.downvote.mp3');
+    const clickSound = new Audio(BASE_PATH + '/assets/a12.click.mp3');
+    const upvoteSound = new Audio(BASE_PATH + '/assets/a12.upvote.mp3');
+    const downvoteSound = new Audio(BASE_PATH + '/assets/a12.downvote.mp3');
     clickSound.volume = 1.0;
     upvoteSound.volume = 1.0;
     downvoteSound.volume = 1.0;
@@ -450,7 +450,7 @@ function initBetaApp() {
     const bioBackBtn = document.getElementById("bio-back-btn");
     if (bioBackBtn) {
         bioBackBtn.addEventListener("click", () => {
-            window.history.pushState({}, '', '/beta');
+            window.history.pushState({}, '', BASE_PATH || '/');
             checkRoute(allServers);
         });
     }
@@ -459,7 +459,7 @@ function initBetaApp() {
     if (creditsLink) {
         creditsLink.addEventListener("click", (e) => {
             e.preventDefault();
-            window.history.pushState({}, '', '/beta/credits');
+            window.history.pushState({}, '', BASE_PATH + '/credits');
             checkRoute(allServers);
         });
     }
@@ -467,7 +467,7 @@ function initBetaApp() {
     const creditsBackBtn = document.getElementById("credits-back-btn");
     if (creditsBackBtn) {
         creditsBackBtn.addEventListener("click", () => {
-            window.history.pushState({}, '', '/beta');
+            window.history.pushState({}, '', BASE_PATH || '/');
             checkRoute(allServers);
         });
     }
@@ -476,7 +476,7 @@ function initBetaApp() {
     if (homeNavLink) {
         homeNavLink.addEventListener("click", (e) => {
             e.preventDefault();
-            window.history.pushState({}, '', '/beta');
+            window.history.pushState({}, '', BASE_PATH || '/');
             checkRoute(allServers);
         });
     }
@@ -485,7 +485,7 @@ function initBetaApp() {
     if (portalsNavLink) {
         portalsNavLink.addEventListener("click", (e) => {
             e.preventDefault();
-            window.history.pushState({}, '', '/beta/credits');
+            window.history.pushState({}, '', BASE_PATH + '/credits');
             checkRoute(allServers);
         });
     }
@@ -494,7 +494,7 @@ function initBetaApp() {
     if (aboutNavLink) {
         aboutNavLink.addEventListener("click", (e) => {
             e.preventDefault();
-            window.history.pushState({}, '', '/beta/about');
+            window.history.pushState({}, '', BASE_PATH + '/about');
             checkRoute(allServers);
         });
     }
@@ -502,7 +502,7 @@ function initBetaApp() {
     const aboutBackBtn = document.getElementById("about-back-btn");
     if (aboutBackBtn) {
         aboutBackBtn.addEventListener("click", () => {
-            window.history.pushState({}, '', '/beta');
+            window.history.pushState({}, '', BASE_PATH || '/');
             checkRoute(allServers);
         });
     }
@@ -522,7 +522,7 @@ function initBetaApp() {
                         artist: 'Area 12',
                         album: 'Soundtrack',
                         artwork: [
-                            { src: window.location.origin + '/beta/logo.png', sizes: '512x512', type: 'image/png' }
+                            { src: window.location.origin + BASE_PATH + '/logo.png', sizes: '512x512', type: 'image/png' }
                         ]
                     });
 
@@ -982,7 +982,7 @@ function renderPinnedFavorites(servers) {
                 return;
             }
             const slug = getServerSlug(server);
-            window.history.pushState({}, '', '/beta/' + slug);
+            window.history.pushState({}, '', BASE_PATH + '/' + slug);
             checkRoute(allServers);
         });
 
@@ -1092,7 +1092,7 @@ function createServerCardElement(server) {
             return;
         }
         const slug = getServerSlug(server);
-        window.history.pushState({}, '', '/beta/' + slug);
+        window.history.pushState({}, '', BASE_PATH + '/' + slug);
         checkRoute(allServers);
     });
 
@@ -1362,10 +1362,10 @@ function checkRoute(servers) {
         path = path.slice(0, -1);
     }
 
-    // Extract relative path after /beta
+    // Extract relative path after BASE_PATH
     let relativePath = path;
-    if (path.startsWith('/beta')) {
-        relativePath = path.substring(5); // strip '/beta'
+    if (BASE_PATH && path.startsWith(BASE_PATH)) {
+        relativePath = path.substring(BASE_PATH.length);
     }
     relativePath = relativePath.replace(/^\/|\/$/g, '').trim();
 
@@ -1708,7 +1708,7 @@ function checkRoute(servers) {
             if (newCodeBox) newCodeBox.addEventListener("click", copyAction);
         }
     } else {
-        window.history.replaceState({}, '', '/beta');
+        window.history.replaceState({}, '', BASE_PATH || '/');
         const bioPage = document.getElementById("bio-page-container");
         const creditsPage = document.getElementById("credits-page-container");
         const aboutPage = document.getElementById("about-page-container");
@@ -2667,8 +2667,8 @@ window.initMobileUI = function () {
     document.querySelectorAll(".mobile-dropdown-filters-grid .filter-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             if (sidebar) sidebar.classList.remove("open");
-            if (window.location.pathname.toLowerCase() !== "/beta") {
-                window.history.pushState({}, '', '/beta');
+            if (window.location.pathname.toLowerCase() !== (BASE_PATH || "/")) {
+                window.history.pushState({}, '', BASE_PATH || '/');
                 checkRoute(allServers);
             }
         });
@@ -2679,7 +2679,7 @@ window.initMobileUI = function () {
     if (mobileHomeLink) {
         mobileHomeLink.addEventListener("click", (e) => {
             e.preventDefault();
-            window.history.pushState({}, '', '/beta');
+            window.history.pushState({}, '', BASE_PATH || '/');
             checkRoute(allServers);
             if (sidebar) sidebar.classList.remove("open");
         });
@@ -2689,7 +2689,7 @@ window.initMobileUI = function () {
     if (mobileAboutLink) {
         mobileAboutLink.addEventListener("click", (e) => {
             e.preventDefault();
-            window.history.pushState({}, '', '/beta/about');
+            window.history.pushState({}, '', BASE_PATH + '/about');
             checkRoute(allServers);
             if (sidebar) sidebar.classList.remove("open");
         });
@@ -2699,7 +2699,7 @@ window.initMobileUI = function () {
     if (mobileMakersLink) {
         mobileMakersLink.addEventListener("click", (e) => {
             e.preventDefault();
-            window.history.pushState({}, '', '/beta/credits');
+            window.history.pushState({}, '', BASE_PATH + '/credits');
             checkRoute(allServers);
             if (sidebar) sidebar.classList.remove("open");
         });
@@ -2711,8 +2711,8 @@ window.initMobileUI = function () {
     if (portalsLink && portalsContent) {
         portalsLink.addEventListener("click", (e) => {
             e.preventDefault();
-            if (window.location.pathname.toLowerCase() !== "/beta") {
-                window.history.pushState({}, '', '/beta');
+            if (window.location.pathname.toLowerCase() !== (BASE_PATH || "/")) {
+                window.history.pushState({}, '', BASE_PATH || '/');
                 checkRoute(allServers);
             }
             portalsContent.classList.toggle("hidden");
@@ -3018,8 +3018,8 @@ window.updateSidebarPortals = function () {
 
 window.syncMobileIndexWithRoute = function () {
     let path = window.location.pathname.toLowerCase();
-    if (path.startsWith('/beta')) {
-        path = path.substring(5);
+    if (BASE_PATH && path.startsWith(BASE_PATH)) {
+        path = path.substring(BASE_PATH.length);
     }
     path = path.replace(/^\/|\/$/g, '').trim();
     if (!path || path === "credits" || path === "about" || path === "index.html") return;
@@ -3349,7 +3349,7 @@ function openMakerProfileModal(maker) {
                 modal.classList.add("hidden");
                 // Navigate to server profile/bio!
                 const serverSlug = getServerSlug(server);
-                window.history.pushState({}, '', `/beta/${serverSlug}`);
+                window.history.pushState({}, '', BASE_PATH + '/' + serverSlug);
                 checkRoute(allServers);
             });
             serversListContainer.appendChild(tag);

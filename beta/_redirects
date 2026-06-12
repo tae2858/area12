@@ -1,9 +1,0 @@
-/robots.txt    /robots.txt    200
-/sitemap.xml   /sitemap.xml   200
-/style.css     /style.css     200
-/app.js        /app.js        200
-/logo.png      /logo.png      200
-/Untitled229_20250606165317.png /Untitled229_20250606165317.png 200
-/assets/*      /assets/:splat  200
-/*             /index.html    200
-

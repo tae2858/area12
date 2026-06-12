@@ -2,38 +2,38 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://area12.lol/</loc>
-        <lastmod>2026-06-05</lastmod>
+        <lastmod>2026-06-12</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>https://area12.lol/beta</loc>
-        <lastmod>2026-06-05</lastmod>
-        <changefreq>always</changefreq>
-        <priority>0.9</priority>
+        <loc>https://area12.lol/credits</loc>
+        <lastmod>2026-06-12</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
     </url>
     <url>
-        <loc>https://area12.lol/beta/credits</loc>
-        <lastmod>2026-06-05</lastmod>
+        <loc>https://area12.lol/about</loc>
+        <lastmod>2026-06-12</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <!-- High-priority server shortcut routes -->
     <url>
-        <loc>https://area12.lol/beta/pkcc</loc>
-        <lastmod>2026-06-05</lastmod>
+        <loc>https://area12.lol/pkcc</loc>
+        <lastmod>2026-06-12</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://area12.lol/beta/smp12</loc>
-        <lastmod>2026-06-05</lastmod>
+        <loc>https://area12.lol/smp12</loc>
+        <lastmod>2026-06-12</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://area12.lol/beta/ss6</loc>
-        <lastmod>2026-06-05</lastmod>
+        <loc>https://area12.lol/ss6</loc>
+        <lastmod>2026-06-12</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.7</priority>
     </url>

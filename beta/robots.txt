@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://area12.lol/sitemap.xml
