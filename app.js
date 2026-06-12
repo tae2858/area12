@@ -648,6 +648,8 @@ function initBetaApp() {
             bar.style.animationPlayState = play ? "running" : "paused";
         });
     }
+
+    initLightbox();
 }
 
 
@@ -3411,5 +3413,81 @@ if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initBetaApp);
 } else {
     initBetaApp();
+}
+
+// Image Lightbox Carousel
+function initLightbox() {
+    const modal = document.getElementById("lightbox-modal");
+    const img = document.getElementById("lightbox-img");
+    const closeBtn = document.querySelector(".lightbox-close");
+    const prevBtn = document.querySelector(".lightbox-prev");
+    const nextBtn = document.querySelector(".lightbox-next");
+
+    let currentImages = [];
+    let currentIndex = 0;
+
+    document.addEventListener("click", (e) => {
+        const target = e.target.closest(".gallery-img");
+        if (!target) return;
+
+        const container = target.closest(".gallery-grid");
+        if (!container) return;
+
+        const imgs = Array.from(container.querySelectorAll(".gallery-img"));
+        currentImages = imgs.map(i => i.src);
+        currentIndex = imgs.indexOf(target);
+
+        showImage();
+        modal.classList.add("show");
+    });
+
+    function showImage() {
+        if (currentImages.length > 0) {
+            img.src = currentImages[currentIndex];
+        }
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+            modal.classList.remove("show");
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal || e.target.classList.contains("lightbox-content")) {
+                modal.classList.remove("show");
+            }
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (currentImages.length === 0) return;
+            currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+            showImage();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (currentImages.length === 0) return;
+            currentIndex = (currentIndex + 1) % currentImages.length;
+            showImage();
+        });
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (!modal.classList.contains("show")) return;
+        if (e.key === "Escape") {
+            modal.classList.remove("show");
+        } else if (e.key === "ArrowLeft" && prevBtn) {
+            prevBtn.click();
+        } else if (e.key === "ArrowRight" && nextBtn) {
+            nextBtn.click();
+        }
+    });
 }
 
