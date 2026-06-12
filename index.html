@@ -25,18 +25,33 @@
     <!-- Favicon Icon -->
     <link rel="icon" type="image/png" href="logo.png">
     <!-- Main Style Sheet Link -->
-    <link rel="stylesheet" href="style.css?v=20260611_1636">
+    <link rel="stylesheet" href="style.css?v=20260612_1345">
 </head>
 
 <body>
 
     <!-- Guns.lol Style Entry Overlay -->
+    <!-- Area 12 Launch Sequence Loading Screen -->
     <div id="enter-overlay" class="enter-overlay">
-        <div class="overlay-content">
-            <img src="logo.png" alt="Area 12 Logo" class="overlay-logo">
-            <h1 class="glitch" data-text="Area 12">Area 12</h1>
-            <p class="overlay-tagline" id="typewriter"></p>
-            <button id="enter-btn" class="enter-btn" type="button">[ CLICK TO ENTER ]</button>
+        <div class="animation-viewport">
+            <div class="dots-wrapper">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+
+            <div class="brand-text">
+                <span class="letter" style="--i: 0">A</span>
+                <span class="letter" style="--i: 1">r</span>
+                <span class="letter" style="--i: 2">e</span>
+                <span class="letter" style="--i: 3">a</span>
+                <span class="letter space" style="--i: 4">&nbsp;</span>
+                <span class="letter" style="--i: 5">1</span>
+                <span class="letter" style="--i: 6">2</span>
+            </div>
+
+            <div class="enter-prompt">[ CLICK TO ENTER ]</div>
         </div>
     </div>
 
@@ -284,7 +299,7 @@
     </div>
 
 
-    <script type="module" src="app.js?v=20260611_1636"></script>
+    <script type="module" src="app.js?v=20260612_1345"></script>
 
     <!-- Glowing toast notification system -->
     <div id="toast" class="toast-notification">Copied invite code to clipboard!</div>

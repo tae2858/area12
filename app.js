@@ -319,7 +319,7 @@ function initBetaApp() {
         }
     });
 
-    const enterBtn = document.getElementById("enter-btn");
+    const enterBtn = document.getElementById("enter-overlay");
     const enterOverlay = document.getElementById("enter-overlay");
     const playPauseBtn = document.getElementById("player-play-pause");
     const volumeSlider = document.getElementById("volume-slider");
@@ -652,7 +652,7 @@ function startTypewriter() {
 
 // 3. API Polling Loop (Fetches from Railway proxy and synchronizes with Firebase cache)
 function initAPIPolling() {
-    const favoriteIds = ["94D92LVD", "QVZACNG5", "XX9IXQ6H"]; // Pinned/favorite slots
+    const favoriteIds = ["QVZACNG5", "94D92LVD", "XX9IXQ6H"]; // Pinned/favorite slots
     let firebaseCachedServers = {};
     let latestLiveServersMap = new Map();
 
@@ -853,7 +853,7 @@ function initAPIPolling() {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ favorites: "94D92LVD,QVZACNG5,XX9IXQ6H" })
+                body: JSON.stringify({ favorites: "QVZACNG5,94D92LVD,XX9IXQ6H" })
             });
 
             if (response.ok) {
@@ -964,6 +964,10 @@ function initAPIPolling() {
 // 4. Render Pinned Favorites (Subscription-style Cards)
 function renderPinnedFavorites(servers) {
     const favorites = servers.filter(s => s.is_favorite === true);
+    const favoriteIdsOrder = ["QVZACNG5", "94D92LVD", "XX9IXQ6H"];
+    favorites.sort((a, b) => {
+        return favoriteIdsOrder.indexOf(a.server_id.toUpperCase()) - favoriteIdsOrder.indexOf(b.server_id.toUpperCase());
+    });
     const container = document.getElementById("favorites-grid");
     container.innerHTML = "";
 
