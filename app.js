@@ -58,6 +58,35 @@ const API_BASE_URL = window.location.hostname === "localhost" || window.location
     ? "http://localhost:8080"
     : atob("aHR0cHM6Ly9tdWx0aWNyYWZ0LXByb2R1Y3Rpb24udXAucmFpbHdheS5hcHAvcHJveHkvZmluZC1uZWFyYnktc2VydmVycw==");
 
+function getServerGallery(serverId) {
+    const sIdUpper = serverId.toUpperCase();
+    if (sIdUpper === "QVZACNG5") {
+        return [
+            "./assets/serverimages/PKCC_1.png",
+            "./assets/serverimages/PKCC_2.png",
+            "./assets/serverimages/PKCC_3.png",
+            "./assets/serverimages/PKCC_4.png"
+        ];
+    }
+    if (sIdUpper === "94D92LVD") {
+        return [
+            "./assets/serverimages/SMP12_1.png",
+            "./assets/serverimages/SMP12_2.png",
+            "./assets/serverimages/SMP12_3.png",
+            "./assets/serverimages/SMP12_4.png"
+        ];
+    }
+    if (sIdUpper === "XX9IXQ6H") {
+        return [
+            "./assets/serverimages/SS6_1.png",
+            "./assets/serverimages/SS6_2.png",
+            "./assets/serverimages/SS6_3.png",
+            "./assets/serverimages/SS6_4.png"
+        ];
+    }
+    return null;
+}
+
 // Typewriter taglines for Guns.lol overlay effect
 const TAGLINES = [
     "Scraping the MultiCraft portals...",
@@ -507,8 +536,14 @@ function initBetaApp() {
         });
     }
 
+    let isAnimationFinished = false;
+    setTimeout(() => {
+        isAnimationFinished = true;
+    }, 4500);
+
     if (enterBtn) {
         enterBtn.addEventListener("click", () => {
+            if (!isAnimationFinished) return;
             if (enterOverlay) enterOverlay.classList.add("hide");
             isPlaying = true;
 
@@ -727,7 +762,8 @@ function initAPIPolling() {
                 adult: sData.adult === true,
                 hardcore: sData.hardcore === true,
                 url: sData.url || "",
-                slug: sData.slug || ""
+                slug: sData.slug || "",
+                gallery: getServerGallery(sIdUpper) || sData.gallery || null
             });
         }
 
@@ -767,7 +803,8 @@ function initAPIPolling() {
                     adult: sData.adult === true,
                     hardcore: sData.hardcore === true,
                     url: sData.url || "",
-                    slug: ""
+                    slug: "",
+                    gallery: getServerGallery(sId) || sData.gallery || null
                 });
             }
         }
@@ -808,7 +845,8 @@ function initAPIPolling() {
                     international: true,
                     adult: false,
                     hardcore: false,
-                    url: fId === "94D92LVD" ? "https://discord.gg/v9NUPx3p78" : ""
+                    url: fId === "94D92LVD" ? "https://discord.gg/v9NUPx3p78" : "",
+                    gallery: getServerGallery(fId)
                 });
             }
         }
@@ -2985,8 +3023,8 @@ window.renderMobileUI = function () {
             detailsHtml += `
                 <div class="bio-foreign-cta" style="margin-top: 16px;">
                     <div class="cta-title">Do you own this server?</div>
-                    <div class="cta-text">Get your own custom invite link and get verified on area12.lol! Join our Discord and use our bot <strong>Bluetooth</strong> with the <code>/registerportal</code> command in the bot channel.</div>
-                    <a href="https://discord.gg/v9NUPx3p78" target="_blank" class="cta-btn">Join Discord & Verify</a>
+                    <div class="cta-text">Get your own custom invite link and get verified on area12.lol! Join our Discord and open a ticket to verify your server.</div>
+                    <a href="https://discord.gg/v9NUPx3p78" target="_blank" class="cta-btn">Open a Ticket</a>
                 </div>
             `;
         }
