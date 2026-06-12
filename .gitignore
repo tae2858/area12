@@ -8,3 +8,6 @@ backend/config.json
 backend/app.py
 backend/Dockerfile
 backend/__pycache__/
+
+# Ignore local Discord account linking bot directory
+linkmtc-bot/

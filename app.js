@@ -23,6 +23,7 @@ let isPlaying = false;
 const activeVoteRequests = new Set();
 let currentSort = "LIT";
 let currentFilter = "ALL";
+let verifiedUsersCache = {};
 
 const DEVELOPERS_DATA = [
     {
@@ -2229,6 +2230,24 @@ function initFirebaseAuth() {
         });
     }
 
+    window.updateNavbarUsername = function() {
+        const user = auth.currentUser;
+        if (user && currentUsername) {
+            const uLower = currentUsername.toLowerCase();
+            const verification = verifiedUsersCache[uLower];
+            let displayStr = currentUsername.toUpperCase();
+            if (verification) {
+                const tag = verification.tagNumber || verification.tag;
+                displayStr += ` [${tag}] ✅`;
+            }
+            signinNavBtn.innerText = `LOG OUT (${displayStr})`;
+            signinNavBtn.style.color = "var(--accent-cyan)";
+        } else if (!user) {
+            signinNavBtn.innerText = "SIGN IN";
+            signinNavBtn.style.color = "var(--text-secondary)";
+        }
+    };
+
     onAuthStateChanged(auth, (user) => {
         const verificationBanner = document.getElementById("verification-banner");
         if (user) {
@@ -2247,8 +2266,7 @@ function initFirebaseAuth() {
             onValue(ref(db, `users/${user.uid}/username`), (snapshot) => {
                 const dbUsername = snapshot.val();
                 currentUsername = dbUsername || user.displayName || user.email.split("@")[0];
-                signinNavBtn.innerText = `LOG OUT (${currentUsername.toUpperCase()})`;
-                signinNavBtn.style.color = "var(--accent-cyan)";
+                window.updateNavbarUsername();
             }, (error) => {
                 console.error("Failed to load user username ref: ", error);
             });
@@ -2256,9 +2274,13 @@ function initFirebaseAuth() {
             window.isUserEmailVerified = true; // reset
             if (verificationBanner) verificationBanner.classList.add("hidden");
             currentUsername = null;
-            signinNavBtn.innerText = "SIGN IN";
-            signinNavBtn.style.color = "var(--text-secondary)";
+            window.updateNavbarUsername();
         }
+    });
+
+    onValue(ref(db, "usernames"), (snapshot) => {
+        verifiedUsersCache = snapshot.val() || {};
+        window.updateNavbarUsername();
     });
 }
 
@@ -2355,10 +2377,18 @@ function initGlobalChat() {
             const isSelf = auth.currentUser && msg.uid === auth.currentUser.uid;
             msgEl.className = `chat-msg ${isSelf ? 'self' : ''}`;
 
+            const uLower = msg.username.toLowerCase();
+            const verification = verifiedUsersCache[uLower];
+            let displayUser = msg.username.toUpperCase();
+            if (verification) {
+                const tag = verification.tagNumber || verification.tag;
+                displayUser += ` <span class="verified-badge" title="Verified Player">[${tag}] ✅</span>`;
+            }
+
             const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             msgEl.innerHTML = `
                 <div class="chat-msg-header">
-                    <span class="chat-msg-user">${msg.username.toUpperCase()}</span>
+                    <span class="chat-msg-user">${displayUser}</span>
                     <span class="chat-msg-time">${time}</span>
                 </div>
                 <div class="chat-msg-text">${escapeHtml(msg.text)}</div>
@@ -2452,9 +2482,17 @@ function loadServerComments(serverId) {
             const downActive = userVote === 'downvoted' ? 'active' : '';
             const scoreClass = userVote === 'upvoted' ? 'upvoted' : (userVote === 'downvoted' ? 'downvoted' : '');
 
+            const uLower = comment.username.toLowerCase();
+            const verification = verifiedUsersCache[uLower];
+            let displayUser = comment.username.toUpperCase();
+            if (verification) {
+                const tag = verification.tagNumber || verification.tag;
+                displayUser += ` <span class="verified-badge" title="Verified Player">[${tag}] ✅</span>`;
+            }
+
             item.innerHTML = `
                 <div class="comment-header">
-                    <span class="comment-author">${comment.username.toUpperCase()}</span>
+                    <span class="comment-author">${displayUser}</span>
                     <span class="comment-date">${date}</span>
                 </div>
                 <div class="comment-text">${escapeHtml(comment.text)}</div>

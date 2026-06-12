@@ -3920,3 +3920,19 @@ body.is-embedded .bio-stats-bar {
     .lightbox-next { right: 10px; }
     .lightbox-close { top: 20px; right: 20px; font-size: 35px; }
 }
+
+/* Verified player badge styling */
+.verified-badge {
+    color: var(--accent-cyan);
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: bold;
+    font-size: 0.75rem;
+    margin-left: 6px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    text-shadow: 0 0 4px var(--accent-cyan);
+    display: inline-flex;
+    align-items: center;
+}
