@@ -3695,7 +3695,7 @@ body.is-embedded .bio-stats-bar {
 
 .enter-overlay {
     background-color: #121212 !important;
-    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
+    font-family: 'Comic Sans MS', 'Comic Sans', 'Comic Neue', sans-serif !important;
     user-select: none;
     position: fixed;
     top: 0;
